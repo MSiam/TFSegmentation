@@ -10,3 +10,5 @@ MobileNet
 FCN32s, 16s, 8s
 U-Net
 Dilation
+
+This work has started in 2017.
