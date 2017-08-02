@@ -100,4 +100,6 @@ ENV/
 # mypy
 .mypy_cache/
 
-# ./idea/
+# IDE Pycharm
+.idea/
+
