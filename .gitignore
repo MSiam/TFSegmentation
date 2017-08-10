@@ -105,4 +105,12 @@ ENV/
 
 # zip files
 *.zip
+
+# log files
 logs/
+
+# Experiments directory
+experiments/
+
+# Out directory
+out/
