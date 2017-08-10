@@ -14,7 +14,7 @@ def max_pool_2d(name, x, size=(2, 2)):
                           name=name)
 
 
-def bi_upsample_2d(name, x, size=(2, 2)):
+def upsample_2d(name, x, size=(2, 2)):
     """
     Bilinear Upsampling 2D Wrapper
     :param name: (string) The name scope provided by the upper tf.name_scope('name') as scope.
@@ -23,7 +23,7 @@ def bi_upsample_2d(name, x, size=(2, 2)):
     :return: The output is the same input but doubled in both width and height (N,2H,2W,C). 
     """
     H, W, _ = x.get_shape().as_list()[1:]
-    mul_h, mul_w = size
-    output_H = H * mul_h
-    output_W = W * mul_w
+    size_x, size_y = size
+    output_H = H * size_x
+    output_W = W * size_y
     return tf.image.resize_bilinear(x, (output_H, output_W), align_corners=None, name=name)
