@@ -1,6 +1,7 @@
 from layers.utils import *
 from layers.pooling import max_pool_2d_2x2
 
+
 def conv2d(name, x, num_filters, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
            initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0):
     """
@@ -107,7 +108,7 @@ def conv2d_f(name, x, num_filters, kernel_size=(3, 3), padding='SAME', stride=(1
     :param initializer: (tf.contrib initializer) The initialization scheme, He et al. normal or Xavier normal are recommended.
     :param l2_strength:(weight decay) (float) L2 regularization parameter.
     :param bias: (float) Amount of bias.
-    :param activation: (tf.graph operator) The activation function applied after the convolution operation. At this moment,'relu' and 'linear' are supported.
+    :param activation: (tf.graph operator) The activation function applied after the convolution operation. If None, linear is applied.
     :param batchnorm_enabled: (boolean) for enabling batch normalization.
     :param max_pool_enabled:  (boolean) for enabling max-pooling 2x2 to decrease width and height by a factor of 2.
     :param dropout_keep_prob: (float) for the probability of keeping neurons.
@@ -120,9 +121,15 @@ def conv2d_f(name, x, num_filters, kernel_size=(3, 3), padding='SAME', stride=(1
 
         if batchnorm_enabled:
             conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training)
-            conv_a = activation(conv_o_bn)
+            if not activation:
+                conv_a = conv_o_bn
+            else:
+                conv_a = activation(conv_o_bn)
         else:
-            conv_a = activation(conv_o_b)
+            if not activation:
+                conv_a = conv_o_b
+            else:
+                conv_a = activation(conv_o_b)
 
         conv_o_dr = tf.nn.dropout(conv_a, dropout_keep_prob)
 

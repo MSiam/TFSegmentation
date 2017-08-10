@@ -23,7 +23,7 @@ def dense(name, x, output_dim, initializer=tf.contrib.layers.xavier_initializer(
 
 
 def dense_f(name, x, output_dim, initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0,
-            activation=tf.nn.relu, batchnorm_enabled=False, max_pool_enabled=True, dropout_keep_prob=1.0,
+            activation=None, batchnorm_enabled=False, max_pool_enabled=True, dropout_keep_prob=1.0,
             is_training=True
             ):
     """
@@ -35,7 +35,7 @@ def dense_f(name, x, output_dim, initializer=tf.contrib.layers.xavier_initialize
     :param initializer: (tf.contrib initializer) The initialization scheme, He et al. normal or Xavier normal are recommended.
     :param l2_strength:(weight decay) (float) L2 regularization parameter.
     :param bias: (float) Amount of bias.
-    :param activation: (tf.graph operator) The activation function applied after the convolution operation. At this moment,'relu' and 'linear' are supported.
+    :param activation: (tf.graph operator) The activation function applied after the convolution operation. If None, linear is applied.
     :param batchnorm_enabled: (boolean) for enabling batch normalization.
     :param max_pool_enabled:  (boolean) for enabling max-pooling 2x2 to decrease width and height by a factor of 2.
     :param dropout_keep_prob: (float) for the probability of keeping neurons.
@@ -48,9 +48,15 @@ def dense_f(name, x, output_dim, initializer=tf.contrib.layers.xavier_initialize
 
         if batchnorm_enabled:
             dense_o_bn = tf.layers.batch_normalization(dense_o_b, training=is_training)
-            dense_a = activation(dense_o_bn)
+            if not activation:
+                dense_a = dense_o_bn
+            else:
+                dense_a = activation(dense_o_bn)
         else:
-            dense_a = activation(dense_o_b)
+            if not activation:
+                dense_a = dense_o_b
+            else:
+                dense_a = activation(dense_o_b)
 
         dense_o_dr = tf.nn.dropout(dense_a, dropout_keep_prob)
 
