@@ -2,12 +2,16 @@
 This class will take control of the whole process of training or testing Segmentation models
 """
 
+import os
+import time
+import logging
+
+import tensorflow as tf
+
 from dirs import *
 from models import *
 from train import *
 from test import *
-import tensorflow as tf
-
 
 class Agent:
     """
