@@ -1,14 +1,18 @@
 """
 It's mission
-just read the parameters
+just read the parameters and create the dirs for the exp
 then pass it to the agent then run it
 """
-from params import *
+
 from agent import Agent
+from utils.params import get_params
+from utils.dirs import create_exp_dirs
 
 
 def main():
-    agent = Agent()
+    args = get_params()
+    args = create_exp_dirs(args)
+    agent = Agent(args)
     agent.run()
 
 
