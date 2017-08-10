@@ -11,7 +11,7 @@ def variable_with_weight_decay(kernel_shape, initializer, wd):
     :param wd:(weight decay) L2 regularization parameter.
     :return: The weights of the kernel initialized. The L2 loss is added to the loss collection.
     """
-    w = tf.get_variable('w_conv', kernel_shape, tf.float32, initializer=initializer)
+    w = tf.get_variable('weights', kernel_shape, tf.float32, initializer=initializer)
 
     collection_name = tf.GraphKeys.REGULARIZATION_LOSSES
     if wd and (not tf.get_variable_scope().reuse):
