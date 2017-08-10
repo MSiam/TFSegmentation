@@ -1,10 +1,29 @@
 import tensorflow as tf
 
 
-def max_pool_2d_2x2(x):
+def max_pool_2d(name, x, size=(2, 2)):
     """
-    Max pooling 2x2 Wrapper
+    Max pooling 2D Wrapper
+    :param name: (string) The name scope provided by the upper tf.name_scope('name') as scope.
     :param x: (tf.tensor) The input to the layer (N,H,W,C).
+    :param size: (tuple) This specifies the size of the filter as well as the stride.
     :return: The output is the same input but halfed in both width and height (N,H/2,W/2,C). 
     """
-    return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
+    size_x, size_y = size
+    return tf.nn.max_pool(x, ksize=[1, size_x, size_y, 1], strides=[1, size_x, size_y, 1], padding='VALID',
+                          name=name)
+
+
+def bi_upsample_2d(name, x, size=(2, 2)):
+    """
+    Bilinear Upsampling 2D Wrapper
+    :param name: (string) The name scope provided by the upper tf.name_scope('name') as scope.
+    :param x: (tf.tensor) The input to the layer (N,H,W,C).
+    :param size: (tuple) This specifies the size of the filter as well as the stride.
+    :return: The output is the same input but doubled in both width and height (N,2H,2W,C). 
+    """
+    H, W, _ = x.get_shape().as_list()[1:]
+    mul_h, mul_w = size
+    output_H = H * mul_h
+    output_W = W * mul_w
+    return tf.image.resize_bilinear(x, (output_H, output_W), align_corners=None, name=name)

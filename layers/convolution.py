@@ -1,5 +1,5 @@
 from layers.utils import *
-from layers.pooling import max_pool_2d_2x2
+from layers.pooling import max_pool_2d
 
 
 def conv2d(name, x, num_filters, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
@@ -135,7 +135,7 @@ def conv2d_f(name, x, num_filters, kernel_size=(3, 3), padding='SAME', stride=(1
 
         conv_o = conv_o_dr
         if max_pool_enabled:
-            conv_o = max_pool_2d_2x2(conv_o_dr)
+            conv_o = max_pool_2d(conv_o_dr)
 
     return conv_o
 
