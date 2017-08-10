@@ -12,3 +12,6 @@ U-Net
 Dilation
 
 This work has started in 2017.
+
+# Dependencies
+Python 3.5.2
