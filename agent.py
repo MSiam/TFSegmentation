@@ -2,16 +2,12 @@
 This class will take control of the whole process of training or testing Segmentation models
 """
 
-import os
-import time
-import logging
-
 import tensorflow as tf
 
-from dirs import *
 from models import *
 from train import *
 from test import *
+
 
 class Agent:
     """
@@ -23,33 +19,54 @@ class Agent:
     Then run it and handle it
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, args):
+        self.args = args
+        self.mode = args.mode
+
+        # Get the class from globals by selecting it by arguments
+        self.model = globals()[args.model]
+        self.operator = globals()[args.operator]
+
+        self.sess = None
 
     def run(self):
+        """
+        Initiate the Graph, sess, model, operator
+        :return:
+        """
         print("Agent is running now...")
-        # TODO Select the Mode
-
-        # TODO Create Experiment Directory and the output directory and get hold of data dir
 
         # Reset the graph
         tf.reset_default_graph()
 
-        # Create the session of the graph with some configuration
-        # TODO Check that there is a running GPU
-        # pass the gpu fraction as a paramter
-        # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1)
-        # sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+        # Create the sess
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1)
+        self.sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True,
+                                                     log_device_placement=True,
+                                                     gpu_options=gpu_options))
 
-        # TODO RUN the agent based on the type of the operation
+        # Create Model class
+        self.model = self.model()
+        self.operator = self.operator()
 
-        # sess.close()
+        if self.mode == 'train_n_test':
+            self.train()
+            self.test()
+        elif self.mode == 'train' or 'overfit':
+            self.train()
+        else:
+            self.test()
+
+        self.sess.close()
         print("Agent is exited...")
 
-    def train(self):
+    def train(self, mode="normal"):
         pass
 
     def test(self):
+        pass
+
+    def overfit(self):
         pass
 
     def create_dirs(self):
