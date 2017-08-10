@@ -1,0 +1,23 @@
+# Directories arguments
+data_dir: "x"
+exp_dir:  "y"
+out_dir:  "z"
+
+# Data arguments
+img_height:   600
+img_width:    120
+num_channels: 3
+num_classes:  7
+
+# Train arguments
+num_epochs: 10
+batch_size: 32
+shuffle: False
+save_every: 2
+test_every: 2
+
+# Models arguments
+learning_rate:   0.0007
+
+# Misc arguments
+verbose: False
