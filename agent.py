@@ -45,29 +45,39 @@ class Agent:
                                                      log_device_placement=True,
                                                      gpu_options=gpu_options))
 
-        # Create Model class
-        self.model = self.model()
-        self.operator = self.operator()
+        # Create Model class and build it
+        self.model = self.model(self.args)
+        self.model.build()
+        # Create the operator
+        self.operator = self.operator(self.args, self.sess, self.model)
 
         if self.mode == 'train_n_test':
             self.train()
             self.test()
-        elif self.mode == 'train' or 'overfit':
+        elif self.mode == 'train':
             self.train()
+        elif self.mode == 'overfit':
+            self.overfit()
         else:
             self.test()
 
         self.sess.close()
         print("Agent is exited...")
 
-    def train(self, mode="normal"):
-        pass
+    def train(self):
+        try:
+            self.operator.train()
+        except KeyboardInterrupt:
+            self.operator.save()
 
     def test(self):
-        pass
+        try:
+            self.operator.test()
+        except KeyboardInterrupt:
+            pass
 
     def overfit(self):
-        pass
-
-    def create_dirs(self):
-        pass
+        try:
+            self.operator.overfit()
+        except KeyboardInterrupt:
+            pass
