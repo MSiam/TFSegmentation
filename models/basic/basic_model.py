@@ -72,7 +72,8 @@ class BasicModel:
         raise NotImplementedError("build function is not implemented in the model")
 
     def init_input(self):
-        pass
+        self.img_pl= tf.placeholder(tf.float32)
+        self.label_pl= tf.placeholder(tf.int32)
 
     def init_network(self):
         raise NotImplementedError("init_network function is not implemented in the model")

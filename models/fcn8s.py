@@ -20,6 +20,7 @@ class FCN8s(BasicModel):
         :return:
         """
         encoder= VGG16(pretrained_path, num_classes= self.num_classes)
+        encoder.build(self.img_pl)
 
         #Build Decoding part
         self.upscore2= conv2d_transpose('upscore2', encoder.score_fr, tf.shape(encoder.feed1),
