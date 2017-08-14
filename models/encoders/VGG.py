@@ -67,6 +67,8 @@ class VGG16(object):
         self.fc7= load_fc_layer(self.fc6, 'fc7', activation= tf.nn.relu, dropout=0.5, train=train)
         self.score_fr= load_fc_layer(self.fc7, 'score_fr', num_classes= num_classes)
 
+        self.feed1= self.conv4_3
+        self.feed2= self.conv3_3
 
     def load_fc_layer(self, bottom, name, num_classes=20,
             activation= None, dropout= 1.0, train= False):
