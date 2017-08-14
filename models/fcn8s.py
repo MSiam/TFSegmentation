@@ -38,5 +38,5 @@ class FCN8s(BasicModel):
         self.upscore8= conv2d_transpose('upscore8', self.fuse_feed2, tf.shape(self.input).as_list(),
                 kernel_size=(16, 16), stride=(8,8), l2_strength= encoder.wd)
 
-        self.logits = tf.reshape(self.upscore8, (-1, self.num_classes))
+        self.logits = self.upscore8
         self.softmax = tf.nn.softmax(logits)
