@@ -64,6 +64,8 @@ def parse_config():
 
     # Models arguments
     parser.add_argument('--learning_rate', default=1e-5, type=float, help='learning rate')
+    parser.add_argument('--weight_decay', default=5e-4, type=float, help='weight decay')
+    parser.add_argument('--pretrained_path', default="", help='The path of pretrained weights')
 
     # Misc arguments
     parser.add_argument('--verbose', action='store_true', help='verbosity in the code')
