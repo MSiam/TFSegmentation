@@ -9,11 +9,18 @@ from utils.img_utils import decode_labels
 import tensorflow as tf
 
 
+# TODO Consider to make the ground truth only NHW (Argmaxed only)
+
 class Params:
     """
-    Empty class to Hold all specified parameters for any Model at runtime
+    Class to hold BasicModel parameters
     """
-    pass
+
+    def __init__(self):
+        self.img_width = None
+        self.img_height = None
+        self.num_channels = None
+        self.num_classes = None
 
 
 class BasicModel:
@@ -30,7 +37,25 @@ class BasicModel:
         self.params.num_channels = self.args.num_channels
         self.params.num_classes = self.args.num_classes
         # Input
+        self.x_pl = None
+        self.y_pl = None
+        self.is_training = None
         # Output
+        self.logits = None
+        self.out_softmax = None
+        self.out_argmax = None
+        self.out_one_hot = None
+        self.y_argmax = None
+        # Train
+        self.cross_entropy_loss = None
+        self.regularization_loss = None
+        self.loss = None
+        self.optimizer = None
+        self.train_op = None
+        # Summaries
+        self.accuracy = None
+        self.segmented_summary = None
+        self.merged_summaries = None
         # Init global step
         self.global_step_tensor = None
         self.global_step_input = None
@@ -72,17 +97,45 @@ class BasicModel:
         raise NotImplementedError("build function is not implemented in the model")
 
     def init_input(self):
-        self.img_pl= tf.placeholder(tf.float32)
-        self.label_pl= tf.placeholder(tf.int32)
+        with tf.name_scope('input'):
+            self.x_pl = tf.placeholder(tf.float32, [None, self.params.img_height, self.params.img_width, 3])
+            self.y_pl = tf.placeholder(tf.int32, [None, self.params.img_height, self.params.img_width, self.params.num_classes])
+            self.is_training = tf.placeholder(tf.bool)
 
     def init_network(self):
         raise NotImplementedError("init_network function is not implemented in the model")
 
     def init_output(self):
-        pass
+        with tf.name_scope('output'):
+            self.out_softmax = tf.nn.softmax(self.logits)
+            self.out_argmax = tf.argmax(self.out_softmax, axis=3)
+            self.y_argmax = tf.argmax(self.y_pl, axis=3)
 
     def init_train(self):
-        pass
+        with tf.name_scope('train-loss'):
+            self.cross_entropy_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_argmax))
+            self.regularization_loss = tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+            self.loss = self.cross_entropy_loss + self.regularization_loss
+
+        with tf.name_scope('train-operation'):
+            extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+            with tf.control_dependencies(extra_update_ops):
+                self.optimizer = tf.train.AdamOptimizer(self.args.learning_rate)
+                self.train_op = self.optimizer.minimize(self.loss)
 
     def init_summaries(self):
-        pass
+        with tf.name_scope('train-accuracy'):
+            self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.y_argmax, self.out_argmax), tf.float32))
+
+        with tf.name_scope('segmented_output'):
+            input_summary = tf.cast(self.x_pl, tf.uint8)
+            labels_summary = tf.py_func(decode_labels, [self.y_argmax, self.params.num_classes], tf.uint8)
+            preds_summary = tf.py_func(decode_labels, [self.out_argmax, self.params.num_classes], tf.uint8)
+            self.segmented_summary = tf.concat(axis=2, values=[input_summary, labels_summary, preds_summary])  # Concatenate row-wise
+
+        # Every step evaluate these summaries
+        with tf.name_scope('train-summary'):
+            tf.summary.scalar('loss', self.loss)
+            tf.summary.scalar('pixel_wise_accuracy', self.accuracy)
+
+        self.merged_summaries = tf.summary.merge_all()
