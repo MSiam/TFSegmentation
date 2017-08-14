@@ -1,4 +1,5 @@
-from layers.convolution import conv2d_pre
+from layers.convolution import conv2d_f_pre, conv2d_f
+import tensorflow as tf
 
 class VGG16(object):
     '''
@@ -109,7 +110,9 @@ class VGG16(object):
                 activation=tf.nn.relu, max_pool_enabled=pooling)
 
     '''
+    ==============================================================
     Next Functions are helpers for loading pretrained weights
+    ==============================================================
     '''
     def get_conv_filter(self, name):
         init = tf.constant_initializer(value=self.pretrained_weights[name][0],

@@ -1,5 +1,6 @@
 from layers.utils import *
 from layers.pooling import max_pool_2d
+import tensorflow as tf
 
 def conv2d_pre(name, x, w, padding='SAME', stride=(1, 1),l2_strength=0.0, bias=0.0):
     """
