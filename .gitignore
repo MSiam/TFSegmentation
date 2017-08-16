@@ -114,3 +114,15 @@ experiments/
 
 # Out directory
 out/
+
+# data
+data/dummy_cityscapes/
+
+# pretrained_weights
+pretrained_weights/*.npy
+
+# imgs
+*.png
+
+# tmp files
+*~

@@ -3,6 +3,8 @@ import numpy as np
 import tensorflow as tf
 
 
+# TODO Revise this class with menna
+
 class VGG16:
     """
     VGG 16 Encoder class
@@ -64,21 +66,13 @@ class VGG16:
         self.feed1 = None
         self.feed2 = None
 
-    def build(self, ):
+    def build(self):
         """
         Build the VGG model using loaded weights
-        Parameters
-        ----------
-        x_input: image batch tensor
-            Image in rgb shape. Scaled to Interval [0, 255]
-        train_flag_tensor: bool
-            Whether to build train or inference graph
-        num_classes: int
-            How many classes should be predicted (by fc8)
         """
 
         # Convert RGB to BGR
-        with tf.name_scope('Processing'):
+        with tf.name_scope('Pre_Processing'):
             red, green, blue = tf.split(self.x_input, num_or_size_splits=3, axis=3)
             preprocessed_input = tf.concat([
                 blue - VGG16.VGG_MEAN[0],
@@ -106,7 +100,7 @@ class VGG16:
 
         self.fc6 = self.load_fc_layer(self.conv5_3, 'fc6', activation=tf.nn.relu, dropout=0.5, train=self.train_flag)
         self.fc7 = self.load_fc_layer(self.fc6, 'fc7', activation=tf.nn.relu, dropout=0.5, train=self.train_flag)
-        self.score_fr = self.load_fc_layer(self.fc7, 'score_fr', num_classes=num_classes)
+        self.score_fr = self.load_fc_layer(self.fc7, 'score_fr', num_classes=self.num_classes)
 
         self.feed1 = self.conv4_3
         self.feed2 = self.conv3_3
@@ -140,13 +134,12 @@ class VGG16:
                 num_channels = 512
                 kernel_size = (1, 1)
 
-            return conv2d_f(name, bottom, num_channel, kernel_size=kernel_size, l2_strength=self.wd, activation=activation, dropout_keep_prob=dropout, is_training=train)
+            return conv2d_f(name, bottom, num_channels, kernel_size=kernel_size, l2_strength=self.wd, activation=activation, dropout_keep_prob=dropout, is_training=train)
 
     def load_conv_layer(self, bottom, name, pooling=False):
         w = self.get_conv_filter(name)
         biases = self.get_bias(name)
-        return conv2d_f_pre(name, bottom, w, l2_strength=self.wd, bias=biases,
-                            activation=tf.nn.relu, max_pool_enabled=pooling)
+        return conv2d_f_pre(name, bottom, w, l2_strength=self.wd, bias=biases, activation=tf.nn.relu, max_pool_enabled=pooling)
 
     """
     ==============================================================
@@ -155,17 +148,14 @@ class VGG16:
     """
 
     def get_conv_filter(self, name):
-        init = tf.constant_initializer(value=self.pretrained_weights[name][0],
-                                       dtype=tf.float32)
+        init = tf.constant_initializer(value=self.pretrained_weights[name][0], dtype=tf.float32)
         shape = self.pretrained_weights[name][0].shape
         print('Layer name: %s' % name)
         print('Layer shape: %s' % str(shape))
         var = tf.get_variable(name="filter", initializer=init, shape=shape)
         if not tf.get_variable_scope().reuse:
-            weight_decay = tf.multiply(tf.nn.l2_loss(var), self.wd,
-                                       name='weight_loss')
-            tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES,
-                                 weight_decay)
+            weight_decay = tf.multiply(tf.nn.l2_loss(var), self.wd, name='weight_loss')
+            tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, weight_decay)
         return var
 
     def _bias_reshape(self, bweight, num_orig, num_new):
@@ -184,14 +174,12 @@ class VGG16:
         return avg_bweight
 
     def get_bias(self, name, num_classes=None):
-        bias_wights = self.pretrained_weights[name][1]
+        bias_weights = self.pretrained_weights[name][1]
         shape = self.pretrained_weights[name][1].shape
         if name == 'fc8':
-            bias_wights = self._bias_reshape(bias_wights, shape[0],
-                                             num_classes)
+            bias_weights = self._bias_reshape(bias_weights, shape[0], num_classes)
             shape = [num_classes]
-        init = tf.constant_initializer(value=bias_wights,
-                                       dtype=tf.float32)
+        init = tf.constant_initializer(value=bias_weights, dtype=tf.float32)
         var = tf.get_variable(name="biases", initializer=init, shape=shape)
         return var
 
@@ -237,9 +225,7 @@ class VGG16:
         weights = self.pretrained_weights[name][0]
         weights = weights.reshape(shape)
         if num_classes is not None:
-            weights = self._summary_reshape(weights, shape,
-                                            num_new=num_classes)
-        init = tf.constant_initializer(value=weights,
-                                       dtype=tf.float32)
+            weights = self._summary_reshape(weights, shape, num_new=num_classes)
+        init = tf.constant_initializer(value=weights, dtype=tf.float32)
         var = tf.get_variable(name="weights", initializer=init, shape=shape)
         return var

@@ -13,6 +13,7 @@ num_classes:  7
 num_epochs: 10
 batch_size: 32
 shuffle: False
+data_mode: "overfit"
 save_every: 2
 test_every: 2
 max_to_keep: 5
@@ -20,7 +21,7 @@ max_to_keep: 5
 # Models arguments
 learning_rate:   0.0007
 weight_decay: 0.0005
-pretrained_path: "./"
+pretrained_path: "pretrained_weights/vgg16.npy"
 
 # Misc arguments
 verbose: False
