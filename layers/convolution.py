@@ -3,9 +3,7 @@ from layers.pooling import max_pool_2d
 import tensorflow as tf
 
 
-# TODO revise _pre layers
-
-def conv2d_pre(name, x, w, padding='SAME', stride=(1, 1), l2_strength=0.0, bias=0.0):
+def conv2d_pre(name, x, w, padding='SAME', stride=(1, 1), bias=0.0):
     """
     Convolution 2D Wrapper
     :param name: (string) The name scope provided by the upper tf.name_scope('name') as scope.
@@ -13,7 +11,6 @@ def conv2d_pre(name, x, w, padding='SAME', stride=(1, 1), l2_strength=0.0, bias=
     :param w: pretrained weights
     :param padding: (string) The amount of padding required.
     :param stride: (integer tuple) The stride required.
-    :param l2_strength:(weight decay) (float) L2 regularization parameter.
     :param bias: (float) Amount of bias.
     :return out: The output of the layer. (N, H', W', num_filters)
     """
@@ -26,7 +23,7 @@ def conv2d_pre(name, x, w, padding='SAME', stride=(1, 1), l2_strength=0.0, bias=
             variable_summaries(bias)
         with tf.name_scope('layer_conv2d'):
             conv = tf.nn.conv2d(x, w, stride, padding)
-            out = tf.nn.bias_add(conv, b)
+            out = tf.nn.bias_add(conv, bias)
     return out
 
 
@@ -142,7 +139,7 @@ def conv2d_f_pre(name, x, w, padding='SAME', stride=(1, 1),
     :return: The output tensor of the layer (N, H', W', C').
     """
     with tf.name_scope(name) as scope:
-        conv_o_b = conv2d_pre(scope, x, w, stride=stride, padding=padding, l2_strength=l2_strength, bias=bias)
+        conv_o_b = conv2d_pre(scope, x, w, stride=stride, padding=padding, bias=bias)
 
         if batchnorm_enabled:
             conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training)
@@ -160,7 +157,7 @@ def conv2d_f_pre(name, x, w, padding='SAME', stride=(1, 1),
 
         conv_o = conv_o_dr
         if max_pool_enabled:
-            conv_o = max_pool_2d(conv_o_dr)
+            conv_o = max_pool_2d(scope, conv_o_dr)
 
     return conv_o
 
@@ -208,7 +205,7 @@ def conv2d_f(name, x, num_filters, kernel_size=(3, 3), padding='SAME', stride=(1
 
         conv_o = conv_o_dr
         if max_pool_enabled:
-            conv_o = max_pool_2d(conv_o_dr)
+            conv_o = max_pool_2d(scope, conv_o_dr)
 
     return conv_o
 
@@ -256,6 +253,6 @@ def deconv2d_f(name, x, output_shape, kernel_size=(3, 3), padding='SAME', stride
 
         conv_o = conv_o_dr
         if max_pool_enabled:
-            conv_o = max_pool_2d_2x2(conv_o_dr)
+            conv_o = max_pool_2d(scope, conv_o_dr)
 
         return conv_o

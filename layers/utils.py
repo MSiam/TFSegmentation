@@ -15,8 +15,7 @@ def variable_with_weight_decay(kernel_shape, initializer, wd):
 
     collection_name = tf.GraphKeys.REGULARIZATION_LOSSES
     if wd and (not tf.get_variable_scope().reuse):
-        weight_decay = tf.multiply(
-            tf.nn.l2_loss(w), wd, name='w_loss')
+        weight_decay = tf.multiply(tf.nn.l2_loss(w), wd, name='w_loss')
         tf.add_to_collection(collection_name, weight_decay)
     variable_summaries(w)
     return w

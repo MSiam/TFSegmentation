@@ -1,6 +1,7 @@
-import tensorflow as tf
 from layers.utils import *
-from layers.pooling import max_pool_2d_2x2
+from layers.pooling import max_pool_2d
+
+import tensorflow as tf
 
 
 def dense(name, x, output_dim, initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0):
@@ -62,6 +63,6 @@ def dense_f(name, x, output_dim, initializer=tf.contrib.layers.xavier_initialize
 
         dense_o = dense_o_dr
         if max_pool_enabled:
-            dense_o = max_pool_2d_2x2(dense_o_dr)
+            dense_o = max_pool_2d(scope, dense_o_dr)
 
     return dense_o
