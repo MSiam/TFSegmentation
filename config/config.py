@@ -56,6 +56,7 @@ def parse_config():
     parser.add_argument('--num_epochs', default=2, type=int, help='number of epochs')
     parser.add_argument('--batch_size', default=32, type=int, help='batch size')
     parser.add_argument('--shuffle', action='store_true', help='Flag to shuffle the data while training')
+    parser.add_argument('--data_mode', default="experiment", help='Data mode')
     parser.add_argument('--save_every', default=1, type=int, help='save every n epochs')
     parser.add_argument('--test_every', default=1, type=int, help='test every n epochs')
     parser.add_argument('--max_to_keep', default=5, type=int, help='Max checkpoints to keep')
