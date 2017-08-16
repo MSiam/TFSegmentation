@@ -2,7 +2,10 @@ from layers.utils import *
 from layers.pooling import max_pool_2d
 import tensorflow as tf
 
-def conv2d_pre(name, x, w, padding='SAME', stride=(1, 1),l2_strength=0.0, bias=0.0):
+
+# TODO revise _pre layers
+
+def conv2d_pre(name, x, w, padding='SAME', stride=(1, 1), l2_strength=0.0, bias=0.0):
     """
     Convolution 2D Wrapper
     :param name: (string) The name scope provided by the upper tf.name_scope('name') as scope.
@@ -25,6 +28,7 @@ def conv2d_pre(name, x, w, padding='SAME', stride=(1, 1),l2_strength=0.0, bias=0
             conv = tf.nn.conv2d(x, w, stride, padding)
             out = tf.nn.bias_add(conv, b)
     return out
+
 
 def conv2d(name, x, num_filters, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
            initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0):
@@ -56,6 +60,7 @@ def conv2d(name, x, num_filters, kernel_size=(3, 3), padding='SAME', stride=(1, 
             out = tf.nn.bias_add(conv, b)
 
     return out
+
 
 def atrous_conv2d(name, x, num_filters, kernel_size=(3, 3), padding='SAME', dilation_rate=1,
                   initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0):
@@ -114,10 +119,11 @@ def conv2d_transpose(name, x, output_shape, kernel_size=(3, 3), padding='SAME', 
 
     return out
 
+
 def conv2d_f_pre(name, x, w, padding='SAME', stride=(1, 1),
-             l2_strength=0.0, bias=0.0,
-             activation=None, batchnorm_enabled=False, max_pool_enabled=True, dropout_keep_prob=1.0,
-             is_training=True):
+                 l2_strength=0.0, bias=0.0,
+                 activation=None, batchnorm_enabled=False, max_pool_enabled=True, dropout_keep_prob=1.0,
+                 is_training=True):
     """
     This block is responsible for a convolution 2D layer followed by optional (non-linearity, dropout, max-pooling).
     Note that: "is_training" should be passed by a correct value based on being in either training or testing.
@@ -136,8 +142,7 @@ def conv2d_f_pre(name, x, w, padding='SAME', stride=(1, 1),
     :return: The output tensor of the layer (N, H', W', C').
     """
     with tf.name_scope(name) as scope:
-        conv_o_b = conv2d_pre(scope, x, w, stride=stride, padding=padding,
-                          l2_strength=l2_strength, bias=bias)
+        conv_o_b = conv2d_pre(scope, x, w, stride=stride, padding=padding, l2_strength=l2_strength, bias=bias)
 
         if batchnorm_enabled:
             conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training)

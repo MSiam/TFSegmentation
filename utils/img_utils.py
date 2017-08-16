@@ -1,6 +1,7 @@
 from PIL import Image
 import numpy as np
 
+# TODO Check for num_classes and zbotha w 3leha
 # colour map
 label_colours_global = [(0, 0, 0),
                         (128, 0, 0),

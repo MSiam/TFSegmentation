@@ -19,6 +19,8 @@ max_to_keep: 5
 
 # Models arguments
 learning_rate:   0.0007
+weight_decay: 0.0005
+pretrained_path: "./"
 
 # Misc arguments
 verbose: False
