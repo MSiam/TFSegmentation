@@ -3,27 +3,26 @@ import numpy as np
 
 # TODO Check for num_classes and zbotha w 3leha
 # colour map
-label_colours_global = [(0, 0, 0),
-                        (128, 0, 0),
-                        (0, 128, 0),
-                        (128, 128, 0),
-                        (0, 0, 128),
-                        (128, 0, 128),
-                        (0, 128, 128),
-                        (128, 128, 128),
-                        (64, 0, 0),
-                        (192, 0, 0),
-                        (64, 128, 0),
-                        (192, 128, 0),
-                        (64, 0, 128),
-                        (192, 0, 128),
-                        (64, 128, 128),
-                        (192, 128, 128),
-                        (0, 64, 0),
-                        (128, 64, 0),
-                        (0, 192, 0),
-                        (128, 192, 0),
-                        (0, 64, 128)]
+label_colours_global = [(128, 64, 128),  # 'road'
+                        (244, 35, 232),  # 'sidewalk'
+                        (70, 70, 70),  # 'building'
+                        (102, 102, 156),  # 'wall'
+                        (190, 153, 153),  # 'fence'
+                        (153, 153, 153),  # 'pole'
+                        (250, 170, 30),  # 'traffic light'
+                        (220, 220, 0),  # 'traffic sign'
+                        (107, 142, 35),  # 'vegetation'
+                        (152, 251, 152),  # 'terrain'
+                        (70, 130, 180),  # 'sky'
+                        (220, 20, 60),  # 'person'
+                        (255, 0, 0),  # 'rider'
+                        (0, 0, 142),  # 'car'
+                        (0, 0, 70),  # 'truck'
+                        (0, 60, 100),  # 'bus'
+                        (0, 80, 100),  # 'train'
+                        (0, 0, 230),  # 'motorcycle'
+                        (119, 11, 32),  # 'bicycle'
+                        (0, 0, 0), ]  # None
 
 
 def decode_labels(mask, num_classes):
@@ -51,7 +50,7 @@ def decode_labels(mask, num_classes):
     #     exit(-1)
 
     # Check the length of the colours with num_classes
-    assert (num_classes <= len(colours)), 'num_classes %d should be less or equal than number colours %d.' % (num_classes, len(colours))
+    assert (num_classes == len(colours)), 'num_classes %d should be equal the number colours %d.' % (num_classes, len(colours))
     # Get the shape of the mask
     n, h, w = mask.shape
     # Create the output numpy array
