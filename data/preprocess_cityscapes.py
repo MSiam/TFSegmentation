@@ -80,6 +80,51 @@ def main(args):
     hf.close()
 
 
+labelID_2_trainID = {0: 19,  # 'unlabeled'
+                     1: 19,  # 'ego vehicle'
+                     2: 19,  # 'rectification border'
+                     3: 19,  # 'out of roi'
+                     4: 19,  # 'static'
+                     5: 19,  # 'dynamic'
+                     6: 19,  # 'ground'
+                     7: 0,  # 'road'
+                     8: 1,  # 'sidewalk'
+                     9: 19,  # 'parking'
+                     10: 19,  # 'rail track'
+                     11: 2,  # 'building'
+                     12: 3,  # 'wall'
+                     13: 4,  # 'fence'
+                     14: 19,  # 'guard rail'
+                     15: 19,  # 'bridge'
+                     16: 19,  # 'tunnel'
+                     17: 5,  # 'pole'
+                     18: 19,  # 'polegroup'
+                     19: 6,  # 'traffic light'
+                     20: 7,  # 'traffic sign'
+                     21: 8,  # 'vegetation'
+                     22: 9,  # 'terrain'
+                     23: 10,  # 'sky'
+                     24: 11,  # 'person'
+                     25: 12,  # 'rider'
+                     26: 13,  # 'car'
+                     27: 14,  # 'truck'
+                     28: 15,  # 'bus'
+                     29: 19,  # 'caravan'
+                     30: 19,  # 'trailer'
+                     31: 16,  # 'train'
+                     32: 17,  # 'motorcycle'
+                     33: 18,  # 'bicycle'
+                     -1: 19,  # 'license plate'
+                     }
+
+
+def custom_ignore_labels(img, h, w):
+    for i in range(h):
+        for j in range(w):
+            img[i, j] = labelID_2_trainID[img[i, j]]
+    return img
+
+
 def custom_read_cityscape(hf, path_images, path_labels, args_, split='train'):
     names = []
     root = path_images
@@ -124,6 +169,11 @@ def custom_read_cityscape(hf, path_images, path_labels, args_, split='train'):
 
     print("%s images have processes in total" % str(i))
 
+    # Save a numpy
+    assert image_dataset.shape == (len(names), h, w, c)
+    assert image_dataset.dtype == np.uint8
+    np.save('X', image_dataset)
+
     shape = (len(names), h, w)
     print("Shape of labels is %s" % (str(shape)))
 
@@ -144,12 +194,18 @@ def custom_read_cityscape(hf, path_images, path_labels, args_, split='train'):
         img = misc.imread(root + '/' + f)
         if args_.rescale is not None:
             img = misc.imresize(img, (h, w))
+            img = custom_ignore_labels(img, h, w)
         if img.shape != (h, w):
             print("an image is skipped due to inconsistent shape with %s" % str(img.shape))
             continue
         image_dataset[i, :h, :w] = img
         i = i + 1
     print("%s labels was processed in total" % str(i))
+
+    # Save a txt to check that everything is ok
+    np.savetxt('Y.txt', np.array(image_dataset[0]), fmt="%d")
+    # Save a numpy
+    np.save('Y', np.array(image_dataset))
 
 
 def custom_main(args_):
