@@ -44,7 +44,7 @@ def conv2d(name, x, num_filters, kernel_size=(3, 3), padding='SAME', stride=(1, 
     """
     with tf.variable_scope(name):
         stride = [1, stride[0], stride[1], 1]
-        kernel_shape = [kernel_size[0], kernel_size[1], x.get_shape()[-1], num_filters]
+        kernel_shape = [kernel_size[0], kernel_size[1], x.shape[-1], num_filters]
 
         with tf.name_scope('layer_weights'):
             w = variable_with_weight_decay(kernel_shape, initializer, l2_strength)
@@ -75,7 +75,7 @@ def atrous_conv2d(name, x, num_filters, kernel_size=(3, 3), padding='SAME', dila
     :return out: The output of the layer. (N, H', W', num_filters)
     """
     with tf.variable_scope(name):
-        kernel_shape = [kernel_size[0], kernel_size[1], x.get_shape()[-1], num_filters]
+        kernel_shape = [kernel_size[0], kernel_size[1], x.shape[-1], num_filters]
 
         with tf.name_scope('layer_weights'):
             w = variable_with_weight_decay(kernel_shape, initializer, l2_strength)
@@ -106,7 +106,7 @@ def conv2d_transpose(name, x, output_shape, kernel_size=(3, 3), padding='SAME', 
     """
     with tf.variable_scope(name):
         stride = [1, stride[0], stride[1], 1]
-        kernel_shape = [kernel_size[0], kernel_size[1], output_shape[-1], x.get_shape()[-1]]
+        kernel_shape = [kernel_size[0], kernel_size[1], output_shape[-1], x.shape[-1]]
 
         w = get_deconv_filter(kernel_shape, l2_strength)
         deconv = tf.nn.conv2d_transpose(x, w, tf.stack(output_shape), strides=stride, padding=padding)
