@@ -119,7 +119,7 @@ def conv2d_transpose(name, x, output_shape, kernel_size=(3, 3), padding='SAME', 
 
 def conv2d_f_pre(name, x, w, padding='SAME', stride=(1, 1),
                  l2_strength=0.0, bias=0.0,
-                 activation=None, batchnorm_enabled=False, max_pool_enabled=True, dropout_keep_prob=1.0,
+                 activation=None, batchnorm_enabled=False, max_pool_enabled=False, dropout_keep_prob=1.0,
                  is_training=True):
     """
     This block is responsible for a convolution 2D layer followed by optional (non-linearity, dropout, max-pooling).
@@ -164,7 +164,7 @@ def conv2d_f_pre(name, x, w, padding='SAME', stride=(1, 1),
 
 def conv2d_f(name, x, num_filters, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
              initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0,
-             activation=None, batchnorm_enabled=False, max_pool_enabled=True, dropout_keep_prob=1.0,
+             activation=None, batchnorm_enabled=False, max_pool_enabled=False, dropout_keep_prob=1.0,
              is_training=True):
     """
     This block is responsible for a convolution 2D layer followed by optional (non-linearity, dropout, max-pooling).
@@ -211,7 +211,7 @@ def conv2d_f(name, x, num_filters, kernel_size=(3, 3), padding='SAME', stride=(1
 
 
 def deconv2d_f(name, x, output_shape, kernel_size=(3, 3), padding='SAME', stride=(1, 1), l2_strength=0.0,
-               bias=0.0, activation=None, batchnorm_enabled=False, max_pool_enabled=True, dropout_keep_prob=1.0,
+               bias=0.0, activation=None, batchnorm_enabled=False, max_pool_enabled=False, dropout_keep_prob=1.0,
                is_training=True):
     """
     This block is responsible for a convolution transpose 2D followed by optional (non-linearity, dropout, max-pooling).
