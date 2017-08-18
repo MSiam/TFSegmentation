@@ -72,7 +72,7 @@ class BasicModel:
         :return:
         """
         with tf.variable_scope('global_epoch'):
-            self.global_epoch_tensor = tf.Variable(0, trainable=False, name='global_epoch')
+            self.global_epoch_tensor = tf.Variable(-1, trainable=False, name='global_epoch')
             self.global_epoch_input = tf.placeholder('int32', None, name='global_epoch_input')
             self.global_epoch_assign_op = self.global_epoch_tensor.assign(self.global_epoch_input)
 
@@ -96,8 +96,8 @@ class BasicModel:
 
     def init_input(self):
         with tf.name_scope('input'):
-            self.x_pl = tf.placeholder(tf.float32, [None, self.params.img_height, self.params.img_width, 3])
-            self.y_pl = tf.placeholder(tf.int32, [None, self.params.img_height, self.params.img_width])
+            self.x_pl = tf.placeholder(tf.float32, [self.args.batch_size, self.params.img_height, self.params.img_width, 3])
+            self.y_pl = tf.placeholder(tf.int32, [self.args.batch_size, self.params.img_height, self.params.img_width])
             self.is_training = tf.placeholder(tf.bool)
 
     def init_network(self):
@@ -106,7 +106,7 @@ class BasicModel:
     def init_output(self):
         with tf.name_scope('output'):
             self.out_softmax = tf.nn.softmax(self.logits)
-            self.out_argmax = tf.argmax(self.out_softmax, axis=3)
+            self.out_argmax = tf.argmax(self.out_softmax, axis=3, output_type=tf.int32)
 
     def init_train(self):
         with tf.name_scope('train-loss'):

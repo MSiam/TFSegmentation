@@ -69,6 +69,8 @@ class VGG16:
         Build the VGG model using loaded weights
         """
 
+        print("Building the VGG..")
+
         # Convert RGB to BGR
         with tf.name_scope('Pre_Processing'):
             red, green, blue = tf.split(self.x_input, num_or_size_splits=3, axis=3)
@@ -102,6 +104,8 @@ class VGG16:
 
         self.feed1 = self.conv4_3
         self.feed2 = self.conv3_3
+
+        print("\nEncoder VGG is built successfully\n\n")
 
     def load_fc_layer(self, bottom, name, num_classes=20, activation=None, dropout=1.0, train=False, trainable=True):
         """
