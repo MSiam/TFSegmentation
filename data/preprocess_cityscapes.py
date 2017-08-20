@@ -172,6 +172,9 @@ def custom_read_cityscape(hf, path_images, path_labels, args_, split='train'):
     # Save a numpy
     assert image_dataset.shape == (len(names), h, w, c)
     assert image_dataset.dtype == np.uint8
+    bs= image_dataset.shape[0] - image_dataset.shape[0]%int(args_.bs)
+
+    image_dataset= image_dataset[:bs,:,:,:]
     np.save('X', image_dataset)
 
     shape = (len(names), h, w)
@@ -205,6 +208,7 @@ def custom_read_cityscape(hf, path_images, path_labels, args_, split='train'):
     # Save a txt to check that everything is ok
     np.savetxt('Y.txt', np.array(image_dataset[0]), fmt="%d")
     # Save a numpy
+    image_dataset= image_dataset[:bs,:,:]
     np.save('Y', np.array(image_dataset))
 
 
@@ -225,6 +229,8 @@ if __name__ == '__main__':
     parser.add_argument("--output_file", default='leftImg8bit_extra.h5',
                         help="output file for the h5 dataset.")
     parser.add_argument("--mode", default="normal", help="Mode of preparation")
+    parser.add_argument("--bs", default=5, help="Batch Size to output divisible number")
+
     args = parser.parse_args()
     if args.mode == "normal":
         main(args)
