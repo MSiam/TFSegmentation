@@ -40,7 +40,8 @@ class Agent:
         tf.reset_default_graph()
 
         # Create the sess
-        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1)
+#        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
+        gpu_options = tf.GPUOptions(allow_growth=True)
         self.sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
         # Create Model class and build it
