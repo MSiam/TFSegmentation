@@ -1,0 +1,29 @@
+# Directories arguments
+data_dir: "train_data"
+exp_dir:  "fcn8s_exp_1"
+out_dir:  "fcn8s_exp_1"
+
+# Data arguments
+img_height:   256
+img_width:    512
+num_channels: 3
+num_classes:  20
+
+# Train arguments
+num_epochs: 20
+batch_size: 16
+shuffle: True
+data_mode: "experiment"
+save_every: 5
+test_every: 10
+max_to_keep: 5
+
+# Models arguments
+learning_rate:   0.0001
+weight_decay: 0.0005
+pretrained_path: "pretrained_weights/vgg16.npy"
+
+# Misc arguments
+verbose: False
+
+## TODO Add the first layer to finetune

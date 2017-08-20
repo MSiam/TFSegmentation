@@ -66,6 +66,7 @@ class Agent:
     def train(self):
         try:
             self.operator.train()
+            self.operator.finalize()
         except KeyboardInterrupt:
             self.operator.finalize()
 
@@ -78,5 +79,6 @@ class Agent:
     def overfit(self):
         try:
             self.operator.overfit()
+            self.operator.finalize()
         except KeyboardInterrupt:
             self.operator.finalize()
