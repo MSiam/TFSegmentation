@@ -119,6 +119,12 @@ class Train(BasicTrain):
         if summaries_merged is not None:
             self.summary_writer.add_summary(summaries_merged, step)
 
+    def load_train_data(self):
+        pass
+
+    def train_generator(self):
+        pass
+
     def train(self):
         pass
 
