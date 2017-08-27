@@ -8,6 +8,7 @@ from metrics.metrics import Metrics
 from tqdm import tqdm
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
 
 
 class Train(BasicTrain):
@@ -30,7 +31,7 @@ class Train(BasicTrain):
         # Init summaries
 
         # Summary variables
-        self.scalar_summary_tags = ['mean_iou_on_val', 'mean_iou_on_test',
+        self.scalar_summary_tags = ['mean_iou_on_val',
                                     'train-loss-per-epoch', 'val-loss-per-epoch',
                                     'train-acc-per-epoch', 'val-acc-per-epoch']
         self.images_summary_tags = [('train_prediction_sample', [None, self.params.img_height, self.params.img_width * 3, 3]),
@@ -382,7 +383,6 @@ class Train(BasicTrain):
 
         # loop by the number of iterations
         for cur_iteration in tt:
-
             # load mini_batches
             x_batch = self.test_data['X'][idx:idx + 1]
             y_batch = self.test_data['Y'][idx:idx + 1]
@@ -410,7 +410,6 @@ class Train(BasicTrain):
             # log metrics
             self.metrics.update_metrics(out_argmax[0], y_batch[0], 0, 0)
 
-
         # mean over batches
         total_loss = np.mean(loss_list)
         total_acc = np.mean(acc_list)
@@ -423,8 +422,9 @@ class Train(BasicTrain):
         print("Total_acc: " + str(total_acc)[:6])
         print("mean_iou: " + str(mean_iou))
 
-        # Break the loop to finalize this epoch
-        # break
+        print("Plotting imgs")
+        for i in range(len(img_list)):
+            plt.imsave(self.args.imgs_dir + 'test_' + str(i) + '.png', img_list[i])
 
     def overfit(self):
         print("Overfitting mode will begin NOW..")
