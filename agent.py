@@ -51,8 +51,10 @@ class Agent:
         self.operator = self.operator(self.args, self.sess, self.model)
 
         if self.mode == 'train_n_test':
-            self.train()
-            self.test()
+            print("Sorry this mode is not available for NOW")
+            exit(-1)
+            # self.train()
+            # self.test()
         elif self.mode == 'train':
             self.train()
         elif self.mode == 'overfit':
