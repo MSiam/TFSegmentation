@@ -1,4 +1,4 @@
-from layers.convolution import conv2d_f_pre, conv2d_f
+from layers.convolution import conv2d
 import numpy as np
 import tensorflow as tf
 
@@ -122,7 +122,7 @@ class VGG16:
                 w = self.get_fc_weight_reshape(name, [1, 1, 4096, 4096], trainable=trainable)
 
             biases = self.get_bias(name, num_classes=num_classes, trainable=trainable)
-            return conv2d_f_pre(name, bottom, w, l2_strength=self.wd, bias=biases,
+            return conv2d(name, x=bottom, w=w, l2_strength=self.wd, bias=biases,
                                 activation=activation, dropout_keep_prob=dropout, is_training=train)
         else:
             if name == 'fc6':
@@ -136,12 +136,12 @@ class VGG16:
                 num_channels = 512
                 kernel_size = (1, 1)
 
-            return conv2d_f(name, bottom, num_channels, kernel_size=kernel_size, l2_strength=self.wd, activation=activation, dropout_keep_prob=dropout, is_training=train)
+            return conv2d(name, x=bottom, num_filters=num_channels, kernel_size=kernel_size, l2_strength=self.wd, activation=activation, dropout_keep_prob=dropout, is_training=train)
 
     def load_conv_layer(self, bottom, name, pooling=False, trainable=True):
         w = self.get_conv_filter(name, trainable=trainable)
         biases = self.get_bias(name, trainable=trainable)
-        return conv2d_f_pre(name, bottom, w, l2_strength=self.wd, bias=biases, activation=tf.nn.relu, max_pool_enabled=pooling)
+        return conv2d(name, x=bottom, w=w, l2_strength=self.wd, bias=biases, activation=tf.nn.relu, max_pool_enabled=pooling)
 
     """
     ==============================================================
