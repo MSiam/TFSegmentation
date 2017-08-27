@@ -20,6 +20,24 @@ class Metrics(object):
         self.fmes = 0
         self.conf_mat= numpy.zeros([nclasses, nclasses], dtype= numpy.float32)
 
+    def reset(self):
+        self.fp = 0
+        self.fn = 0
+        self.tp = 0
+        self.cost = 0
+        self.error = 0
+        self.prec = 0
+        self.rec = 0
+        self.fmes = 0
+        self.conf_mat= numpy.zeros([self.nclasses, self.nclasses], dtype= numpy.float32)
+        self.mean_iou_index= 0
+
+    def update_metrics_batch(self, preds, y):
+        error = 0
+        cost = 0
+        for i in range(preds.shape[0]):
+            self.update_metrics(preds[i],y[i],error,cost)
+
     def update_metrics(self, preds, y, error, cost):
         self.error += error
         self.cost += cost
