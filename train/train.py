@@ -316,7 +316,7 @@ class Train(BasicTrain):
             # Feed this variables to the network
             feed_dict = {self.model.x_pl: x_batch,
                          self.model.y_pl: y_batch,
-                         self.model.is_training: True
+                         self.model.is_training: False
                          }
 
             # Run the feed forward but the last iteration finalize what you want to do
@@ -364,7 +364,67 @@ class Train(BasicTrain):
                 break
 
     def test(self):
-        pass
+        print("Testing mode will begin NOW..")
+
+        # init tqdm and get the epoch value
+        tt = tqdm(range(self.test_data_len))
+
+        # init acc and loss lists
+        loss_list = []
+        acc_list = []
+        img_list = []
+
+        # idx of image
+        idx = 0
+
+        # reset metrics
+        self.metrics.reset()
+
+        # loop by the number of iterations
+        for cur_iteration in tt:
+
+            # load mini_batches
+            x_batch = self.test_data['X'][idx:idx + 1]
+            y_batch = self.test_data['Y'][idx:idx + 1]
+
+            # update idx of mini_batch
+            idx += 1
+
+            # Feed this variables to the network
+            feed_dict = {self.model.x_pl: x_batch,
+                         self.model.y_pl: y_batch,
+                         self.model.is_training: False
+                         }
+
+            # run the feed_forward
+            out_argmax, loss, acc, summaries_merged, segmented_imgs = self.sess.run(
+                [self.model.out_argmax, self.model.loss, self.model.accuracy,
+                 self.model.merged_summaries, self.model.segmented_summary],
+                feed_dict=feed_dict)
+
+            # log loss and acc
+            loss_list += loss
+            acc_list += acc
+            img_list += segmented_imgs[0]
+
+            # log metrics
+            self.metrics.update_metrics(out_argmax[0], y_batch[0], 0, 0)
+
+
+        # mean over batches
+        total_loss = np.mean(loss_list)
+        total_acc = np.mean(acc_list)
+        mean_iou = self.metrics.compute_final_metrics(self.test_data_len)
+
+        # print in console
+        tt.close()
+        print("Here the statistics")
+        print("Total_loss: " + str(total_loss))
+        print("Total_acc: " + str(total_acc)[:6])
+        print("mean_iou: " + str(mean_iou))
+
+        # Break the loop to finalize this epoch
+        # break
 
     def overfit(self):
         print("Overfitting mode will begin NOW..")
