@@ -34,7 +34,7 @@ class Metrics(object):
     def update_metrics_batch(self, preds, y):
         error = 0
         cost = 0
-        for i in range(len(preds.shape[0])):
+        for i in range(preds.shape[0]):
             self.update_metrics(preds[i],y[i],error,cost)
         self.compute_rates()
         self.compute_final_metrics(1)
