@@ -1,5 +1,4 @@
-from layers.utils import *
-from layers.convolution import conv2d
+from gp.layers.utils import *
 
 import tensorflow as tf
 
@@ -30,7 +29,7 @@ def dense_p(name, x, w=None, output_dim=128, initializer=tf.contrib.layers.xavie
 
 def dense(name, x, w=None, output_dim=128, initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0,
           bias=0.0,
-          activation=None, batchnorm_enabled=False, dropout_keep_prob=1.0,
+          activation=None, batchnorm_enabled=False, dropout_keep_prob=-1,
           is_training=True
           ):
     """
@@ -44,7 +43,7 @@ def dense(name, x, w=None, output_dim=128, initializer=tf.contrib.layers.xavier_
     :param bias: (float) Amount of bias.
     :param activation: (tf.graph operator) The activation function applied after the convolution operation. If None, linear is applied.
     :param batchnorm_enabled: (boolean) for enabling batch normalization.
-    :param dropout_keep_prob: (float) for the probability of keeping neurons.
+    :param dropout_keep_prob: (float) for the probability of keeping neurons. If equals -1, it means no dropout
     :param is_training: (boolean) to diff. between training and testing (important for batch normalization and dropout) 
     :return out: The output of the layer. (N, H)
     """
@@ -65,7 +64,10 @@ def dense(name, x, w=None, output_dim=128, initializer=tf.contrib.layers.xavier_
             else:
                 dense_a = activation(dense_o_b)
 
-        dense_o_dr = tf.nn.dropout(dense_a, dropout_keep_prob)
+        if dropout_keep_prob != -1:
+            dense_o_dr = tf.nn.dropout(dense_a, dropout_keep_prob)
+        else:
+            dense_o_dr = dense_a
 
         dense_o = dense_o_dr
     return dense_o
@@ -80,39 +82,3 @@ def flatten(x):
     all_dims_exc_first = np.prod([v.value for v in x.get_shape()[1:]])
     o = tf.reshape(x, [-1, all_dims_exc_first])
     return o
-
-
-def load_dense_layer(reduced_flag, bottom, name, pretrained_weights, num_classes=20, activation=None, dropout=1.0,
-                     train=False,
-                     trainable=True, l2_strength=0.0):
-    """
-    Load fully connected layers from pretrained weights in case of full vgg
-    in case of reduced vgg initialize randomly
-    """
-    if not reduced_flag:
-        if name == 'fc6':
-            w = get_dense_weight_reshape(name, pretrained_weights, [7, 7, 512, 4096], trainable=trainable)
-        elif name == 'score_fr':
-            name = 'fc8'
-            w = get_dense_weight_reshape(name, pretrained_weights, [1, 1, 4096, 1000], num_classes=num_classes,
-                                         trainable=trainable)
-        else:
-            w = get_dense_weight_reshape(name, pretrained_weights, [1, 1, 4096, 4096], trainable=trainable)
-
-        biases = load_bias(name, pretrained_weights, num_classes=num_classes, trainable=trainable)
-        return conv2d(name, x=bottom, w=w, l2_strength=l2_strength, bias=biases,
-                      activation=activation, dropout_keep_prob=dropout, is_training=train)
-    else:
-        if name == 'fc6':
-            num_channels = 512
-            kernel_size = (7, 7)
-        elif name == 'score_fr':
-            name = 'fc8'
-            num_channels = num_classes
-            kernel_size = (1, 1)
-        else:
-            num_channels = 512
-            kernel_size = (1, 1)
-
-        return conv2d(name, x=bottom, num_filters=num_channels, kernel_size=kernel_size, l2_strength=l2_strength,
-                      activation=activation, dropout_keep_prob=dropout, is_training=train)
