@@ -109,7 +109,7 @@ class BasicModel:
             self.out_argmax = tf.argmax(self.out_softmax, axis=3, output_type=tf.int32)
 
     def init_train(self):
-        with tf.name_scope('train-loss'):
+        with tf.name_scope('loss'):
             self.cross_entropy_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_pl))
             self.regularization_loss = tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
             self.loss = self.cross_entropy_loss + self.regularization_loss
@@ -121,7 +121,7 @@ class BasicModel:
                 self.train_op = self.optimizer.minimize(self.loss)
 
     def init_summaries(self):
-        with tf.name_scope('train-accuracy'):
+        with tf.name_scope('pixel_wise_accuracy'):
             self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.y_pl, self.out_argmax), tf.float32))
 
         with tf.name_scope('segmented_output'):
