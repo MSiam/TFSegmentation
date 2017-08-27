@@ -15,8 +15,7 @@ def variable_with_weight_decay(kernel_shape, initializer, wd):
 
     collection_name = tf.GraphKeys.REGULARIZATION_LOSSES
     if wd and (not tf.get_variable_scope().reuse):
-        weight_decay = tf.multiply(
-            tf.nn.l2_loss(w), wd, name='w_loss')
+        weight_decay = tf.multiply(tf.nn.l2_loss(w), wd, name='w_loss')
         tf.add_to_collection(collection_name, weight_decay)
     variable_summaries(w)
     return w
@@ -62,3 +61,95 @@ def get_deconv_filter(f_shape, l2_strength):
 
     init = tf.constant_initializer(value=weights, dtype=tf.float32)
     return variable_with_weight_decay(weights.shape, init, l2_strength)
+
+
+def load_conv_filter(name, pretrained_weights, l2_strength=0.0, trainable=True):
+    with tf.variable_scope(name):
+        init = tf.constant_initializer(value=pretrained_weights[name][0], dtype=tf.float32)
+        shape = pretrained_weights[name][0].shape
+        print('Layer name: %s' % name)
+        print('Layer shape: %s' % str(shape))
+        var = tf.get_variable(name="filters", initializer=init, shape=shape, trainable=trainable)
+        if not tf.get_variable_scope().reuse:
+            weight_decay = tf.multiply(tf.nn.l2_loss(var), l2_strength, name='weight_loss')
+            tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, weight_decay)
+        return var
+
+
+def load_bias(name, pretrained_weights, trainable=True, num_classes=None):
+    with tf.variable_scope(name):
+        bias_weights = pretrained_weights[name][1]
+        shape = pretrained_weights[name][1].shape
+        if name == 'fc8':
+            bias_weights = _bias_reshape(bias_weights, shape[0], num_classes)
+            shape = [num_classes]
+        init = tf.constant_initializer(value=bias_weights, dtype=tf.float32)
+        var = tf.get_variable(name="biases", initializer=init, shape=shape, trainable=trainable)
+        return var
+
+
+def get_dense_weight_reshape(name, pretrained_weights, shape, trainable=True, num_classes=None):
+    with tf.variable_scope(name):
+        print('Layer name: %s' % name)
+        print('Layer shape: %s' % shape)
+        weights = pretrained_weights[name][0]
+        weights = weights.reshape(shape)
+        if num_classes is not None:
+            weights = _summary_reshape(weights, shape, num_new=num_classes)
+        init = tf.constant_initializer(value=weights, dtype=tf.float32)
+        var = tf.get_variable(name="weights", initializer=init, shape=shape, trainable=trainable)
+        return var
+
+
+def _bias_reshape(bweight, num_orig, num_new):
+    """
+    Build bias weights for filter produces with `_summary_reshape`
+    """
+    n_averaged_elements = num_orig // num_new
+    avg_bweight = np.zeros(num_new)
+    for i in range(0, num_orig, n_averaged_elements):
+        start_idx = i
+        end_idx = start_idx + n_averaged_elements
+        avg_idx = start_idx // n_averaged_elements
+        if avg_idx == num_new:
+            break
+        avg_bweight[avg_idx] = np.mean(bweight[start_idx:end_idx])
+    return avg_bweight
+
+
+def _summary_reshape(fweight, shape, num_new):
+    """
+    Produce weights for a reduced fully-connected layer.
+
+    FC8 of VGG produces 1000 classes. Most semantic segmentation
+    task require much less classes. This reshapes the original weights
+    to be used in a fully-convolutional layer which produces num_new
+    classes. To archive this the average (mean) of n adjanced classes is
+    taken.
+
+    Consider reordering fweight, to perserve semantic meaning of the
+    weights.
+
+    Args:
+      fweight: original weights
+      shape: shape of the desired fully-convolutional layer
+      num_new: number of new classes
+
+
+    Returns:
+      Filter weights for `num_new` classes.
+    """
+    num_orig = shape[3]
+    shape[3] = num_new
+    assert (num_new < num_orig)
+    n_averaged_elements = num_orig // num_new
+    avg_fweight = np.zeros(shape)
+    for i in range(0, num_orig, n_averaged_elements):
+        start_idx = i
+        end_idx = start_idx + n_averaged_elements
+        avg_idx = start_idx // n_averaged_elements
+        if avg_idx == num_new:
+            break
+        avg_fweight[:, :, :, avg_idx] = np.mean(
+            fweight[:, :, :, start_idx:end_idx], axis=3)
+    return avg_fweight
