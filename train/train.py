@@ -47,6 +47,8 @@ class Train(BasicTrain):
             print("ERROR this data_mode is not implemented..")
             exit(-1)
         elif self.args.data_mode == "overfit":
+            self.train_data = None
+            self.train_data_len = None
             self.load_overfit_data()
             self.generator = self.overfit_generator
         else:
@@ -126,6 +128,9 @@ class Train(BasicTrain):
         pass
 
     def train(self):
+        pass
+
+    def test_per_epoch(self, step, epoch):
         pass
 
     def overfit(self):
