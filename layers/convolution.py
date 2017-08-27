@@ -1,5 +1,5 @@
-from gp.layers.utils import *
-from gp.layers.pooling import max_pool_2d
+from layers.utils import *
+from layers.pooling import max_pool_2d
 import tensorflow as tf
 
 
