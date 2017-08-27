@@ -358,7 +358,7 @@ class Train(BasicTrain):
 
                 # print in console
                 tt.close()
-                print("Val-epoch-" + str(epoch) + "-" + "loss:" + str(total_loss) + "-" + "acc-" + str(total_acc)[:6])
+                print("Val-epoch-" + str(epoch) + "-" + "loss:" + str(total_loss) + "-" + "acc-" + str(total_acc)[:6] + "-mean_iou-" + str(mean_iou))
 
                 # Break the loop to finalize this epoch
                 break
