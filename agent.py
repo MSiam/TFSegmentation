@@ -34,16 +34,15 @@ class Agent:
         Initiate the Graph, sess, model, operator
         :return:
         """
-        print("Agent is running now...")
+        print("Agent is running now...\n\n")
 
         # Reset the graph
         tf.reset_default_graph()
 
         # Create the sess
-        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1)
-        self.sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True,
-                                                     log_device_placement=True,
-                                                     gpu_options=gpu_options))
+#        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
+        gpu_options = tf.GPUOptions(allow_growth=True)
+        self.sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
         # Create Model class and build it
         self.model = self.model(self.args)
@@ -62,13 +61,14 @@ class Agent:
             self.test()
 
         self.sess.close()
-        print("Agent is exited...")
+        print("\nAgent is exited...\n")
 
     def train(self):
         try:
             self.operator.train()
+            self.operator.finalize()
         except KeyboardInterrupt:
-            self.operator.save()
+            self.operator.finalize()
 
     def test(self):
         try:
@@ -79,5 +79,6 @@ class Agent:
     def overfit(self):
         try:
             self.operator.overfit()
+            self.operator.finalize()
         except KeyboardInterrupt:
-            pass
+            self.operator.finalize()

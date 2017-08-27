@@ -9,8 +9,6 @@ from utils.img_utils import decode_labels
 import tensorflow as tf
 
 
-# TODO Consider to make the ground truth only NHW (Argmaxed only)
-
 class Params:
     """
     Class to hold BasicModel parameters
@@ -74,7 +72,7 @@ class BasicModel:
         :return:
         """
         with tf.variable_scope('global_epoch'):
-            self.global_epoch_tensor = tf.Variable(0, trainable=False, name='global_epoch')
+            self.global_epoch_tensor = tf.Variable(-1, trainable=False, name='global_epoch')
             self.global_epoch_input = tf.placeholder('int32', None, name='global_epoch_input')
             self.global_epoch_assign_op = self.global_epoch_tensor.assign(self.global_epoch_input)
 
@@ -98,8 +96,8 @@ class BasicModel:
 
     def init_input(self):
         with tf.name_scope('input'):
-            self.x_pl = tf.placeholder(tf.float32, [None, self.params.img_height, self.params.img_width, 3])
-            self.y_pl = tf.placeholder(tf.int32, [None, self.params.img_height, self.params.img_width, self.params.num_classes])
+            self.x_pl = tf.placeholder(tf.float32, [self.args.batch_size, self.params.img_height, self.params.img_width, 3])
+            self.y_pl = tf.placeholder(tf.int32, [self.args.batch_size, self.params.img_height, self.params.img_width])
             self.is_training = tf.placeholder(tf.bool)
 
     def init_network(self):
@@ -108,12 +106,11 @@ class BasicModel:
     def init_output(self):
         with tf.name_scope('output'):
             self.out_softmax = tf.nn.softmax(self.logits)
-            self.out_argmax = tf.argmax(self.out_softmax, axis=3)
-            self.y_argmax = tf.argmax(self.y_pl, axis=3)
+            self.out_argmax = tf.argmax(self.out_softmax, axis=3, output_type=tf.int32)
 
     def init_train(self):
         with tf.name_scope('train-loss'):
-            self.cross_entropy_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_argmax))
+            self.cross_entropy_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_pl))
             self.regularization_loss = tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
             self.loss = self.cross_entropy_loss + self.regularization_loss
 
@@ -125,11 +122,11 @@ class BasicModel:
 
     def init_summaries(self):
         with tf.name_scope('train-accuracy'):
-            self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.y_argmax, self.out_argmax), tf.float32))
+            self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.y_pl, self.out_argmax), tf.float32))
 
         with tf.name_scope('segmented_output'):
             input_summary = tf.cast(self.x_pl, tf.uint8)
-            labels_summary = tf.py_func(decode_labels, [self.y_argmax, self.params.num_classes], tf.uint8)
+            labels_summary = tf.py_func(decode_labels, [self.y_pl, self.params.num_classes], tf.uint8)
             preds_summary = tf.py_func(decode_labels, [self.out_argmax, self.params.num_classes], tf.uint8)
             self.segmented_summary = tf.concat(axis=2, values=[input_summary, labels_summary, preds_summary])  # Concatenate row-wise
 
