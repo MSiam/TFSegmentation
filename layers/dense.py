@@ -101,7 +101,7 @@ def load_dense_layer(reduced_flag, bottom, name, pretrained_weights, num_classes
         else:
             w = get_dense_weight_reshape(name, pretrained_weights, [1, 1, 4096, 4096], trainable=trainable)
 
-        biases = load_bias(name, num_classes=num_classes, trainable=trainable)
+        biases = load_bias(name, pretrained_weights, num_classes=num_classes, trainable=trainable)
         return conv2d(name, x=bottom, w=w, l2_strength=l2_strength, bias=biases,
                       activation=activation, dropout_keep_prob=dropout, is_training=train)
     else:
