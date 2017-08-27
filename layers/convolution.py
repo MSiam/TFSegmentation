@@ -146,7 +146,7 @@ def conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAME', 
 
         conv_o = conv_o_dr
         if max_pool_enabled:
-            conv_o = max_pool_2d(scope, conv_o_dr)
+            conv_o = max_pool_2d(conv_o_dr)
 
     return conv_o
 
@@ -195,7 +195,7 @@ def atrous_conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='
 
         conv_o = conv_o_dr
         if max_pool_enabled:
-            conv_o = max_pool_2d(scope, conv_o_dr)
+            conv_o = max_pool_2d(conv_o_dr)
 
     return conv_o
 
@@ -244,7 +244,7 @@ def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), pad
 
         conv_o = conv_o_dr
         if max_pool_enabled:
-            conv_o = max_pool_2d(scope, conv_o_dr)
+            conv_o = max_pool_2d(conv_o_dr)
 
         return conv_o
 
