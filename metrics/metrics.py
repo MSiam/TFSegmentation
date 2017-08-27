@@ -29,15 +29,14 @@ class Metrics(object):
         self.prec = 0
         self.rec = 0
         self.fmes = 0
-        self.conf_mat= numpy.zeros([nclasses, nclasses], dtype= numpy.float32)
+        self.conf_mat= numpy.zeros([self.nclasses, self.nclasses], dtype= numpy.float32)
+        self.mean_iou_index= 0
 
     def update_metrics_batch(self, preds, y):
         error = 0
         cost = 0
         for i in range(preds.shape[0]):
             self.update_metrics(preds[i],y[i],error,cost)
-        self.compute_rates()
-        self.compute_final_metrics(1)
 
     def update_metrics(self, preds, y, error, cost):
         self.error += error
