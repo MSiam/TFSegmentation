@@ -254,3 +254,4 @@ def load_conv_layer(bottom, name, pretrained_weights, pooling=False, trainable=T
     biases = load_bias(name, pretrained_weights, trainable=trainable)
     return conv2d(name, x=bottom, w=w, l2_strength=l2_strength, bias=biases, activation=tf.nn.relu,
                   max_pool_enabled=pooling)
+
