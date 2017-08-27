@@ -149,7 +149,7 @@ def conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAME', 
 
         conv_o = conv_o_dr
         if max_pool_enabled:
-            conv_o = max_pool_2d(scope, conv_o_dr)
+            conv_o = max_pool_2d(conv_o_dr)
 
     return conv_o
 
@@ -201,13 +201,13 @@ def atrous_conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='
 
         conv_o = conv_o_dr
         if max_pool_enabled:
-            conv_o = max_pool_2d(scope, conv_o_dr)
+            conv_o = max_pool_2d(conv_o_dr)
 
     return conv_o
 
 
 def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1), l2_strength=0.0,
-               bias=0.0, activation=None, batchnorm_enabled=False, max_pool_enabled=False, dropout_keep_prob=-1,
+               bias=0.0, activation=None, batchnorm_enabled=False, dropout_keep_prob=-1,
                is_training=True):
     """
     This block is responsible for a convolution transpose 2D followed by optional (non-linearity, dropout, max-pooling).
@@ -222,7 +222,6 @@ def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), pad
     :param bias: (float) Amount of bias.
     :param activation: (tf.graph operator) The activation function applied after the convolution operation. If None, linear is applied.
     :param batchnorm_enabled: (boolean) for enabling batch normalization.
-    :param max_pool_enabled:  (boolean) for enabling max-pooling 2x2 to decrease width and height by a factor of 2.
     :param dropout_keep_prob: (float) for the probability of keeping neurons. If equals -1, it means no dropout
     :param is_training: (boolean) to diff. between training and testing (important for batch normalization and dropout)
     :return out: The output of the layer. (output_shape[0], output_shape[1], output_shape[2], output_shape[3])
@@ -251,8 +250,6 @@ def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), pad
             conv_o_dr = conv_a
 
         conv_o = conv_o_dr
-        if max_pool_enabled:
-            conv_o = max_pool_2d(scope, conv_o_dr)
 
         return conv_o
 

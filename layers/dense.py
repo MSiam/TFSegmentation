@@ -84,7 +84,7 @@ def flatten(x):
     return o
 
 
-def load_dense_layer(reduced_flag, bottom, name, pretrained_weights, num_classes=20, activation=None, dropout=1.0,
+def load_dense_layer(reduced_flag, bottom, name, pretrained_weights, num_classes=20, activation=None, dropout=-1,
                      train=False,
                      trainable=True, l2_strength=0.0):
     """
