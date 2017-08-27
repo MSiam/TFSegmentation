@@ -28,7 +28,6 @@ def readCityScapes(hf, path_images, path_labels, args, split='train'):
         w = int(w * args.rescale)
     shape = (len(names), c, h, w)
 
-    pdb.set_trace()
     image_dset = hf.create_dataset('images_' + split, shape, dtype=np.uint8)
     i = 0
     for root, dirs, files in os.walk(path_images):
@@ -71,14 +70,11 @@ def readCityScapes(hf, path_images, path_labels, args, split='train'):
 
 def main(args):
     hf = h5py.File(args.output_file, 'w')
-    train_images_path = args.root + 'leftImg8bit/train/darmstadt'
-    train_labels_path = args.root + 'gtCoarse/train/darmstadt'
-    valid_images_path = args.root + 'leftImg8bit/val/lindau'
-    valid_labels_path = args.root + 'gtCoarse/val/lindau'
-    readCityScapes(hf, train_images_path, train_labels_path, args, split='train')
-    readCityScapes(hf, valid_images_path, valid_labels_path, args, split='valid')
+    for d in os.listdir(args.root+'images/'):
+        train_images_path = args.root + 'images/'+d
+        train_labels_path = args.root + 'labels/'+d
+        custom_read_cityscape(hf, train_images_path, train_labels_path, args, split=d)
     hf.close()
-
 
 labelID_2_trainID = {0: 19,  # 'unlabeled'
                      1: 19,  # 'ego vehicle'
@@ -130,12 +126,13 @@ def custom_read_cityscape(hf, path_images, path_labels, args_, split='train'):
     root = path_images
 
     # Read all image files in the path_images directory
-    for root, dirs, files in os.walk(path_images):
-        for f in sorted(files):
-            if f.split('.')[-1].lower() == 'png':
-                names.append(f)
-            else:
-                continue
+    for d in os.listdir(path_images):
+        for _, dirs, files in os.walk(path_images+'/'+d):
+            for f in sorted(files):
+                if f.split('.')[-1].lower() == 'png':
+                    names.append(d+'/'+f)
+                else:
+                    continue
 
     # Print statistics
     print("number of found images in \n %s is %s img" % (path_images, len(names)))
@@ -154,7 +151,6 @@ def custom_read_cityscape(hf, path_images, path_labels, args_, split='train'):
 
     # Create a dataset for images
     image_dataset = hf.create_dataset('images_' + split, shape, dtype=np.uint8)
-
     # loop on images and scale and save
     i = 0
     for f in tqdm(names):
@@ -175,19 +171,20 @@ def custom_read_cityscape(hf, path_images, path_labels, args_, split='train'):
     bs= image_dataset.shape[0] - image_dataset.shape[0]%int(args_.bs)
 
     image_dataset= image_dataset[:bs,:,:,:]
-    np.save('X', image_dataset)
+    np.save('X_'+split, image_dataset)
 
     shape = (len(names), h, w)
     print("Shape of labels is %s" % (str(shape)))
 
     # Read all image files in the path_images directory
     names = []
-    for root, dirs, files in os.walk(path_labels):
-        for f in sorted(files):
-            if f.split('.')[-1].lower() == 'png' and 'labelIds' in f:
-                names.append(f)
-            else:
-                continue
+    for d in os.listdir(path_images):
+        for _, dirs, files in os.walk(path_labels+'/'+d):
+            for f in sorted(files):
+                if f.split('.')[-1].lower() == 'png' and 'labelIds' in f:
+                    names.append(d+'/'+f)
+                else:
+                    continue
 
     # Create a dataset for labels
     image_dataset = hf.create_dataset('labels_' + split, shape, dtype=np.uint8)
@@ -206,11 +203,10 @@ def custom_read_cityscape(hf, path_images, path_labels, args_, split='train'):
     print("%s labels was processed in total" % str(i))
 
     # Save a txt to check that everything is ok
-    np.savetxt('Y.txt', np.array(image_dataset[0]), fmt="%d")
+    #np.savetxt('Y.txt', np.array(image_dataset[0]), fmt="%d")
     # Save a numpy
     image_dataset= image_dataset[:bs,:,:]
-    np.save('Y', np.array(image_dataset))
-
+    np.save('Y_'+split, np.array(image_dataset))
 
 def custom_main(args_):
     hf = h5py.File(args_.output_file, 'w')
