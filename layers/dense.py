@@ -1,4 +1,4 @@
-from gp.layers.utils import *
+from layers.utils import *
 
 import tensorflow as tf
 
