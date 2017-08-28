@@ -328,8 +328,8 @@ class Train(BasicTrain):
                     [self.model.out_argmax, self.model.loss, self.model.accuracy, self.model.merged_summaries],
                     feed_dict=feed_dict)
                 # log loss and acc
-                loss_list += loss
-                acc_list += acc
+                loss_list += [loss]
+                acc_list += [acc]
                 # log metrics
                 self.metrics.update_metrics_batch(out_argmax, y_batch)
 
@@ -341,8 +341,8 @@ class Train(BasicTrain):
                      self.model.merged_summaries, self.model.segmented_summary],
                     feed_dict=feed_dict)
                 # log loss and acc
-                loss_list += loss
-                acc_list += acc
+                loss_list += [loss]
+                acc_list += [acc]
                 # log metrics
                 self.metrics.update_metrics_batch(out_argmax, y_batch)
                 # mean over batches

@@ -84,3 +84,4 @@ class Metrics(object):
             self.fmes= (2*self.rec*self.prec)/(self.rec+self.prec)
         self.error /= nmini_batches
         self.cost /= nmini_batches
+        return self.mean_iou_index
