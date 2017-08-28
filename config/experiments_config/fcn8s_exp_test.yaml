@@ -15,7 +15,7 @@ batch_size: 5
 shuffle: True
 data_mode: "experiment"
 save_every: 5
-test_every: 1
+test_every: 5
 max_to_keep: 5
 
 # Models arguments

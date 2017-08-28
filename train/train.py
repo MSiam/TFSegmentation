@@ -279,11 +279,11 @@ class Train(BasicTrain):
                 cur_iteration += 1
 
             # Save the current checkpoint
-            if cur_epoch != 0 and cur_epoch % self.args.save_every == 0:
+            if cur_epoch % self.args.save_every == 0:
                 self.save_model()
 
             # Test the model on validation
-            if cur_epoch != 0 and cur_epoch % self.args.test_every == 0:
+            if cur_epoch % self.args.test_every == 0:
                 self.test_per_epoch(step=self.model.global_step_tensor.eval(self.sess),
                                     epoch=self.model.global_epoch_tensor.eval(self.sess))
 
@@ -293,7 +293,7 @@ class Train(BasicTrain):
         print("Validation at step:" + str(step) + " at epoch:" + str(epoch) + " ..")
 
         # init tqdm and get the epoch value
-        tt = tqdm(range(self.num_iterations_validation_per_epoch), total=self.num_iterations_training_per_epoch, desc="Val-epoch-" + str(epoch) + "-")
+        tt = tqdm(range(self.num_iterations_validation_per_epoch), total=self.num_iterations_validation_per_epoch, desc="Val-epoch-" + str(epoch) + "-")
 
         # init acc and loss lists
         loss_list = []
