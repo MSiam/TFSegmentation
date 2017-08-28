@@ -403,8 +403,8 @@ class Train(BasicTrain):
                 feed_dict=feed_dict)
 
             # log loss and acc
-            loss_list += loss
-            acc_list += acc
+            loss_list += [loss]
+            acc_list += [acc]
             img_list += segmented_imgs[0]
 
             # log metrics
