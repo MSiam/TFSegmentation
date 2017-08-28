@@ -10,7 +10,6 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-
 class Train(BasicTrain):
     """
     Trainer class
@@ -63,7 +62,8 @@ class Train(BasicTrain):
         elif self.args.data_mode == "overfit":
             self.train_data = None
             self.train_data_len = None
-            self.num_iterations_per_epoch = None  # It will be calculated in loading the data
+            #self.num_iterations_per_epoch = None  # It will be calculated in loading the data
+            self.num_iterations_training_per_epoch = None
             self.load_overfit_data()
             self.generator = self.overfit_generator
         else:
@@ -79,10 +79,10 @@ class Train(BasicTrain):
         self.train_data = {'X': np.load(self.args.data_dir + "X.npy"),
                            'Y': np.load(self.args.data_dir + "Y.npy")}
         self.train_data_len = self.train_data['X'].shape[0]
-        self.num_iterations_per_epoch = (self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+        self.num_iterations_training_per_epoch = (self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Train-shape-x -- " + str(self.train_data['X'].shape))
         print("Train-shape-y -- " + str(self.train_data['Y'].shape))
-        print("Num of iterations in one epoch -- " + str(self.num_iterations_per_epoch))
+        print("Num of iterations in one epoch -- " + str(self.num_iterations_training_per_epoch))
         print("Overfitting data is loaded")
 
     def overfit_generator(self):
@@ -231,8 +231,8 @@ class Train(BasicTrain):
                         [self.model.train_op, self.model.loss, self.model.accuracy, self.model.merged_summaries],
                         feed_dict=feed_dict)
                     # log loss and acc
-                    loss_list += loss
-                    acc_list += acc
+                    loss_list += [loss]
+                    acc_list += [acc]
                     # summarize
                     self.add_summary(cur_it, summaries_merged=summaries_merged)
 
@@ -244,8 +244,8 @@ class Train(BasicTrain):
                          self.model.merged_summaries, self.model.segmented_summary],
                         feed_dict=feed_dict)
                     # log loss and acc
-                    loss_list += loss
-                    acc_list += acc
+                    loss_list += [loss]
+                    acc_list += [acc]
                     total_loss = np.mean(loss_list)
                     total_acc = np.mean(acc_list)
                     # summarize
@@ -266,7 +266,7 @@ class Train(BasicTrain):
 
                     # print in console
                     tt.close()
-                    print("epoch-" + str(cur_epoch) + "-" + "loss:" + str(total_loss) + "-" + "acc-" + str(total_acc)[:6])
+                    print("epoch-" + str(cur_epoch) + "-" + "loss:" + str(total_loss) + "-" + " acc:" + str(total_acc)[:6])
 
                     # Break the loop to finalize this epoch
                     break
