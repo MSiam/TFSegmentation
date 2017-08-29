@@ -58,7 +58,17 @@ class Train(BasicTrain):
         elif self.args.data_mode == "test":
             self.test_data = None
             self.test_data_len = None
+            self.num_iterations_testing_per_epoch = None
             self.load_test_data()
+            self.generator = self.test_generator
+        elif self.args.data_mode == "video":
+            self.args.data_mode= "test"
+            self.test_data = None
+            self.test_data_len = None
+            self.num_iterations_testing_per_epoch = None
+            self.load_vid_data()
+            self.generator = self.test_generator
+
         elif self.args.data_mode == "overfit":
             self.train_data = None
             self.train_data_len = None
@@ -161,6 +171,16 @@ class Train(BasicTrain):
         print("Num of iterations on validation data in one epoch -- " + str(self.num_iterations_validation_per_epoch))
         print("Validation data is loaded")
 
+    def load_vid_data(self):
+        print("Loading Testing data..")
+        self.test_data = {'X': np.load(self.args.data_dir + "X_vid.npy")}
+        self.test_data['Y']= np.zeros(self.test_data['X'].shape[:3])
+        self.test_data_len = self.test_data['X'].shape[0]
+        print("Vid-shape-x -- " + str(self.test_data['X'].shape))
+        print("Vid-shape-y -- " + str(self.test_data['Y'].shape))
+        self.num_iterations_testing_per_epoch = (self.test_data_len + self.args.batch_size - 1) // self.args.batch_size
+        print("Test data is loaded")
+
     def load_test_data(self):
         print("Loading Testing data..")
         self.test_data = {'X': np.load(self.args.data_dir + "X_test.npy"),
@@ -168,7 +188,35 @@ class Train(BasicTrain):
         self.test_data_len = self.test_data['X'].shape[0]
         print("Test-shape-x -- " + str(self.test_data['X'].shape))
         print("Test-shape-y -- " + str(self.test_data['Y'].shape))
+        self.num_iterations_testing_per_epoch = (self.test_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Test data is loaded")
+
+    def test_generator(self):
+        start = 0
+        new_epoch_flag = True
+        idx = None
+        while True:
+            # init index array if it is a new_epoch
+            if new_epoch_flag:
+                if self.args.shuffle:
+                    idx = np.random.choice(self.test_data_len, self.test_data_len, replace=False)
+                else:
+                    idx = np.arange(self.test_data_len)
+                new_epoch_flag = False
+
+            # select the mini_batches
+            mask = idx[start:start + self.args.batch_size]
+            x_batch = self.test_data['X'][mask]
+            y_batch = self.test_data['Y'][mask]
+
+            # update start idx
+            start += self.args.batch_size
+
+            if start >= self.test_data_len:
+                start = 0
+                new_epoch_flag = True
+
+            yield x_batch, y_batch
 
     def train_generator(self):
         start = 0
@@ -405,7 +453,7 @@ class Train(BasicTrain):
             # log loss and acc
             loss_list += [loss]
             acc_list += [acc]
-            img_list += segmented_imgs[0]
+            img_list += [segmented_imgs[0]]
 
             # log metrics
             self.metrics.update_metrics(out_argmax[0], y_batch[0], 0, 0)
