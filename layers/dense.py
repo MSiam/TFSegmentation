@@ -90,7 +90,7 @@ def flatten(x):
     return o
 
 
-def load_dense_layer(reduced_flag, bottom, name, pretrained_weights, num_classes=20, activation=None, dropout=-1,
+def load_dense_layer(reduced_flag, x, name, pretrained_weights, num_classes=20, activation=None, dropout=-1,
                      train=False,
                      trainable=True, l2_strength=0.0):
     """
@@ -108,7 +108,7 @@ def load_dense_layer(reduced_flag, bottom, name, pretrained_weights, num_classes
             w = get_dense_weight_reshape(name, pretrained_weights, [1, 1, 4096, 4096], trainable=trainable)
 
         biases = load_bias(name, pretrained_weights, num_classes=num_classes, trainable=trainable)
-        return conv2d(name, x=bottom, w=w, l2_strength=l2_strength, bias=biases,
+        return conv2d(name, x=x, w=w, l2_strength=l2_strength, bias=biases,
                       activation=activation, dropout_keep_prob=dropout, is_training=train)
     else:
         if name == 'fc6':
@@ -122,5 +122,5 @@ def load_dense_layer(reduced_flag, bottom, name, pretrained_weights, num_classes
             num_channels = 512
             kernel_size = (1, 1)
 
-        return conv2d(name, x=bottom, num_filters=num_channels, kernel_size=kernel_size, l2_strength=l2_strength,
+        return conv2d(name, x=x, num_filters=num_channels, kernel_size=kernel_size, l2_strength=l2_strength,
                       activation=activation, dropout_keep_prob=dropout, is_training=train)
