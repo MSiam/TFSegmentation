@@ -10,6 +10,7 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
+
 class Train(BasicTrain):
     """
     Trainer class
@@ -62,17 +63,15 @@ class Train(BasicTrain):
             self.load_test_data()
             self.generator = self.test_generator
         elif self.args.data_mode == "video":
-            self.args.data_mode= "test"
+            self.args.data_mode = "test"
             self.test_data = None
             self.test_data_len = None
             self.num_iterations_testing_per_epoch = None
             self.load_vid_data()
             self.generator = self.test_generator
-
         elif self.args.data_mode == "overfit":
             self.train_data = None
             self.train_data_len = None
-            #self.num_iterations_per_epoch = None  # It will be calculated in loading the data
             self.num_iterations_training_per_epoch = None
             self.load_overfit_data()
             self.generator = self.overfit_generator
@@ -174,7 +173,7 @@ class Train(BasicTrain):
     def load_vid_data(self):
         print("Loading Testing data..")
         self.test_data = {'X': np.load(self.args.data_dir + "X_vid.npy")}
-        self.test_data['Y']= np.zeros(self.test_data['X'].shape[:3])
+        self.test_data['Y'] = np.zeros(self.test_data['X'].shape[:3])
         self.test_data_len = self.test_data['X'].shape[0]
         print("Vid-shape-x -- " + str(self.test_data['X'].shape))
         print("Vid-shape-y -- " + str(self.test_data['Y'].shape))
@@ -480,7 +479,7 @@ class Train(BasicTrain):
         for cur_epoch in range(self.model.global_epoch_tensor.eval(self.sess) + 1, self.args.num_epochs + 1, 1):
 
             # init tqdm and get the epoch value
-            tt = tqdm(self.generator(), total=self.num_iterations_per_epoch, desc="epoch-" + str(cur_epoch) + "-")
+            tt = tqdm(self.generator(), total=self.num_iterations_training_per_epoch, desc="epoch-" + str(cur_epoch) + "-")
 
             # init the current iterations
             cur_iteration = 0
@@ -498,7 +497,7 @@ class Train(BasicTrain):
                              }
 
                 # Run the feed forward but the last iteration finalize what you want to do
-                if cur_iteration < self.num_iterations_per_epoch - 1:
+                if cur_iteration < self.num_iterations_training_per_epoch - 1:
 
                     # run the feed_forward
                     _, summaries_merged = self.sess.run(
