@@ -163,11 +163,14 @@ def conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAME', 
             else:
                 conv_a = activation(conv_o_b)
 
+        def dropout_with_keep():
+            return tf.nn.dropout(conv_a, dropout_keep_prob)
+
+        def dropout_no_keep():
+            return tf.nn.dropout(conv_a, 1.0)
+
         if dropout_keep_prob != -1:
-            if is_training:
-                conv_o_dr = tf.nn.dropout(conv_a, dropout_keep_prob)
-            else:
-                conv_o_dr = tf.nn.dropout(conv_a, 1.0)
+            conv_o_dr = tf.cond(is_training, dropout_with_keep, dropout_no_keep)
         else:
             conv_o_dr = conv_a
 
@@ -218,11 +221,14 @@ def atrous_conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='
             else:
                 conv_a = activation(conv_o_b)
 
+        def dropout_with_keep():
+            return tf.nn.dropout(conv_a, dropout_keep_prob)
+
+        def dropout_no_keep():
+            return tf.nn.dropout(conv_a, 1.0)
+
         if dropout_keep_prob != -1:
-            if is_training:
-                conv_o_dr = tf.nn.dropout(conv_a, dropout_keep_prob)
-            else:
-                conv_o_dr = tf.nn.dropout(conv_a, 1.0)
+            conv_o_dr = tf.cond(is_training, dropout_with_keep, dropout_no_keep)
         else:
             conv_o_dr = conv_a
 
@@ -272,11 +278,14 @@ def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), pad
             else:
                 conv_a = activation(conv_o_b)
 
+        def dropout_with_keep():
+            return tf.nn.dropout(conv_a, dropout_keep_prob)
+
+        def dropout_no_keep():
+            return tf.nn.dropout(conv_a, 1.0)
+
         if dropout_keep_prob != -1:
-            if is_training:
-                conv_o_dr = tf.nn.dropout(conv_a, dropout_keep_prob)
-            else:
-                conv_o_dr = tf.nn.dropout(conv_a, 1.0)
+            conv_o_dr = tf.cond(is_training, dropout_with_keep, dropout_no_keep)
         else:
             conv_o_dr = conv_a
 
