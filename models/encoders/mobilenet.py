@@ -140,10 +140,9 @@ class MobileNet:
                                                       batchnorm_enabled=True, is_training=self.train_flag,
                                                       l2_strength=self.wd)
 
-            # Pooling is according to the conv6_1 feature map size, originally it was 7x7 pooling.
-            self.avg_pool_15 = avg_pool_2d(self.conv6_1, (8, 16), name='avg_pool_15')
-            self.score_fr = conv2d('fc_16', self.avg_pool_15, num_filters=self.num_classes, l2_strength=self.wd)
-            self.score_fr = self.conv6_1
+            # Pooling is removed.
+            self.score_fr = conv2d('fc_16', self.conv6_1, num_filters=self.num_classes, l2_strength=self.wd,
+                                   kernel_size=(1, 1))
             self.feed1 = self.conv4_2
             self.feed2 = self.conv3_2
 
