@@ -3,8 +3,8 @@ from layers.pooling import max_pool_2d
 import tensorflow as tf
 
 
-def conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
-           initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0):
+def __conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
+               initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0):
     """
     Convolution 2D Wrapper
     :param name: (string) The name scope provided by the upper tf.name_scope('name') as scope.
@@ -38,8 +38,8 @@ def conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAME'
     return out
 
 
-def atrous_conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAME', dilation_rate=1,
-                  initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0):
+def __atrous_conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAME', dilation_rate=1,
+                      initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0):
     """
     Atrous Convolution 2D Wrapper
     :param name: (string) The name scope provided by the upper tf.name_scope('name') as scope.
@@ -72,9 +72,9 @@ def atrous_conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding
     return out
 
 
-def conv2d_transpose_p(name, x, w=None, output_shape=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
-                     l2_strength=0.0,
-                     bias=0.0):
+def __conv2d_transpose_p(name, x, w=None, output_shape=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
+                         l2_strength=0.0,
+                         bias=0.0):
     """
     Convolution Transpose 2D Wrapper
     :param name: (string) The name scope provided by the upper tf.name_scope('name') as scope.
@@ -102,10 +102,31 @@ def conv2d_transpose_p(name, x, w=None, output_shape=None, kernel_size=(3, 3), p
     return out
 
 
+def __depthwise_conv2d_p(name, x, w=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
+                         initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0):
+    with tf.variable_scope(name):
+        stride = [1, stride[0], stride[1], 1]
+        kernel_shape = [kernel_size[0], kernel_size[1], x.shape[-1], 1]
+
+        with tf.name_scope('layer_weights'):
+            if w == None:
+                w = variable_with_weight_decay(kernel_shape, initializer, l2_strength)
+            variable_summaries(w)
+        with tf.name_scope('layer_biases'):
+            if isinstance(bias, float):
+                bias = tf.get_variable('biases', [1], initializer=tf.constant_initializer(bias))
+            variable_summaries(bias)
+        with tf.name_scope('layer_conv2d'):
+            conv = tf.nn.depthwise_conv2d(x, w, stride, padding)
+            out = tf.nn.bias_add(conv, bias)
+
+    return out
+
+
 def conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
-             initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0,
-             activation=None, batchnorm_enabled=False, max_pool_enabled=False, dropout_keep_prob=-1,
-             is_training=True):
+           initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0,
+           activation=None, batchnorm_enabled=False, max_pool_enabled=False, dropout_keep_prob=-1,
+           is_training=True):
     """
     This block is responsible for a convolution 2D layer followed by optional (non-linearity, dropout, max-pooling).
     Note that: "is_training" should be passed by a correct value based on being in either training or testing.
@@ -126,9 +147,9 @@ def conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAME', 
     :return: The output tensor of the layer (N, H', W', C').
     """
     with tf.variable_scope(name) as scope:
-        conv_o_b = conv2d_p(scope, x=x, w=w, num_filters=num_filters, kernel_size=kernel_size, stride=stride,
-                          padding=padding,
-                          initializer=initializer, l2_strength=l2_strength, bias=bias)
+        conv_o_b = __conv2d_p(scope, x=x, w=w, num_filters=num_filters, kernel_size=kernel_size, stride=stride,
+                              padding=padding,
+                              initializer=initializer, l2_strength=l2_strength, bias=bias)
 
         if batchnorm_enabled:
             conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training)
@@ -143,7 +164,10 @@ def conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAME', 
                 conv_a = activation(conv_o_b)
 
         if dropout_keep_prob != -1:
-            conv_o_dr = tf.nn.dropout(conv_a, dropout_keep_prob)
+            if is_training:
+                conv_o_dr = tf.nn.dropout(conv_a, dropout_keep_prob)
+            else:
+                conv_o_dr = tf.nn.dropout(conv_a, 1.0)
         else:
             conv_o_dr = conv_a
 
@@ -155,9 +179,9 @@ def conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAME', 
 
 
 def atrous_conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAME', dilation_rate=1,
-                    initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0,
-                    activation=None, batchnorm_enabled=False, max_pool_enabled=False, dropout_keep_prob=-1,
-                    is_training=True):
+                  initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0,
+                  activation=None, batchnorm_enabled=False, max_pool_enabled=False, dropout_keep_prob=-1,
+                  is_training=True):
     """
     This block is responsible for a Dilated convolution 2D layer followed by optional (non-linearity, dropout, max-pooling).
     Note that: "is_training" should be passed by a correct value based on being in either training or testing.
@@ -178,9 +202,9 @@ def atrous_conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='
     :return: The output tensor of the layer (N, H', W', C').
     """
     with tf.variable_scope(name) as scope:
-        conv_o_b = atrous_conv2d_p(scope, x=x, w=w, num_filters=num_filters, kernel_size=kernel_size,
-                                 padding=padding, dilation_rate=dilation_rate,
-                                 initializer=initializer, l2_strength=l2_strength, bias=bias)
+        conv_o_b = __atrous_conv2d_p(scope, x=x, w=w, num_filters=num_filters, kernel_size=kernel_size,
+                                     padding=padding, dilation_rate=dilation_rate,
+                                     initializer=initializer, l2_strength=l2_strength, bias=bias)
 
         if batchnorm_enabled:
             conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training)
@@ -195,7 +219,10 @@ def atrous_conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='
                 conv_a = activation(conv_o_b)
 
         if dropout_keep_prob != -1:
-            conv_o_dr = tf.nn.dropout(conv_a, dropout_keep_prob)
+            if is_training:
+                conv_o_dr = tf.nn.dropout(conv_a, dropout_keep_prob)
+            else:
+                conv_o_dr = tf.nn.dropout(conv_a, 1.0)
         else:
             conv_o_dr = conv_a
 
@@ -206,9 +233,10 @@ def atrous_conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='
     return conv_o
 
 
-def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1), l2_strength=0.0,
-               bias=0.0, activation=None, batchnorm_enabled=False, dropout_keep_prob=-1,
-               is_training=True):
+def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
+                     l2_strength=0.0,
+                     bias=0.0, activation=None, batchnorm_enabled=False, dropout_keep_prob=-1,
+                     is_training=True):
     """
     This block is responsible for a convolution transpose 2D followed by optional (non-linearity, dropout, max-pooling).
     Note that: "is_training" should be passed by a correct value based on being in either training or testing.
@@ -227,10 +255,10 @@ def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), pad
     :return out: The output of the layer. (output_shape[0], output_shape[1], output_shape[2], output_shape[3])
     """
     with tf.variable_scope(name) as scope:
-        conv_o_b = conv2d_transpose_p(name=scope, x=x, w=w, output_shape=output_shape, kernel_size=kernel_size,
-                                    padding=padding, stride=stride,
-                                    l2_strength=l2_strength,
-                                    bias=bias)
+        conv_o_b = __conv2d_transpose_p(name=scope, x=x, w=w, output_shape=output_shape, kernel_size=kernel_size,
+                                        padding=padding, stride=stride,
+                                        l2_strength=l2_strength,
+                                        bias=bias)
 
         if batchnorm_enabled:
             conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training)
@@ -245,7 +273,10 @@ def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), pad
                 conv_a = activation(conv_o_b)
 
         if dropout_keep_prob != -1:
-            conv_o_dr = tf.nn.dropout(conv_a, dropout_keep_prob)
+            if is_training:
+                conv_o_dr = tf.nn.dropout(conv_a, dropout_keep_prob)
+            else:
+                conv_o_dr = tf.nn.dropout(conv_a, 1.0)
         else:
             conv_o_dr = conv_a
 
@@ -260,3 +291,43 @@ def load_conv_layer(bottom, name, pretrained_weights, pooling=False, trainable=T
     return conv2d(name, x=bottom, w=w, l2_strength=l2_strength, bias=biases, activation=tf.nn.relu,
                   max_pool_enabled=pooling)
 
+
+def depthwise_conv2d(name, x, w=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
+                     initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0, activation=None,
+                     batchnorm_enabled=False, is_training=True):
+    with tf.variable_scope(name) as scope:
+        conv_o_b = __depthwise_conv2d_p(name=scope, x=x, w=w, kernel_size=kernel_size, padding=padding,
+                                        stride=stride, initializer=initializer, l2_strength=l2_strength, bias=bias)
+
+        if batchnorm_enabled:
+            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training)
+            if not activation:
+                conv_a = conv_o_bn
+            else:
+                conv_a = activation(conv_o_bn)
+        else:
+            if not activation:
+                conv_a = conv_o_b
+            else:
+                conv_a = activation(conv_o_b)
+    return conv_a
+
+
+def depthwise_separable_conv2d(name, x, w_depthwise=None, w_pointwise=None, width_multiplier=1.0, num_filters=16,
+                               kernel_size=(3, 3),
+                               padding='SAME', stride=(1, 1),
+                               initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0,
+                               activation=None, batchnorm_enabled=True,
+                               is_training=True):
+    total_num_filters = int(round(num_filters * width_multiplier))
+    with tf.variable_scope(name) as scope:
+        conv_a = depthwise_conv2d('depthwise', x=x, w=w_depthwise, kernel_size=kernel_size, padding=padding,
+                                  stride=stride,
+                                  initializer=initializer, l2_strength=l2_strength, bias=bias, activation=activation,
+                                  batchnorm_enabled=batchnorm_enabled, is_training=is_training)
+
+        conv_o = conv2d('pointwise', x=conv_a, w=w_pointwise, num_filters=total_num_filters, kernel_size=(1, 1),
+                        initializer=initializer, l2_strength=l2_strength, bias=bias, activation=activation,
+                        batchnorm_enabled=batchnorm_enabled, is_training=is_training)
+
+    return conv_o
