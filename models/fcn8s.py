@@ -1,5 +1,6 @@
 from models.basic.basic_model import BasicModel
 from models.encoders.VGG import VGG16
+from models.encoders.mobilenet import MobileNet
 from layers.convolution import conv2d_transpose, conv2d
 
 import tensorflow as tf
@@ -39,12 +40,15 @@ class FCN8s(BasicModel):
         """
 
         # Init a VGG16 as an encoder
-        self.encoder = VGG16(x_input=self.x_pl,
-                             num_classes=self.params.num_classes,
-                             pretrained_path=self.args.pretrained_path,
-                             train_flag=self.is_training,
-                             reduced_flag=False,
-                             weight_decay=self.args.weight_decay)
+        # self.encoder = VGG16(x_input=self.x_pl,
+        #                      num_classes=self.params.num_classes,
+        #                      pretrained_path=self.args.pretrained_path,
+        #                      train_flag=self.is_training,
+        #                      reduced_flag=False,
+        #                      weight_decay=self.args.weight_decay)
+        self.encoder = MobileNet(x_input=self.x_pl, num_classes=self.params.num_classes,
+                                 pretrained_path=self.args.pretrained_path,
+                                 train_flag=self.is_training, width_multipler=1.0, weight_decay=self.args.weight_decay)
 
         # Build Encoding part
         self.encoder.build()
