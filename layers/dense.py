@@ -65,7 +65,10 @@ def dense(name, x, w=None, output_dim=128, initializer=tf.contrib.layers.xavier_
                 dense_a = activation(dense_o_b)
 
         if dropout_keep_prob != -1:
-            dense_o_dr = tf.nn.dropout(dense_a, dropout_keep_prob)
+            if is_training:
+                dense_o_dr = tf.nn.dropout(dense_a, dropout_keep_prob)
+            else:
+                dense_o_dr = tf.nn.dropout(dense_a, 1.0)
         else:
             dense_o_dr = dense_a
 
