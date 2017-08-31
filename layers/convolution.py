@@ -114,7 +114,7 @@ def __depthwise_conv2d_p(name, x, w=None, kernel_size=(3, 3), padding='SAME', st
             variable_summaries(w)
         with tf.name_scope('layer_biases'):
             if isinstance(bias, float):
-                bias = tf.get_variable('biases', [1], initializer=tf.constant_initializer(bias))
+                bias = tf.get_variable('biases', [x.shape[-1]], initializer=tf.constant_initializer(bias))
             variable_summaries(bias)
         with tf.name_scope('layer_conv2d'):
             conv = tf.nn.depthwise_conv2d(x, w, stride, padding)
@@ -295,12 +295,12 @@ def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), pad
 
 
 def load_conv_layer(x, name, pretrained_weights, pooling=False, trainable=True, l2_strength=0.0, stride=(1, 1),
-                    padding='SAME', dropout_keep_prob=-1, is_training=True):
+                    padding='SAME', dropout_keep_prob=-1, batchnorm_enabled=False, is_training=True):
     w = load_conv_filter(name, pretrained_weights, l2_strength, trainable=trainable)
     biases = load_bias(name, pretrained_weights, trainable=trainable)
     return conv2d(name, x=x, w=w, l2_strength=l2_strength, bias=biases, activation=tf.nn.relu,
                   max_pool_enabled=pooling, stride=stride, padding=padding, dropout_keep_prob=dropout_keep_prob,
-                  is_training=is_training)
+                  is_training=is_training, batchnorm_enabled=batchnorm_enabled)
 
 
 def load_depthwise_separable_conv_layer(x, name, pretrained_depthwise_weights, pretrained_pointwise_weights,
@@ -326,7 +326,7 @@ def depthwise_conv2d(name, x, w=None, kernel_size=(3, 3), padding='SAME', stride
                                         stride=stride, initializer=initializer, l2_strength=l2_strength, bias=bias)
 
         if batchnorm_enabled:
-            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training)
+            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training, name='batch_norm')
             if not activation:
                 conv_a = conv_o_bn
             else:
