@@ -146,13 +146,12 @@ class MobileNet:
             print("\nEncoder MobileNet is built successfully\n\n")
 
     def __restore(self, file_name, sess):
-        variables = tf.trainable_variables()
+        variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="mobilenet_encoder")
         dict = load_obj(file_name)
         for variable in variables:
             for key, value in dict.items():
                 if key in variable.name:
                     sess.run(tf.assign(variable, value))
-                    # print("Variable: " + key + " loaded")
 
     def load_pretrained_weights(self, sess):
         print("Loading ImageNet Pretrained Weights...")
