@@ -26,10 +26,11 @@ class BasicTrain(object):
         self.sess.run(self.init)
 
         # Create a saver object
-        self.saver = tf.train.Saver(max_to_keep=self.args.max_to_keep, keep_checkpoint_every_n_hours=10, save_relative_paths=True)
+        self.saver = tf.train.Saver(max_to_keep=self.args.max_to_keep, keep_checkpoint_every_n_hours=10,
+                                    save_relative_paths=True)
 
         # Load from latest checkpoint if found
-        self.load_model()
+        self.load_model(model)
 
     def save_model(self):
         """
@@ -40,11 +41,17 @@ class BasicTrain(object):
         self.saver.save(self.sess, self.args.checkpoint_dir, self.model.global_step_tensor)
         print("Saved a checkpoint")
 
-    def load_model(self):
+    def load_model(self, model):
         """
         Load the latest checkpoint
         :return:
         """
+        try:
+            # This is for loading the pretrained weights if they can't be loaded during initialization.
+            model.encoder.load_pretrained_weights(self.sess)
+        except AttributeError:
+            pass
+
         latest_checkpoint = tf.train.latest_checkpoint(self.args.checkpoint_dir)
         if latest_checkpoint:
             print("Loading model checkpoint {} ...\n".format(latest_checkpoint))

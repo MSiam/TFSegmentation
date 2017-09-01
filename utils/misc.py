@@ -1,4 +1,5 @@
 import time
+import pickle
 
 
 def timeit(f):
@@ -34,3 +35,13 @@ def output_confusion_matrix(confusion_matrix, file_name, num_classes):
         file_output.write('\n')
 
     file_output.close()
+
+
+def load_obj(name):
+    with open(name, 'rb') as f:
+        return pickle.load(f)
+
+
+def save_obj(obj, name):
+    with open(name, 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
