@@ -34,5 +34,4 @@ output_dict = {}
 for i in range(len(variables_to_train)):
     output_dict[variables_to_train[i].name] = variables_executed[i]
 __save_obj(output_dict, os.path.realpath(os.getcwd()) + "/variables.pkl")
-print(output_dict)
 print("Model Saved in variables.pkl")
