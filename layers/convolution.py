@@ -326,7 +326,7 @@ def depthwise_conv2d(name, x, w=None, kernel_size=(3, 3), padding='SAME', stride
                                         stride=stride, initializer=initializer, l2_strength=l2_strength, bias=bias)
 
         if batchnorm_enabled:
-            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training, name='batch_norm')
+            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training)
             if not activation:
                 conv_a = conv_o_bn
             else:
