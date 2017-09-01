@@ -1,7 +1,7 @@
 # Directories arguments
 data_dir: "full_cityscapes"
-exp_dir:  "fcn8s_mobilenet_exp_test"
-out_dir:  "fcn8s_mobilenet_exp_test"
+exp_dir:  "fcn8s_mobilenet_exp"
+out_dir:  "fcn8s_mobilenet_exp"
 
 # Data arguments
 img_height:   512
