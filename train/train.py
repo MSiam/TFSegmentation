@@ -4,6 +4,7 @@ Trainer class to train Segmentation models
 
 from train.basic_train import BasicTrain
 from metrics.metrics import Metrics
+from utils.misc import timeit
 
 from tqdm import tqdm
 import numpy as np
@@ -83,6 +84,7 @@ class Train(BasicTrain):
         self.metrics = Metrics(self.args.num_classes)
         ##################################################################################
 
+    @timeit
     def load_overfit_data(self):
         print("Loading data..")
         self.train_data = {'X': np.load(self.args.data_dir + "X.npy"),
@@ -149,6 +151,7 @@ class Train(BasicTrain):
         if summaries_merged is not None:
             self.summary_writer.add_summary(summaries_merged, step)
 
+    @timeit
     def load_train_data(self):
         print("Loading Training data..")
         self.train_data = {'X': np.load(self.args.data_dir + "X_train.npy"),
@@ -170,16 +173,18 @@ class Train(BasicTrain):
         print("Num of iterations on validation data in one epoch -- " + str(self.num_iterations_validation_per_epoch))
         print("Validation data is loaded")
 
+    @timeit
     def load_vid_data(self):
-        print("Loading Testing data..")
+        print("Loading Video data..")
         self.test_data = {'X': np.load(self.args.data_dir + "X_vid.npy")}
         self.test_data['Y'] = np.zeros(self.test_data['X'].shape[:3])
         self.test_data_len = self.test_data['X'].shape[0]
         print("Vid-shape-x -- " + str(self.test_data['X'].shape))
         print("Vid-shape-y -- " + str(self.test_data['Y'].shape))
         self.num_iterations_testing_per_epoch = (self.test_data_len + self.args.batch_size - 1) // self.args.batch_size
-        print("Test data is loaded")
+        print("Video data is loaded")
 
+    @timeit
     def load_test_data(self):
         print("Loading Testing data..")
         self.test_data = {'X': np.load(self.args.data_dir + "X_test.npy"),
