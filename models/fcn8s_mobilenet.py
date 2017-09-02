@@ -6,9 +6,9 @@ from layers.convolution import conv2d_transpose, conv2d
 import tensorflow as tf
 
 
-class FCN8s(BasicModel):
+class FCN8sMobileNet(BasicModel):
     """
-    FCN8s Model Architecture
+    FCN8s with MobileNet as an encoder Model Architecture
     """
 
     def __init__(self, args):
@@ -39,13 +39,10 @@ class FCN8s(BasicModel):
         :return:
         """
 
-        # Init a VGG16 as an encoder
-        self.encoder = VGG16(x_input=self.x_pl,
-                             num_classes=self.params.num_classes,
-                             pretrained_path=self.args.pretrained_path,
-                             train_flag=self.is_training,
-                             reduced_flag=False,
-                             weight_decay=self.args.weight_decay)
+        # Init MobileNet as an encoder
+        self.encoder = MobileNet(x_input=self.x_pl, num_classes=self.params.num_classes,
+                                 pretrained_path=self.args.pretrained_path,
+                                 train_flag=self.is_training, width_multipler=1.0, weight_decay=self.args.weight_decay)
 
         # Build Encoding part
         self.encoder.build()
