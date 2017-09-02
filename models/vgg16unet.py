@@ -10,6 +10,24 @@ class VGG16UNET(BasicModel):
         super().__init__(args)
         # init encoder
         self.encoder = None
+        # all layers
+        self.upscale1 = None
+        self.concat1 = None
+        self.expand11 = None
+        self.expand12 = None
+        self.upscale2 = None
+        self.concat2 = None
+        self.expand21 = None
+        self.expand22 = None
+        self.upscale3 = None
+        self.concat3 = None
+        self.expand31 = None
+        self.expand32 = None
+        self.upscale4 = None
+        self.concat4 = None
+        self.expand41 = None
+        self.expand42 = None
+        self.fscore = None
 
     def build(self):
         print("\nBuilding the MODEL...")
@@ -45,11 +63,11 @@ class VGG16UNET(BasicModel):
                                              kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
             self.concat1 = tf.concat([self.upscale1, self.encoder.conv4_3], 3)
             self.expand11 = conv2d('expand1_1', x=self.concat1,
-                                      num_filters=self.encoder.conv4_3.shape.as_list()[3], kernel_size=(3, 3),
-                                      l2_strength=self.encoder.wd)
+                                   num_filters=self.encoder.conv4_3.shape.as_list()[3], kernel_size=(3, 3),
+                                   l2_strength=self.encoder.wd)
             self.expand12 = conv2d('expand1_2', x=self.expand11,
-                                      num_filters=self.encoder.conv4_3.shape.as_list()[3], kernel_size=(3, 3),
-                                      l2_strength=self.encoder.wd)
+                                   num_filters=self.encoder.conv4_3.shape.as_list()[3], kernel_size=(3, 3),
+                                   l2_strength=self.encoder.wd)
         with tf.name_scope('upscale_2'):
             self.upscale2 = conv2d_transpose('upscale2', x=self.expand12,
                                              output_shape=self.encoder.conv3_3.shape.as_list()[0:3] + [
@@ -57,11 +75,11 @@ class VGG16UNET(BasicModel):
                                              kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
             self.concat2 = tf.concat([self.upscale2, self.encoder.conv3_3], 3)
             self.expand21 = conv2d('expand2_1', x=self.concat2,
-                                      num_filters=self.encoder.conv3_3.shape.as_list()[3], kernel_size=(3, 3),
-                                      l2_strength=self.encoder.wd)
+                                   num_filters=self.encoder.conv3_3.shape.as_list()[3], kernel_size=(3, 3),
+                                   l2_strength=self.encoder.wd)
             self.expand22 = conv2d('expand2_2', x=self.expand21,
-                                      num_filters=self.encoder.conv3_3.shape.as_list()[3], kernel_size=(3, 3),
-                                      l2_strength=self.encoder.wd)
+                                   num_filters=self.encoder.conv3_3.shape.as_list()[3], kernel_size=(3, 3),
+                                   l2_strength=self.encoder.wd)
         with tf.name_scope('upscale_3'):
             self.upscale3 = conv2d_transpose('upscale3', x=self.expand22,
                                              output_shape=self.encoder.conv2_2.shape.as_list()[0:3] + [
@@ -69,27 +87,26 @@ class VGG16UNET(BasicModel):
                                              kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
             self.concat3 = tf.concat([self.upscale3, self.encoder.conv2_2], 3)
             self.expand31 = conv2d('expand3_1', x=self.concat3,
-                                      num_filters=self.encoder.conv2_2.shape.as_list()[3], kernel_size=(3, 3),
-                                      l2_strength=self.encoder.wd)
+                                   num_filters=self.encoder.conv2_2.shape.as_list()[3], kernel_size=(3, 3),
+                                   l2_strength=self.encoder.wd)
             self.expand32 = conv2d('expand3_2', x=self.expand31,
-                                      num_filters=self.encoder.conv2_2.shape.as_list()[3], kernel_size=(3, 3),
-                                      l2_strength=self.encoder.wd)
+                                   num_filters=self.encoder.conv2_2.shape.as_list()[3], kernel_size=(3, 3),
+                                   l2_strength=self.encoder.wd)
         with tf.name_scope('upscale_4'):
             self.upscale4 = conv2d_transpose('upscale4', x=self.expand32,
-                                             output_shape=self.encoder.conv2_2.shape.as_list()[0:3] + [
-                                                 self.encoder.conv1_2.shape.as_list()[3]],
+                                             output_shape=self.encoder.conv1_2.shape.as_list()[0:3] + [
+                                                 self.encoder.conv2_2.shape.as_list()[3]],
                                              kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
             self.concat4 = tf.concat([self.upscale4, self.encoder.conv1_2], 3)
             self.expand41 = conv2d('expand4_1', x=self.concat4,
-                                      num_filters=self.encoder.conv1_2.shape.as_list()[3], kernel_size=(3, 3),
-                                      l2_strength=self.encoder.wd)
+                                   num_filters=self.encoder.conv1_2.shape.as_list()[3], kernel_size=(3, 3),
+                                   l2_strength=self.encoder.wd)
             self.expand42 = conv2d('expand4_2', x=self.expand41,
-                                      num_filters=self.encoder.conv1_2.shape.as_list()[3], kernel_size=(3, 3),
-                                      l2_strength=self.encoder.wd)
-
+                                   num_filters=self.encoder.conv1_2.shape.as_list()[3], kernel_size=(3, 3),
+                                   l2_strength=self.encoder.wd)
 
         with tf.name_scope('final_score'):
             self.fscore = conv2d('fscore', x=self.expand42,
-                                      num_filters=self.params.num_classes, kernel_size=(1, 1),
-                                      l2_strength=self.encoder.wd)
+                                 num_filters=self.params.num_classes, kernel_size=(1, 1),
+                                 l2_strength=self.encoder.wd)
         self.logits = self.fscore
