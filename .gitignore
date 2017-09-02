@@ -131,7 +131,7 @@ pretrained_weights/*.npz
 # h5 files
 *.h5
 # I will push this to test the code
-!data/174_imgs_for_test_n_overfit/X.npy
-!data/174_imgs_for_test_n_overfit/Y.npy
+!data/data_for_test_n_overfit/X.npy
+!data/data_for_test_n_overfit/Y.npy
 cityscapesScripts/cityscapesscripts/annotation/icons/
 cityscapesScripts/cityscapesscripts/viewer/icons/
