@@ -87,7 +87,7 @@ class Train(BasicTrain):
         print("Loading data..")
         self.train_data = {'X': np.load(self.args.data_dir + "X.npy"),
                            'Y': np.load(self.args.data_dir + "Y.npy")}
-        self.train_data_len = self.train_data['X'].shape[0]
+        self.train_data_len = self.train_data['X'].shape[0]-self.train_data['X'].shape[0]%self.args.batch_size
         self.num_iterations_training_per_epoch = (self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Train-shape-x -- " + str(self.train_data['X'].shape))
         print("Train-shape-y -- " + str(self.train_data['Y'].shape))
@@ -153,9 +153,9 @@ class Train(BasicTrain):
         print("Loading Training data..")
         self.train_data = {'X': np.load(self.args.data_dir + "X_train.npy"),
                            'Y': np.load(self.args.data_dir + "Y_train.npy")}
-        self.train_data_len = self.train_data['X'].shape[0]
+        self.train_data_len = self.train_data['X'].shape[0]-self.train_data['X'].shape[0]%self.args.batch_size
         self.num_iterations_training_per_epoch = (self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
-        print("Train-shape-x -- " + str(self.train_data['X'].shape))
+        print("Train-shape-x -- " + str(self.train_data['X'].shape)+" "+str(self.train_data_len))
         print("Train-shape-y -- " + str(self.train_data['Y'].shape))
         print("Num of iterations on training data in one epoch -- " + str(self.num_iterations_training_per_epoch))
         print("Training data is loaded")
@@ -163,9 +163,9 @@ class Train(BasicTrain):
         print("Loading Validation data..")
         self.val_data = {'X': np.load(self.args.data_dir + "X_val.npy"),
                          'Y': np.load(self.args.data_dir + "Y_val.npy")}
-        self.val_data_len = self.val_data['X'].shape[0]
+        self.val_data_len = self.val_data['X'].shape[0]-self.val_data['X'].shape[0]%self.args.batch_size
         self.num_iterations_validation_per_epoch = (self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
-        print("Val-shape-x -- " + str(self.val_data['X'].shape))
+        print("Val-shape-x -- " + str(self.val_data['X'].shape)+" "+str(self.val_data_len))
         print("Val-shape-y -- " + str(self.val_data['Y'].shape))
         print("Num of iterations on validation data in one epoch -- " + str(self.num_iterations_validation_per_epoch))
         print("Validation data is loaded")
@@ -184,7 +184,7 @@ class Train(BasicTrain):
         print("Loading Testing data..")
         self.test_data = {'X': np.load(self.args.data_dir + "X_test.npy"),
                           'Y': np.load(self.args.data_dir + "Y_test.npy")}
-        self.test_data_len = self.test_data['X'].shape[0]
+        self.test_data_len = self.test_data['X'].shape[0]-self.test_data['X'].shape[0]%self.args.batch_size
         print("Test-shape-x -- " + str(self.test_data['X'].shape))
         print("Test-shape-y -- " + str(self.test_data['Y'].shape))
         self.num_iterations_testing_per_epoch = (self.test_data_len + self.args.batch_size - 1) // self.args.batch_size
