@@ -114,7 +114,7 @@ def __depthwise_conv2d_p(name, x, w=None, kernel_size=(3, 3), padding='SAME', st
             variable_summaries(w)
         with tf.name_scope('layer_biases'):
             if isinstance(bias, float):
-                bias = tf.get_variable('biases', [1], initializer=tf.constant_initializer(bias))
+                bias = tf.get_variable('biases', [x.shape[-1]], initializer=tf.constant_initializer(bias))
             variable_summaries(bias)
         with tf.name_scope('layer_conv2d'):
             conv = tf.nn.depthwise_conv2d(x, w, stride, padding)
@@ -294,11 +294,28 @@ def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), pad
         return conv_o
 
 
-def load_conv_layer(bottom, name, pretrained_weights, pooling=False, trainable=True, l2_strength=0.0):
+def load_conv_layer(x, name, pretrained_weights, pooling=False, trainable=True, l2_strength=0.0, stride=(1, 1),
+                    padding='SAME', dropout_keep_prob=-1, batchnorm_enabled=False, is_training=True):
     w = load_conv_filter(name, pretrained_weights, l2_strength, trainable=trainable)
     biases = load_bias(name, pretrained_weights, trainable=trainable)
-    return conv2d(name, x=bottom, w=w, l2_strength=l2_strength, bias=biases, activation=tf.nn.relu,
-                  max_pool_enabled=pooling)
+    return conv2d(name, x=x, w=w, l2_strength=l2_strength, bias=biases, activation=tf.nn.relu,
+                  max_pool_enabled=pooling, stride=stride, padding=padding, dropout_keep_prob=dropout_keep_prob,
+                  is_training=is_training, batchnorm_enabled=batchnorm_enabled)
+
+
+def load_depthwise_separable_conv_layer(x, name, pretrained_depthwise_weights, pretrained_pointwise_weights,
+                                        trainable=True,
+                                        l2_strength=0.0, width_multiplier=1.0, stride=(1, 1), padding='SAME',
+                                        is_training=True):
+    w_depthwise = load_conv_filter(name, pretrained_depthwise_weights, l2_strength, trainable=trainable)
+    biases_depthwise = load_bias(name, pretrained_depthwise_weights, trainable=trainable)
+    w_pointwise = load_conv_filter(name, pretrained_pointwise_weights, l2_strength, trainable=trainable)
+    biases_pointwise = load_bias(name, pretrained_pointwise_weights, trainable=trainable)
+    return depthwise_separable_conv2d(name, x=x, w_depthwise=w_depthwise,
+                                      w_pointwise=w_pointwise, l2_strength=l2_strength,
+                                      width_multiplier=width_multiplier,
+                                      biases=(biases_depthwise, biases_pointwise),
+                                      activation=tf.nn.relu, padding=padding, stride=stride, is_training=is_training)
 
 
 def depthwise_conv2d(name, x, w=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
@@ -325,18 +342,19 @@ def depthwise_conv2d(name, x, w=None, kernel_size=(3, 3), padding='SAME', stride
 def depthwise_separable_conv2d(name, x, w_depthwise=None, w_pointwise=None, width_multiplier=1.0, num_filters=16,
                                kernel_size=(3, 3),
                                padding='SAME', stride=(1, 1),
-                               initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0,
+                               initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, biases=(0.0, 0.0),
                                activation=None, batchnorm_enabled=True,
                                is_training=True):
     total_num_filters = int(round(num_filters * width_multiplier))
     with tf.variable_scope(name) as scope:
         conv_a = depthwise_conv2d('depthwise', x=x, w=w_depthwise, kernel_size=kernel_size, padding=padding,
                                   stride=stride,
-                                  initializer=initializer, l2_strength=l2_strength, bias=bias, activation=activation,
+                                  initializer=initializer, l2_strength=l2_strength, bias=biases[0],
+                                  activation=activation,
                                   batchnorm_enabled=batchnorm_enabled, is_training=is_training)
 
         conv_o = conv2d('pointwise', x=conv_a, w=w_pointwise, num_filters=total_num_filters, kernel_size=(1, 1),
-                        initializer=initializer, l2_strength=l2_strength, bias=bias, activation=activation,
+                        initializer=initializer, l2_strength=l2_strength, bias=biases[1], activation=activation,
                         batchnorm_enabled=batchnorm_enabled, is_training=is_training)
 
     return conv_o
