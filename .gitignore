@@ -120,6 +120,7 @@ data/dummy_cityscapes/
 
 # pretrained_weights
 pretrained_weights/*.npy
+pretrained_weights/*.npz
 
 # imgs
 *.png
