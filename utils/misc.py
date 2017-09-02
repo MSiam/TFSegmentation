@@ -9,8 +9,9 @@ def timeit(f):
         start_time = time.time()
         result = f(*args, **kwargs)
         end_time = time.time()
-
-        print("   [-] %s : %2.5f sec" % (f.__name__, end_time - start_time))
+        seconds = end_time - start_time
+        print("   [-] %s : %2.5f sec, which is %2.5f mins, which is %2.5f hours" %
+              (f.__name__, seconds, seconds / 60, seconds / 3600))
         return result
 
     return timed
