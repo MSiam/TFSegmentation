@@ -117,10 +117,12 @@ out/
 
 # data
 data/dummy_cityscapes/
+data/full_cityscapes/
 
 # pretrained_weights
 pretrained_weights/*.npy
 pretrained_weights/*.npz
+pretrained_weights/*.t7
 
 # imgs
 *.png
