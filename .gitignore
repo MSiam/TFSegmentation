@@ -117,9 +117,12 @@ out/
 
 # data
 data/dummy_cityscapes/
+data/full_cityscapes/
 
 # pretrained_weights
 pretrained_weights/*.npy
+pretrained_weights/*.npz
+pretrained_weights/*.t7
 
 # imgs
 *.png
@@ -130,5 +133,7 @@ pretrained_weights/*.npy
 # h5 files
 *.h5
 # I will push this to test the code
-!data/174_imgs_for_test_n_overfit/X.npy
-!data/174_imgs_for_test_n_overfit/Y.npy
+!data/data_for_test_n_overfit/X.npy
+!data/data_for_test_n_overfit/Y.npy
+cityscapesScripts/cityscapesscripts/annotation/icons/
+cityscapesScripts/cityscapesscripts/viewer/icons/
