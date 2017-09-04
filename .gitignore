@@ -126,6 +126,7 @@ pretrained_weights/*.t7
 
 # imgs
 *.png
+*.jpg
 
 # tmp files
 *~

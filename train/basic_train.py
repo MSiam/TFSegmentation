@@ -61,7 +61,7 @@ class BasicTrain(object):
         try:
             # This is for loading the pretrained weights if they can't be loaded during initialization.
             model.encoder.load_pretrained_weights(self.sess)
-            print("Pretrained weights is loaded")
+            print("Pretrained weights of the encoder is loaded")
         except AttributeError:
             pass
 
