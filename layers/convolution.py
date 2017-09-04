@@ -14,7 +14,7 @@ def __conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAM
     :param kernel_size: (integer tuple) The size of the convolving kernel.
     :param padding: (string) The amount of padding required.
     :param stride: (integer tuple) The stride required.
-    :param initializer: (tf.contrib initializer) The initialization scheme, He et al. normal or Xavier normal are recommended.
+    :param initializer: The initialization scheme, He et al. normal or Xavier normal are recommended.
     :param l2_strength:(weight decay) (float) L2 regularization parameter.
     :param bias: (float) Amount of bias. (if not float, it means pretrained bias)
     :return out: The output of the layer. (N, H', W', num_filters)
@@ -24,7 +24,7 @@ def __conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAM
         kernel_shape = [kernel_size[0], kernel_size[1], x.shape[-1], num_filters]
 
         with tf.name_scope('layer_weights'):
-            if w == None:
+            if w is None:
                 w = variable_with_weight_decay(kernel_shape, initializer, l2_strength)
             variable_summaries(w)
         with tf.name_scope('layer_biases'):
@@ -49,7 +49,7 @@ def __atrous_conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), paddi
     :param kernel_size: (integer tuple) The size of the convolving kernel.
     :param padding: (string) The amount of padding required.
     :param dilation_rate: (integer) The amount of dilation required. If equals 1, it means normal convolution.
-    :param initializer: (tf.contrib initializer) The initialization scheme, He et al. normal or Xavier normal are recommended.
+    :param initializer: The initialization scheme, He et al. normal or Xavier normal are recommended.
     :param l2_strength:(weight decay) (float) L2 regularization parameter.
     :param bias: (float) Amount of bias. (if not float, it means pretrained bias)
     :return out: The output of the layer. (N, H', W', num_filters)
@@ -58,7 +58,7 @@ def __atrous_conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), paddi
         kernel_shape = [kernel_size[0], kernel_size[1], x.shape[-1], num_filters]
 
         with tf.name_scope('layer_weights'):
-            if w == None:
+            if w is None:
                 w = variable_with_weight_decay(kernel_shape, initializer, l2_strength)
             variable_summaries(w)
         with tf.name_scope('layer_biases'):
@@ -90,7 +90,7 @@ def __conv2d_transpose_p(name, x, w=None, output_shape=None, kernel_size=(3, 3),
     with tf.variable_scope(name):
         stride = [1, stride[0], stride[1], 1]
         kernel_shape = [kernel_size[0], kernel_size[1], output_shape[-1], x.shape[-1]]
-        if w == None:
+        if w is None:
             w = get_deconv_filter(kernel_shape, l2_strength)
         variable_summaries(w)
         deconv = tf.nn.conv2d_transpose(x, w, tf.stack(output_shape), strides=stride, padding=padding)
@@ -109,7 +109,7 @@ def __depthwise_conv2d_p(name, x, w=None, kernel_size=(3, 3), padding='SAME', st
         kernel_shape = [kernel_size[0], kernel_size[1], x.shape[-1], 1]
 
         with tf.name_scope('layer_weights'):
-            if w == None:
+            if w is None:
                 w = variable_with_weight_decay(kernel_shape, initializer, l2_strength)
             variable_summaries(w)
         with tf.name_scope('layer_biases'):
@@ -132,14 +132,15 @@ def conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAME', 
     Note that: "is_training" should be passed by a correct value based on being in either training or testing.
     :param name: (string) The name scope provided by the upper tf.name_scope('name') as scope.
     :param x: (tf.tensor) The input to the layer (N, H, W, C).
+    :param w: (tf.tensor) pretrained weights (if None, it means no pretrained weights)
     :param num_filters: (integer) No. of filters (This is the output depth)
     :param kernel_size: (integer tuple) The size of the convolving kernel.
     :param padding: (string) The amount of padding required.
     :param stride: (integer tuple) The stride required.
-    :param initializer: (tf.contrib initializer) The initialization scheme, He et al. normal or Xavier normal are recommended.
+    :param initializer:The initialization scheme, He et al. normal or Xavier normal are recommended.
     :param l2_strength:(weight decay) (float) L2 regularization parameter.
     :param bias: (float) Amount of bias.
-    :param activation: (tf.graph operator) The activation function applied after the convolution operation. If None, linear is applied.
+    :param activation: The activation function applied after the convolution operation. If None, linear is applied.
     :param batchnorm_enabled: (boolean) for enabling batch normalization.
     :param max_pool_enabled:  (boolean) for enabling max-pooling 2x2 to decrease width and height by a factor of 2.
     :param dropout_keep_prob: (float) for the probability of keeping neurons. If equals -1, it means no dropout
@@ -186,18 +187,20 @@ def atrous_conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='
                   activation=None, batchnorm_enabled=False, max_pool_enabled=False, dropout_keep_prob=-1,
                   is_training=True):
     """
-    This block is responsible for a Dilated convolution 2D layer followed by optional (non-linearity, dropout, max-pooling).
+    This block is responsible for a Dilated convolution 2D layer followed by optional
+    (non-linearity, dropout, max-pooling).
     Note that: "is_training" should be passed by a correct value based on being in either training or testing.
     :param name: (string) The name scope provided by the upper tf.name_scope('name') as scope.
+    :param w: (tf.tensor) pretrained weights (if None, it means no pretrained weights)
     :param x: (tf.tensor) The input to the layer (N, H, W, C).
     :param num_filters: (integer) No. of filters (This is the output depth)
     :param kernel_size: (integer tuple) The size of the convolving kernel.
     :param padding: (string) The amount of padding required.
     :param dilation_rate: (integer) The amount of dilation required. If equals 1, it means normal convolution.
-    :param initializer: (tf.contrib initializer) The initialization scheme, He et al. normal or Xavier normal are recommended.
+    :param initializer: The initialization scheme, He et al. normal or Xavier normal are recommended.
     :param l2_strength:(weight decay) (float) L2 regularization parameter.
     :param bias: (float) Amount of bias.
-    :param activation: (tf.graph operator) The activation function applied after the convolution operation. If None, linear is applied.
+    :param activation: The activation function applied after the convolution operation. If None, linear is applied.
     :param batchnorm_enabled: (boolean) for enabling batch normalization.
     :param max_pool_enabled:  (boolean) for enabling max-pooling 2x2 to decrease width and height by a factor of 2.
     :param dropout_keep_prob: (float) for the probability of keeping neurons. If equals -1, it means no dropout
@@ -247,6 +250,7 @@ def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), pad
     This block is responsible for a convolution transpose 2D followed by optional (non-linearity, dropout, max-pooling).
     Note that: "is_training" should be passed by a correct value based on being in either training or testing.
     :param name: (string) The name scope provided by the upper tf.name_scope('name') as scope.
+    :param w: (tf.tensor) pretrained weights (if None, it means no pretrained weights)
     :param x: (tf.tensor) The input to the layer (N, H, W, C).
     :param output_shape: (Array) [N, H', W', C'] The shape of the corresponding output.
     :param kernel_size: (integer tuple) The size of the convolving kernel.
@@ -254,7 +258,7 @@ def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), pad
     :param stride: (integer tuple) The stride required.
     :param l2_strength:(weight decay) (float) L2 regularization parameter.
     :param bias: (float) Amount of bias.
-    :param activation: (tf.graph operator) The activation function applied after the convolution operation. If None, linear is applied.
+    :param activation: The activation function applied after the convolution operation. If None, linear is applied.
     :param batchnorm_enabled: (boolean) for enabling batch normalization.
     :param dropout_keep_prob: (float) for the probability of keeping neurons. If equals -1, it means no dropout
     :param is_training: (boolean) to diff. between training and testing (important for batch normalization and dropout)
@@ -346,7 +350,7 @@ def depthwise_separable_conv2d(name, x, w_depthwise=None, w_pointwise=None, widt
                                activation=None, batchnorm_enabled=True,
                                is_training=True):
     total_num_filters = int(round(num_filters * width_multiplier))
-    with tf.variable_scope(name) as scope:
+    with tf.variable_scope(name):
         conv_a = depthwise_conv2d('depthwise', x=x, w=w_depthwise, kernel_size=kernel_size, padding=padding,
                                   stride=stride,
                                   initializer=initializer, l2_strength=l2_strength, bias=biases[0],
