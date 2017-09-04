@@ -1,6 +1,5 @@
 import tensorflow as tf
 import numpy as np
-import pickle
 
 from layers.utils import variable_summaries, variable_with_weight_decay
 
@@ -24,9 +23,10 @@ class RESNET18:
         :param weight_decay:
         """
 
-        # # Load pretrained path
-        # self.pretrained_weights = np.load(pretrained_path, encoding='latin1').item()
-        # print('pretrained weights loaded')
+        # Load pretrained path
+        self.pretrained_weights = np.load(pretrained_path)
+        self.pretrained_weights = self.pretrained_weights.item()  # Load the dictionary
+        print('pretrained weights loaded')
 
         # init parameters and input
         self.x_input = x_input
@@ -35,6 +35,9 @@ class RESNET18:
         self.wd = weight_decay
 
         # All layers
+        self.resnet_mean = None
+        self.resnet_std = None
+        self.x_preprocessed = None
         self.conv1 = None
         self.conv2 = None
         self.conv3 = None
@@ -61,9 +64,9 @@ class RESNET18:
             self.x_preprocessed = (self.x_preprocessed - self.resnet_mean) / self.resnet_std
 
         # These variables to keep track of what i do
-        filters = [64, 64, 128, 256, 512]
-        kernels = [7, 3, 3, 3, 3]
-        strides = [2, 0, 2, 2, 2]
+        # filters = [64, 64, 128, 256, 512]
+        # kernels = [7, 3, 3, 3, 3]
+        # strides = [2, 0, 2, 2, 2]
 
         with tf.variable_scope('conv1_x'):
             print('Building unit: conv1')
@@ -98,6 +101,16 @@ class RESNET18:
             print('logits-shape: ' + str(self.score.shape.as_list()))
 
         print("\nEncoder RESNET is built successfully\n\n")
+
+    def load_pretrained_weights(self, sess):
+        print("Loading pretrained weights of resnet18")
+        all_vars = tf.trainable_variables()
+        all_vars += tf.get_collection('mu_sigma_bn')
+        for v in all_vars:
+            assign_op = v.assign(self.pretrained_weights[v.op.name])
+            sess.run(assign_op)
+            # print(v.op.name)
+        print("All pretrained weights of resnet18 is loaded")
 
     def _residual_block(self, name, x, filters, pool_first=False, strides=1):
         print('Building residual unit: %s' % name)
@@ -135,8 +148,9 @@ class RESNET18:
 
             return x
 
-    def _conv(self, name, x, num_filters=16, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
-              initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0):
+    @staticmethod
+    def _conv(name, x, num_filters=16, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
+              initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0):
 
         with tf.variable_scope(name):
             stride = [1, stride[0], stride[1], 1]
@@ -146,23 +160,18 @@ class RESNET18:
 
             variable_summaries(w)
 
-            if isinstance(bias, float):
-                bias = tf.get_variable('biases', [num_filters], initializer=tf.constant_initializer(bias))
-            variable_summaries(bias)
-
             conv = tf.nn.conv2d(x, w, stride, padding)
-            out = tf.nn.bias_add(conv, bias)
 
-            return out
+            return conv
 
-    def _relu(self, name, x):
+    @staticmethod
+    def _relu(name, x):
         with tf.variable_scope(name):
             return tf.nn.relu(x)
 
-    def _fc(self, name, x, output_dim=128,
-            initializer=tf.contrib.layers.xavier_initializer(),
-            l2_strength=0.0,
-            bias=0.0):
+    @staticmethod
+    def _fc(name, x, output_dim=128,
+            initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0):
 
         with tf.variable_scope(name):
             n_in = x.get_shape()[-1].value
@@ -187,13 +196,17 @@ class RESNET18:
 
             batch_mean, batch_var = tf.nn.moments(x, [0, 1, 2])
 
-            mu = tf.get_variable('mu', batch_mean.get_shape(), tf.float32,
+            mu = tf.get_variable('mu', batch_mean.shape, dtype=tf.float32,
                                  initializer=tf.zeros_initializer(), trainable=False)
-            sigma = tf.get_variable('sigma', batch_var.get_shape(), tf.float32,
+            tf.add_to_collection(tf.GraphKeys.GLOBAL_VARIABLES, mu)
+            tf.add_to_collection('mu_sigma_bn', mu)
+            sigma = tf.get_variable('sigma', batch_var.shape, dtype=tf.float32,
                                     initializer=tf.ones_initializer(), trainable=False)
-            beta = tf.get_variable('beta', batch_mean.get_shape(), tf.float32,
+            tf.add_to_collection(tf.GraphKeys.GLOBAL_VARIABLES, sigma)
+            tf.add_to_collection('mu_sigma_bn', sigma)
+            beta = tf.get_variable('beta', batch_mean.shape, dtype=tf.float32,
                                    initializer=tf.zeros_initializer())
-            gamma = tf.get_variable('gamma', batch_var.get_shape(), tf.float32,
+            gamma = tf.get_variable('gamma', batch_var.shape, dtype=tf.float32,
                                     initializer=tf.ones_initializer())
 
             # BN when training
