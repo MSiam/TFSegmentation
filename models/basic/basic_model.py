@@ -64,6 +64,10 @@ class BasicModel:
         self.global_epoch_input = None
         self.global_epoch_assign_op = None
         self.init_global_epoch()
+        # Init Best iou tensor
+        self.best_iou_tensor = None
+        self.best_iou_input = None
+        self.best_iou_assign_op = None
         #########################################
 
     def init_global_epoch(self):
@@ -136,3 +140,9 @@ class BasicModel:
             tf.summary.scalar('pixel_wise_accuracy', self.accuracy)
 
         self.merged_summaries = tf.summary.merge_all()
+
+        # Save the best iou on validation
+        self.best_iou_tensor = tf.Variable(0, trainable=False, name='best_iou')
+        self.best_iou_input = tf.placeholder('int32', None, name='best_iou_input')
+        self.best_iou_assign_op = self.best_iou_tensor.assign(self.best_iou_input)
+
