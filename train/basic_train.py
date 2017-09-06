@@ -32,6 +32,9 @@ class BasicTrain(object):
                                     keep_checkpoint_every_n_hours=10,
                                     save_relative_paths=True)
 
+        self.saver_best = tf.train.Saver(max_to_keep=1,
+                                         save_relative_paths=True)
+
         # Load from latest checkpoint if found
         self.load_model()
 
@@ -50,6 +53,15 @@ class BasicTrain(object):
         print("saving a checkpoint")
         self.saver.save(self.sess, self.args.checkpoint_dir, self.model.global_step_tensor)
         print("Saved a checkpoint")
+
+    def save_best_model(self):
+        """
+        Save Model Checkpoint
+        :return:
+        """
+        print("saving a checkpoint for the best model")
+        self.saver_best.save(self.sess, self.args.checkpoint_best_dir, self.model.global_step_tensor)
+        print("Saved a checkpoint for the best model")
 
     @timeit
     def load_model(self):

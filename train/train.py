@@ -35,8 +35,9 @@ class Train(BasicTrain):
         self.scalar_summary_tags = ['mean_iou_on_val',
                                     'train-loss-per-epoch', 'val-loss-per-epoch',
                                     'train-acc-per-epoch', 'val-acc-per-epoch']
-        self.images_summary_tags = [('train_prediction_sample', [None, self.params.img_height, self.params.img_width * 3, 3]),
-                                    ('val_prediction_sample', [None, self.params.img_height, self.params.img_width * 3, 3])]
+        self.images_summary_tags = [
+            ('train_prediction_sample', [None, self.params.img_height, self.params.img_width * 3, 3]),
+            ('val_prediction_sample', [None, self.params.img_height, self.params.img_width * 3, 3])]
 
         self.summary_tags = []
         self.summary_placeholders = {}
@@ -89,8 +90,9 @@ class Train(BasicTrain):
         print("Loading data..")
         self.train_data = {'X': np.load(self.args.data_dir + "X.npy"),
                            'Y': np.load(self.args.data_dir + "Y.npy")}
-        self.train_data_len = self.train_data['X'].shape[0]-self.train_data['X'].shape[0]%self.args.batch_size
-        self.num_iterations_training_per_epoch = (self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+        self.train_data_len = self.train_data['X'].shape[0] - self.train_data['X'].shape[0] % self.args.batch_size
+        self.num_iterations_training_per_epoch = (
+                                                     self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Train-shape-x -- " + str(self.train_data['X'].shape))
         print("Train-shape-y -- " + str(self.train_data['Y'].shape))
         print("Num of iterations in one epoch -- " + str(self.num_iterations_training_per_epoch))
@@ -145,7 +147,9 @@ class Train(BasicTrain):
         :return:
         """
         if summaries_dict is not None:
-            summary_list = self.sess.run([self.summary_ops[tag] for tag in summaries_dict.keys()], {self.summary_placeholders[tag]: value for tag, value in summaries_dict.items()})
+            summary_list = self.sess.run([self.summary_ops[tag] for tag in summaries_dict.keys()],
+                                         {self.summary_placeholders[tag]: value for tag, value in
+                                          summaries_dict.items()})
             for summary in summary_list:
                 self.summary_writer.add_summary(summary, step)
         if summaries_merged is not None:
@@ -156,9 +160,10 @@ class Train(BasicTrain):
         print("Loading Training data..")
         self.train_data = {'X': np.load(self.args.data_dir + "X_train.npy"),
                            'Y': np.load(self.args.data_dir + "Y_train.npy")}
-        self.train_data_len = self.train_data['X'].shape[0]-self.train_data['X'].shape[0]%self.args.batch_size
-        self.num_iterations_training_per_epoch = (self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
-        print("Train-shape-x -- " + str(self.train_data['X'].shape)+" "+str(self.train_data_len))
+        self.train_data_len = self.train_data['X'].shape[0] - self.train_data['X'].shape[0] % self.args.batch_size
+        self.num_iterations_training_per_epoch = (
+                                                     self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+        print("Train-shape-x -- " + str(self.train_data['X'].shape) + " " + str(self.train_data_len))
         print("Train-shape-y -- " + str(self.train_data['Y'].shape))
         print("Num of iterations on training data in one epoch -- " + str(self.num_iterations_training_per_epoch))
         print("Training data is loaded")
@@ -166,9 +171,10 @@ class Train(BasicTrain):
         print("Loading Validation data..")
         self.val_data = {'X': np.load(self.args.data_dir + "X_val.npy"),
                          'Y': np.load(self.args.data_dir + "Y_val.npy")}
-        self.val_data_len = self.val_data['X'].shape[0]-self.val_data['X'].shape[0]%self.args.batch_size
-        self.num_iterations_validation_per_epoch = (self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
-        print("Val-shape-x -- " + str(self.val_data['X'].shape)+" "+str(self.val_data_len))
+        self.val_data_len = self.val_data['X'].shape[0] - self.val_data['X'].shape[0] % self.args.batch_size
+        self.num_iterations_validation_per_epoch = (
+                                                       self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
+        print("Val-shape-x -- " + str(self.val_data['X'].shape) + " " + str(self.val_data_len))
         print("Val-shape-y -- " + str(self.val_data['Y'].shape))
         print("Num of iterations on validation data in one epoch -- " + str(self.num_iterations_validation_per_epoch))
         print("Validation data is loaded")
@@ -189,7 +195,7 @@ class Train(BasicTrain):
         print("Loading Testing data..")
         self.test_data = {'X': np.load(self.args.data_dir + "X_test.npy"),
                           'Y': np.load(self.args.data_dir + "Y_test.npy")}
-        self.test_data_len = self.test_data['X'].shape[0]-self.test_data['X'].shape[0]%self.args.batch_size
+        self.test_data_len = self.test_data['X'].shape[0] - self.test_data['X'].shape[0] % self.args.batch_size
         print("Test-shape-x -- " + str(self.test_data['X'].shape))
         print("Test-shape-y -- " + str(self.test_data['Y'].shape))
         self.num_iterations_testing_per_epoch = (self.test_data_len + self.args.batch_size - 1) // self.args.batch_size
@@ -254,7 +260,8 @@ class Train(BasicTrain):
         for cur_epoch in range(self.model.global_epoch_tensor.eval(self.sess) + 1, self.args.num_epochs + 1, 1):
 
             # init tqdm and get the epoch value
-            tt = tqdm(self.generator(), total=self.num_iterations_training_per_epoch, desc="epoch-" + str(cur_epoch) + "-")
+            tt = tqdm(self.generator(), total=self.num_iterations_training_per_epoch,
+                      desc="epoch-" + str(cur_epoch) + "-")
 
             # init the current iterations
             cur_iteration = 0
@@ -318,7 +325,8 @@ class Train(BasicTrain):
 
                     # print in console
                     tt.close()
-                    print("epoch-" + str(cur_epoch) + "-" + "loss:" + str(total_loss) + "-" + " acc:" + str(total_acc)[:6])
+                    print("epoch-" + str(cur_epoch) + "-" + "loss:" + str(total_loss) + "-" + " acc:" + str(total_acc)[
+                                                                                                        :6])
 
                     # Break the loop to finalize this epoch
                     break
@@ -345,7 +353,8 @@ class Train(BasicTrain):
         print("Validation at step:" + str(step) + " at epoch:" + str(epoch) + " ..")
 
         # init tqdm and get the epoch value
-        tt = tqdm(range(self.num_iterations_validation_per_epoch), total=self.num_iterations_validation_per_epoch, desc="Val-epoch-" + str(epoch) + "-")
+        tt = tqdm(range(self.num_iterations_validation_per_epoch), total=self.num_iterations_validation_per_epoch,
+                  desc="Val-epoch-" + str(epoch) + "-")
 
         # init acc and loss lists
         loss_list = []
@@ -356,6 +365,9 @@ class Train(BasicTrain):
 
         # reset metrics
         self.metrics.reset()
+
+        # get the maximum iou to compare with and save the best model
+        max_iou = self.model.best_iou.tensor.eval(self.sess)
 
         # loop by the number of iterations
         for cur_iteration in tt:
@@ -411,7 +423,15 @@ class Train(BasicTrain):
 
                 # print in console
                 tt.close()
-                print("Val-epoch-" + str(epoch) + "-" + "loss:" + str(total_loss) + "-" + "acc-" + str(total_acc)[:6] + "-mean_iou-" + str(mean_iou))
+                print("Val-epoch-" + str(epoch) + "-" + "loss:" + str(total_loss) + "-" +
+                      "acc:" + str(total_acc)[:6] + "-mean_iou:" + str(mean_iou))
+                if mean_iou > max_iou:
+                    print("This validation got a new best iou. so we will save this one")
+                    # save the best model
+                    self.save_best_model()
+                    # Set the new maximum
+                    self.model.best_iou_assign_op.eval(session=self.sess,
+                                                       feed_dict={self.model.best_iou_input: mean_iou})
 
                 # Break the loop to finalize this epoch
                 break
@@ -484,7 +504,8 @@ class Train(BasicTrain):
         for cur_epoch in range(self.model.global_epoch_tensor.eval(self.sess) + 1, self.args.num_epochs + 1, 1):
 
             # init tqdm and get the epoch value
-            tt = tqdm(self.generator(), total=self.num_iterations_training_per_epoch, desc="epoch-" + str(cur_epoch) + "-")
+            tt = tqdm(self.generator(), total=self.num_iterations_training_per_epoch,
+                      desc="epoch-" + str(cur_epoch) + "-")
 
             # init the current iterations
             cur_iteration = 0
