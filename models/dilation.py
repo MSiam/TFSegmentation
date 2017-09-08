@@ -6,7 +6,7 @@ from layers.dense import load_dense_layer
 import tensorflow as tf
 
 
-class VGG16Dilation(BasicModel):
+class Dilation(BasicModel):
     """
     FCN8s Model Architecture
     """
@@ -50,7 +50,19 @@ class VGG16Dilation(BasicModel):
 
         # Build Decoding part
         with tf.name_scope('dilation_2'):
-            self.conv5_3_dil = atrous_conv2d('conv5_3_dil', x=self.encoder.conv5_2, num_filters=512,
+            self.conv4_3_dil = conv2d('conv4_3_dil', x=self.encoder.conv4_2, num_filters=512,
+                                        kernel_size=(3, 3), activation= tf.nn.relu,
+                                        l2_strength=self.encoder.wd, is_training=self.is_training )
+
+            self.conv5_1_dil = atrous_conv2d('conv5_1_dil', x=self.conv4_3_dil, num_filters=512,
+                                             kernel_size=(3, 3), dilation_rate=2, activation=tf.nn.relu,
+                                             l2_strength=self.encoder.wd, is_training=self.is_training)
+
+            self.conv5_2_dil = atrous_conv2d('conv5_2_dil', x=self.conv5_1_dil, num_filters=512,
+                                             kernel_size=(3, 3), dilation_rate=2, activation=tf.nn.relu,
+                                             l2_strength=self.encoder.wd, is_training=self.is_training)
+
+            self.conv5_3_dil = atrous_conv2d('conv5_3_dil', x=self.conv5_2_dil, num_filters=512,
                                              kernel_size=(3, 3), dilation_rate=2, activation=tf.nn.relu,
                                              l2_strength=self.encoder.wd, is_training=self.is_training)
 
@@ -59,13 +71,13 @@ class VGG16Dilation(BasicModel):
                                          l2_strength=self.encoder.wd, dropout_keep_prob=0.5,
                                          is_training=self.is_training)
 
-            self.fc7 = load_dense_layer(self.encoder.reduced_flag, self.fc6_dil, 'fc7', self.encoder.pretrained_weights,
-                                        activation=tf.nn.relu, dropout=0.5,
-                                        train=self.is_training, l2_strength=self.encoder.wd)
+            self.fc7_dil = conv2d('fc7_dil', x=self.fc6_dil, num_filters=1024,
+                                        kernel_size=(1, 1), activation= tf.nn.relu, dropout_keep_prob=0.5,
+                                        l2_strength=self.encoder.wd, is_training=self.is_training )
 
-            self.score_fr = load_dense_layer(self.encoder.reduced_flag, self.fc7, 'score_fr',
-                                             self.encoder.pretrained_weights,
-                                             num_classes=self.params.num_classes, l2_strength=self.encoder.wd)
+            self.score_fr = conv2d('score_fr_dil', x=self.fc7_dil, num_filters=self.params.num_classes,
+                                        kernel_size=(1, 1), l2_strength=self.encoder.wd,
+                                        is_training=self.is_training )
 
         with tf.name_scope('upscore_8s'):
             self.upscore8 = conv2d_transpose('upscore8', x=self.score_fr,
