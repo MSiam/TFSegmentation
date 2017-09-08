@@ -8,6 +8,7 @@
 
 
 # FCN8sMobileNet experiment
-python3 main.py --load_config=fcn8s_mobilenet_exp_train.yaml overfit Train FCN8sMobileNet
+#python3 main.py --load_config=fcn8s_mobilenet_exp_train.yaml overfit Train FCN8sMobileNet
 
+# Dilation
 python main.py --load_config=dilation_exp_overfit.yaml train Train FCN8s
