@@ -9,7 +9,7 @@ from tqdm import tqdm
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
-
+import pdb
 
 class Train(BasicTrain):
     """
@@ -34,8 +34,8 @@ class Train(BasicTrain):
         self.scalar_summary_tags = ['mean_iou_on_val',
                                     'train-loss-per-epoch', 'val-loss-per-epoch',
                                     'train-acc-per-epoch', 'val-acc-per-epoch']
-        self.images_summary_tags = [('train_prediction_sample', [None, self.params.img_height, self.params.img_width * 3, 3]),
-                                    ('val_prediction_sample', [None, self.params.img_height, self.params.img_width * 3, 3])]
+        self.images_summary_tags = [('train_prediction_sample', [None, self.params.img_height, self.params.img_width * 2, 3]),
+                                    ('val_prediction_sample', [None, self.params.img_height, self.params.img_width * 2, 3])]
 
         self.summary_tags = []
         self.summary_placeholders = {}
@@ -383,6 +383,7 @@ class Train(BasicTrain):
             else:
 
                 # run the feed_forward
+                print('Entering here ')
                 out_argmax, loss, acc, summaries_merged, segmented_imgs = self.sess.run(
                     [self.model.out_argmax, self.model.loss, self.model.accuracy,
                      self.model.merged_summaries, self.model.segmented_summary],
@@ -453,7 +454,7 @@ class Train(BasicTrain):
             loss_list += [loss]
             acc_list += [acc]
             img_list += [segmented_imgs[0]]
-
+            pdb.set_trace()
             # log metrics
             self.metrics.update_metrics(out_argmax[0], y_batch[0], 0, 0)
 
