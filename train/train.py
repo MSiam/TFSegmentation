@@ -79,6 +79,7 @@ class Train(BasicTrain):
             self.train_data = None
             self.train_data_len = None
             self.num_iterations_training_per_epoch = None
+            self.num_iterations_validation_per_epoch = None
             self.load_overfit_data()
             self.generator = self.overfit_generator
         else:
@@ -95,12 +96,20 @@ class Train(BasicTrain):
         self.train_data = {'X': np.load(self.args.data_dir + "X.npy"),
                            'Y': np.load(self.args.data_dir + "Y.npy")}
         self.train_data_len = self.train_data['X'].shape[0] - self.train_data['X'].shape[0] % self.args.batch_size
-        self.num_iterations_training_per_epoch = (
-                                                     self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+        self.num_iterations_training_per_epoch = (self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Train-shape-x -- " + str(self.train_data['X'].shape))
         print("Train-shape-y -- " + str(self.train_data['Y'].shape))
         print("Num of iterations in one epoch -- " + str(self.num_iterations_training_per_epoch))
         print("Overfitting data is loaded")
+
+        print("Loading Validation data..")
+        self.val_data = self.train_data
+        self.val_data_len = self.val_data['X'].shape[0] - self.val_data['X'].shape[0] % self.args.batch_size
+        self.num_iterations_validation_per_epoch = (self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
+        print("Val-shape-x -- " + str(self.val_data['X'].shape) + " " + str(self.val_data_len))
+        print("Val-shape-y -- " + str(self.val_data['Y'].shape))
+        print("Num of iterations on validation data in one epoch -- " + str(self.num_iterations_validation_per_epoch))
+        print("Validation data is loaded")
 
     def overfit_generator(self):
         start = 0
@@ -369,7 +378,7 @@ class Train(BasicTrain):
         self.metrics.reset()
 
         # get the maximum iou to compare with and save the best model
-        max_iou = self.model.best_iou.tensor.eval(self.sess)
+        max_iou = self.model.best_iou_tensor.eval(self.sess)
 
         # loop by the number of iterations
         for cur_iteration in tt:
