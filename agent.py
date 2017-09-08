@@ -7,7 +7,10 @@ import tensorflow as tf
 from models import *
 from train import *
 from test import *
-
+from utils.misc import timeit
+import os
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   # see issue #152
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 class Agent:
     """
@@ -29,6 +32,12 @@ class Agent:
 
         self.sess = None
 
+    @timeit
+    def build_model(self):
+        self.model = self.model(self.args)
+        self.model.build()
+
+    @timeit
     def run(self):
         """
         Initiate the Graph, sess, model, operator
@@ -40,13 +49,12 @@ class Agent:
         tf.reset_default_graph()
 
         # Create the sess
-#        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
-        gpu_options = tf.GPUOptions(allow_growth=True)
+        # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
+        gpu_options = tf.GPUOptions(allow_growth=True)#, allow_soft_placement=True)
         self.sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
         # Create Model class and build it
-        self.model = self.model(self.args)
-        self.model.build()
+        self.build_model()
         # Create the operator
         self.operator = self.operator(self.args, self.sess, self.model)
 

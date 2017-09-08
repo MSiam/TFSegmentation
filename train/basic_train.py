@@ -4,6 +4,8 @@ The Basic class to train any Model
 
 import tensorflow as tf
 
+from utils.misc import timeit
+
 
 class BasicTrain(object):
     """
@@ -22,15 +24,26 @@ class BasicTrain(object):
         self.params = self.model.params
 
         # To initialize all variables
-        self.init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
-        self.sess.run(self.init)
+        self.init = None
+        self.init_model()
 
         # Create a saver object
-        self.saver = tf.train.Saver(max_to_keep=self.args.max_to_keep, keep_checkpoint_every_n_hours=10,
+        self.saver = tf.train.Saver(max_to_keep=self.args.max_to_keep,
+                                    keep_checkpoint_every_n_hours=10,
                                     save_relative_paths=True)
 
+        self.saver_best = tf.train.Saver(max_to_keep=1,
+                                         save_relative_paths=True)
+
         # Load from latest checkpoint if found
-        self.load_model(model)
+        self.load_model()
+
+    @timeit
+    def init_model(self):
+        print("Initializing the variables of the model")
+        self.init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
+        self.sess.run(self.init)
+        print("Initialization finished")
 
     def save_model(self):
         """
@@ -41,24 +54,35 @@ class BasicTrain(object):
         self.saver.save(self.sess, self.args.checkpoint_dir, self.model.global_step_tensor)
         print("Saved a checkpoint")
 
-    def load_model(self, model):
+    def save_best_model(self):
+        """
+        Save Model Checkpoint
+        :return:
+        """
+        print("saving a checkpoint for the best model")
+        self.saver_best.save(self.sess, self.args.checkpoint_best_dir, self.model.global_step_tensor)
+        print("Saved a checkpoint for the best model")
+
+    @timeit
+    def load_model(self):
         """
         Load the latest checkpoint
         :return:
         """
         try:
             # This is for loading the pretrained weights if they can't be loaded during initialization.
-            model.encoder.load_pretrained_weights(self.sess)
+            self.model.encoder.load_pretrained_weights(self.sess)
         except AttributeError:
             pass
 
+        print("Searching for a checkpoint")
         latest_checkpoint = tf.train.latest_checkpoint(self.args.checkpoint_dir)
         if latest_checkpoint:
             print("Loading model checkpoint {} ...\n".format(latest_checkpoint))
             self.saver.restore(self.sess, latest_checkpoint)
             print("Model loaded from the latest checkpoint\n")
         else:
-            print("\n.. First time to train ..\n")
+            print("\n.. No ckpt, SO First time to train :D ..\n")
 
     def train(self):
         raise NotImplementedError("train function is not implemented in the trainer")
