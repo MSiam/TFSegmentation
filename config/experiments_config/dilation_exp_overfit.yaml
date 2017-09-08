@@ -1,11 +1,11 @@
 # Directories arguments
-data_dir: "full_cityscapes"
+data_dir: "174_imgs_for_test_n_overfit"
 exp_dir:  "dilation_exp_test"
 out_dir:  "dilation_exp_test"
 
 # Data arguments
-img_height:   512
-img_width:    1024
+img_height:   256
+img_width:    512
 num_channels: 3
 num_classes:  20
 

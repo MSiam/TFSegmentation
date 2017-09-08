@@ -9,8 +9,9 @@ from utils.misc import timeit
 from tqdm import tqdm
 import numpy as np
 import tensorflow as tf
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-
 
 class Train(BasicTrain):
     """
