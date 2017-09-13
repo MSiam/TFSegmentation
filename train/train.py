@@ -9,7 +9,11 @@ from utils.misc import timeit
 from tqdm import tqdm
 import numpy as np
 import tensorflow as tf
+import matplotlib
 import matplotlib.pyplot as plt
+import pdb
+
+matplotlib.use('Agg')
 
 
 class Train(BasicTrain):
@@ -36,8 +40,8 @@ class Train(BasicTrain):
                                     'train-loss-per-epoch', 'val-loss-per-epoch',
                                     'train-acc-per-epoch', 'val-acc-per-epoch']
         self.images_summary_tags = [
-            ('train_prediction_sample', [None, self.params.img_height, self.params.img_width * 3, 3]),
-            ('val_prediction_sample', [None, self.params.img_height, self.params.img_width * 3, 3])]
+            ('train_prediction_sample', [None, self.params.img_height, self.params.img_width * 2, 3]),
+            ('val_prediction_sample', [None, self.params.img_height, self.params.img_width * 2, 3])]
 
         self.summary_tags = []
         self.summary_placeholders = {}
@@ -161,8 +165,7 @@ class Train(BasicTrain):
         self.train_data = {'X': np.load(self.args.data_dir + "X_train.npy"),
                            'Y': np.load(self.args.data_dir + "Y_train.npy")}
         self.train_data_len = self.train_data['X'].shape[0] - self.train_data['X'].shape[0] % self.args.batch_size
-        self.num_iterations_training_per_epoch = (
-                                                     self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+        self.num_iterations_training_per_epoch = (self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Train-shape-x -- " + str(self.train_data['X'].shape) + " " + str(self.train_data_len))
         print("Train-shape-y -- " + str(self.train_data['Y'].shape))
         print("Num of iterations on training data in one epoch -- " + str(self.num_iterations_training_per_epoch))
@@ -172,8 +175,7 @@ class Train(BasicTrain):
         self.val_data = {'X': np.load(self.args.data_dir + "X_val.npy"),
                          'Y': np.load(self.args.data_dir + "Y_val.npy")}
         self.val_data_len = self.val_data['X'].shape[0] - self.val_data['X'].shape[0] % self.args.batch_size
-        self.num_iterations_validation_per_epoch = (
-                                                       self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
+        self.num_iterations_validation_per_epoch = (self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Val-shape-x -- " + str(self.val_data['X'].shape) + " " + str(self.val_data_len))
         print("Val-shape-y -- " + str(self.val_data['Y'].shape))
         print("Num of iterations on validation data in one epoch -- " + str(self.num_iterations_validation_per_epoch))
