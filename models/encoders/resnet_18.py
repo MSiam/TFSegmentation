@@ -100,6 +100,8 @@ class RESNET18:
             self.score = self._fc('logits_dense', self.score, output_dim=self.num_classes, l2_strength=self.wd)
             print('logits-shape: ' + str(self.score.shape.as_list()))
 
+        self.feed1 = self.conv4
+        self.feed2 = self.conv3
         print("\nEncoder RESNET is built successfully\n\n")
 
     def load_pretrained_weights(self, sess):
