@@ -179,7 +179,7 @@ class Onavos():
                                     filter_size=[[1, 1], [3, 3], [1, 1]], dilations=[1, 4, 1])
 
         conv1 = tf.layers.batch_normalization(res16, axis=-1, momentum=0.95, epsilon=1e-5,
-                                              training=self.is_training, name='con1/bn')
+                                              training=self.is_training, name='conv1/bn')
         conv1 = tf.layers.conv2d(conv1, 512, 3, dilation_rate=12, kernel_regularizer=self.regularizer,
                                  padding='SAME', name='conv1')
         conv1 = tf.nn.relu(conv1)
@@ -195,4 +195,5 @@ sess = tf.Session()
 
 model = Onavos()
 
-print(tf.trainable_variables())
+for var in tf.trainable_variables():
+    print(var.name)
