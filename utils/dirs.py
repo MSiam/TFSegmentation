@@ -28,11 +28,13 @@ def create_exp_dirs(args):
     args.out_dir = os.path.realpath(os.getcwd()) + "/out/" + args.out_dir + "/"
     args.summary_dir = args.exp_dir + 'summaries/'
     args.checkpoint_dir = args.exp_dir + 'checkpoints/'
+    args.checkpoint_best_dir = args.exp_dir + 'checkpoints/best/'
     args.npy_dir = args.out_dir + 'npy/'
     args.metrics_dir = args.out_dir + 'metrics/'
     args.imgs_dir = args.out_dir + 'imgs/'
 
     dirs_to_be_created = [args.checkpoint_dir,
+                          args.checkpoint_best_dir,
                           args.summary_dir,
                           args.npy_dir,
                           args.metrics_dir,
