@@ -34,8 +34,8 @@ class Train(BasicTrain):
         self.scalar_summary_tags = ['mean_iou_on_val',
                                     'train-loss-per-epoch', 'val-loss-per-epoch',
                                     'train-acc-per-epoch', 'val-acc-per-epoch']
-        self.images_summary_tags = [('train_prediction_sample', [None, self.params.img_height, self.params.img_width * 3, 3]),
-                                    ('val_prediction_sample', [None, self.params.img_height, self.params.img_width * 3, 3])]
+        self.images_summary_tags = [('train_prediction_sample', [None, self.params.img_height, self.params.img_width * 2, 3]),
+                                    ('val_prediction_sample', [None, self.params.img_height, self.params.img_width * 2, 3])]
 
         self.summary_tags = []
         self.summary_placeholders = {}
