@@ -51,7 +51,8 @@ class Onavos():
                 else:
                     res = tf.layers.conv2d(curr, n_features[-1], 1, kernel_regularizer=self.regularizer,
                                            use_bias=False, padding='SAME', name='conv0')
-
+            else:
+                res = inputs
             if dilations is None:
                 curr = tf.layers.conv2d(curr, n_features[0], filter_size[0], strides=strides[0],
                                         kernel_regularizer=self.regularizer, use_bias=False, padding='SAME', name='conv1')
@@ -60,8 +61,9 @@ class Onavos():
                                         kernel_regularizer=self.regularizer, use_bias=False, padding='SAME', name='conv1')
 
             for idx in range(1, n_convs):
-                curr = tf.layers.batch_normalization(inputs, axis=-1, momentum=batch_norm_decay, epsilon=1e-5,
+                curr = tf.layers.batch_normalization(curr, axis=-1, momentum=batch_norm_decay, epsilon=1e-5,
                                                      training=self.is_training, name='bn' + str(idx))
+
                 if activation is not None:
                     curr = activation(curr)
 
@@ -77,7 +79,7 @@ class Onavos():
             curr = curr + res
             return curr
 
-    def segmentation_softmax(self, name, inp, targets, n_classes, void_label, tower_setup, filter_size=(1, 1),
+    def segmentation_softmax(self, name, inp, targets, n_classes, void_label, filter_size=(1, 1),
                              input_activation=None, dilation=None, resize_targets=False, resize_logits=False, loss="ce",
                              fraction=None):
         n_features_inp = int(inp.get_shape()[-1])
@@ -86,9 +88,6 @@ class Onavos():
         with tf.variable_scope(name):
             if input_activation is not None:
                 inp = input_activation(inp)
-
-            if self.n_classes_current is None:
-                self.n_classes_current = n_classes
 
             if dilation is None:
                 y_pred = tf.layers.conv2d(inp, n_classes, filter_size[0], kernel_regularizer=self.regularizer,
@@ -117,7 +116,7 @@ class Onavos():
             else:
                 no_void_label_mask = None
 
-            self.loss = self.create_loss(loss, fraction, no_void_label_mask, targets, tower_setup, void_label, y_pred)
+            self.loss = self.create_loss(loss, fraction, no_void_label_mask, targets, void_label, y_pred)
 
     def bootstrapped_ce_loss(self, ce, fraction):
         # only consider k worst pixels (lowest posterior probability) per image
@@ -131,13 +130,13 @@ class Onavos():
         bs_ce = tf.reduce_sum(bs_ce, axis=0)
         return bs_ce
 
-    def create_loss(self, loss_str, fraction, no_void_label_mask, targets, tower_setup, void_label, y_pred):
+    def create_loss(self, loss_str, fraction, no_void_label_mask, targets, void_label, y_pred):
         ce = None
         if "ce" in loss_str:
             ce = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=y_pred, labels=targets, name="ce")
 
             if void_label is not None:
-                mask = tf.cast(no_void_label_mask, tower_setup.dtype)
+                mask = tf.cast(no_void_label_mask, tf.float32)
                 ce *= mask
         if loss_str == "ce":
             ce = tf.reduce_mean(ce, axis=[1, 2])
@@ -185,8 +184,8 @@ class Onavos():
                                  padding='SAME', name='conv1')
         conv1 = tf.nn.relu(conv1)
 
-        self.segmentation_softmax('output', conv1, self.label_placeholder, 2, filter_size=(3, 3), input_activation=tf.nn.relu,
-                                  dilation=12, resize_targets=True, loss="bootstrapped_ce", )
+        self.segmentation_softmax('output', conv1, self.label_placeholder, 2, None, filter_size=(3, 3), input_activation=tf.nn.relu,
+                                  dilation=12, resize_targets=True, loss="bootstrapped_ce", fraction=0.25)
 
 
 tf.reset_default_graph()
@@ -196,3 +195,4 @@ sess = tf.Session()
 
 model = Onavos()
 
+print(tf.trainable_variables())
