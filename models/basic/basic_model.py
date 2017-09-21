@@ -145,6 +145,6 @@ class BasicModel:
         self.merged_summaries = tf.summary.merge_all()
 
         # Save the best iou on validation
-        self.best_iou_tensor = tf.Variable(0, trainable=False, name='best_iou')
+        self.best_iou_tensor = tf.Variable(0.0, trainable=False, name='best_iou')
         self.best_iou_input = tf.placeholder('float32', None, name='best_iou_input')
         self.best_iou_assign_op = self.best_iou_tensor.assign(self.best_iou_input)
