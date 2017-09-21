@@ -1,21 +1,26 @@
 from models.basic.basic_model import BasicModel
 import tensorflow as tf
 import numpy as np
+import pickle
+import matplotlib.pyplot as plt
 
 MAX_ADJUSTABLE_CLASSES = 100  # max 100 objects per sequence should be sufficient
 
 
 class Onavos():
-    def __init__(self):
+    def __init__(self, sess):
         # super.__init__(args)
         # self.args = args
+        self.sess = sess
         self.regularizer = tf.contrib.layers.l2_regularizer(scale=1e-4)
         self.init_input()
         self.build()
 
+        init = tf.global_variables_initializer()
+        self.sess.run(init)
     def init_input(self):
-        self.img_placeholder = tf.placeholder(tf.float32, shape=(None, 200, 200, 3), name="img_placeholder")
-        self.label_placeholder = tf.placeholder(tf.uint8, shape=(None, 200, 200, 1), name="label_placeholder")
+        self.img_placeholder = tf.placeholder(tf.float32, shape=(None, 480, 854, 3), name="img_placeholder")
+        self.label_placeholder = tf.placeholder(tf.uint8, shape=(None, 480, 854, 1), name="label_placeholder")
         self.tag_placeholder = tf.placeholder(tf.string, shape=(), name="tag_placeholder")
         self.is_training = tf.placeholder(tf.bool)
 
@@ -46,7 +51,8 @@ class Onavos():
 
             if (n_features[-1] != n_features_inp) or (strides_res != [1, 1]):
                 if dilations is None:
-                    res = tf.layers.conv2d(curr, n_features[-1], 1, strides=strides_res, kernel_regularizer=self.regularizer,
+                    res = tf.layers.conv2d(curr, n_features[-1], 1, strides=strides_res,
+                                           kernel_regularizer=self.regularizer,
                                            use_bias=False, padding='SAME', name='conv0')
                 else:
                     res = tf.layers.conv2d(curr, n_features[-1], 1, kernel_regularizer=self.regularizer,
@@ -55,10 +61,12 @@ class Onavos():
                 res = inputs
             if dilations is None:
                 curr = tf.layers.conv2d(curr, n_features[0], filter_size[0], strides=strides[0],
-                                        kernel_regularizer=self.regularizer, use_bias=False, padding='SAME', name='conv1')
+                                        kernel_regularizer=self.regularizer, use_bias=False, padding='SAME',
+                                        name='conv1')
             else:
                 curr = tf.layers.conv2d(curr, n_features[0], filter_size[0], dilation_rate=dilations[0],
-                                        kernel_regularizer=self.regularizer, use_bias=False, padding='SAME', name='conv1')
+                                        kernel_regularizer=self.regularizer, use_bias=False, padding='SAME',
+                                        name='conv1')
 
             for idx in range(1, n_convs):
                 curr = tf.layers.batch_normalization(curr, axis=-1, momentum=batch_norm_decay, epsilon=1e-5,
@@ -102,7 +110,7 @@ class Onavos():
             if resize_logits:
                 y_pred = tf.image.resize_images(y_pred, tf.shape(targets)[1:3])
 
-            pred = tf.argmax(y_pred, axis=3)
+            self.pred = tf.argmax(y_pred, axis=3)
             targets = tf.cast(targets, tf.int64)
             targets = tf.squeeze(targets, axis=3)
 
@@ -179,20 +187,72 @@ class Onavos():
                                     filter_size=[[1, 1], [3, 3], [1, 1]], dilations=[1, 4, 1])
 
         conv1 = tf.layers.batch_normalization(res16, axis=-1, momentum=0.95, epsilon=1e-5,
-                                              training=self.is_training, name='con1/bn')
+                                              training=self.is_training, name='conv1/bn')
         conv1 = tf.layers.conv2d(conv1, 512, 3, dilation_rate=12, kernel_regularizer=self.regularizer,
                                  padding='SAME', name='conv1')
         conv1 = tf.nn.relu(conv1)
 
-        self.segmentation_softmax('output', conv1, self.label_placeholder, 2, None, filter_size=(3, 3), input_activation=tf.nn.relu,
+        self.segmentation_softmax('output', conv1, self.label_placeholder, 2, None, filter_size=(3, 3),
+                                  input_activation=tf.nn.relu,
                                   dilation=12, resize_targets=True, loss="bootstrapped_ce", fraction=0.25)
 
+    def load_weights(self, model_path):
+        with open(model_path, 'rb') as output:
+            loaded_weights = pickle.load(output, encoding='latin1')
+            loaded_model_names = []
 
-tf.reset_default_graph()
-tf.logging.set_verbosity(tf.logging.INFO)
+            for name, v in loaded_weights.items():
+                if name == 'global_step:0':
+                    continue
+                loaded_model_names.append(name)
+            model_weights = {}
+            model_names = []
 
-sess = tf.Session()
+            model_trainables_vars = tf.all_variables()
+            for i in range(len(model_trainables_vars)):
+                name = model_trainables_vars[i].name
+                name = name.replace('kernel', 'W')
+                name = name.replace('bn', 'zbn')
+                model_names.append(name)
+                model_weights[model_trainables_vars[i].name] = model_trainables_vars[i]
 
-model = Onavos()
+            loaded_model_names = sorted(loaded_model_names)
+            model_names = sorted(model_names)
 
-print(tf.trainable_variables())
+            for i in range(len(loaded_model_names)):
+                print(i)
+                name=model_names[i]
+                name = name.replace('W','kernel')
+                name = name.replace('zbn', 'bn')
+                assign_op = model_weights[name].assign(loaded_weights[loaded_model_names[i]])
+                self.sess.run(assign_op)
+        print("loading weights done")
+
+    def test(self,img,train):
+        feed_dict = {self.img_placeholder: img, self.is_training: train}
+        out=self.sess.run(self.outputs,feed_dict)
+        return out
+def main(_):
+    with tf.device("cpu"):
+        from scipy.ndimage import  imread
+        im = imread("../0.jpg")
+        im=im/255
+        print(im.shape)
+
+        tf.reset_default_graph()
+        tf.logging.set_verbosity(tf.logging.INFO)
+
+        init = tf.global_variables_initializer()
+
+        sess = tf.Session()
+        sess.run(init)
+
+        model = Onavos(sess)
+        model.load_weights('../model.pkl')
+        out=model.test(im.reshape((1,480,854,3)),False)
+        plt.imsave('test',out[0][0,:,:,0],cmap='gray')
+        print(out[0].shape)
+        print(out)
+if __name__ == '__main__':
+  tf.app.run(main)
+
