@@ -1,12 +1,12 @@
 from models.basic.basic_model import BasicModel
 from models.encoders.VGG import VGG16
 from models.encoders.mobilenet import MobileNet
-from layers.convolution import conv2d_transpose, conv2d
+from layers.convolution import conv2d_transpose, conv2d, atrous_conv2d
 
 import tensorflow as tf
 
 
-class FCN8sMobileNet(BasicModel):
+class DilationMobileNet(BasicModel):
     """
     FCN8s with MobileNet as an encoder Model Architecture
     """
@@ -16,13 +16,6 @@ class FCN8sMobileNet(BasicModel):
         # init encoder
         self.encoder = None
         # init network layers
-        self.upscore2 = None
-        self.score_feed1 = None
-        self.fuse_feed1 = None
-        self.upscore4 = None
-        self.score_feed2 = None
-        self.fuse_feed2 = None
-        self.upscore8 = None
 
     def build(self):
         print("\nBuilding the MODEL...")
