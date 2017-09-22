@@ -9,6 +9,7 @@ class MobileNet:
     MobileNet Class
     """
 
+    MEAN = [103.939, 116.779, 123.68]
     def __init__(self, x_input,
                  num_classes,
                  pretrained_path,
@@ -62,7 +63,16 @@ class MobileNet:
     def encoder_build(self):
         print("Building the MobileNet..")
         with tf.variable_scope('mobilenet_encoder'):
-            self.conv1_1 = conv2d('conv_1', self.x_input, num_filters=int(round(32 * self.width_multiplier)),
+            with tf.name_scope('Pre_Processing'):
+                red, green, blue = tf.split(self.x_input, num_or_size_splits=3, axis=3)
+                preprocessed_input = tf.concat([
+                    (blue - MobileNet.MEAN[0])/255.0,
+                    (green - MobileNet.MEAN[1])/255.0,
+                    (red - MobileNet.MEAN[2])/255.0,
+                ], 3)
+
+
+            self.conv1_1 = conv2d('conv_1', preprocessed_input, num_filters=int(round(32 * self.width_multiplier)),
                                   kernel_size=(3, 3),
                                   padding='SAME', stride=(2, 2), activation=tf.nn.relu, batchnorm_enabled=True,
                                   is_training=self.train_flag, l2_strength=self.wd)
