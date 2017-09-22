@@ -1,7 +1,7 @@
 # Directories arguments
 data_dir: "full_cityscapes"
-exp_dir:  "fcn8s_mobilenet_exp"
-out_dir:  "fcn8s_mobilenet_exp"
+exp_dir:  "dilation_exp_test"
+out_dir:  "dilation_exp_test"
 
 # Data arguments
 img_height:   512
@@ -11,7 +11,7 @@ num_classes:  20
 
 # Train arguments
 num_epochs: 200
-batch_size: 8
+batch_size: 5
 shuffle: True
 data_mode: "experiment"
 save_every: 5
@@ -21,7 +21,7 @@ max_to_keep: 5
 # Models arguments
 learning_rate:   0.0001
 weight_decay: 0.0005
-pretrained_path: "pretrained_weights/mobilenet_v1.pkl"
+pretrained_path: "pretrained_weights/vgg16.npy"
 
 # Misc arguments
 verbose: False
