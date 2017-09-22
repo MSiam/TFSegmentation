@@ -9,6 +9,7 @@ class MobileNet:
     MobileNet Class
     """
 
+    MEAN = [103.939, 116.779, 123.68]
     def __init__(self, x_input,
                  num_classes,
                  pretrained_path,
@@ -62,7 +63,16 @@ class MobileNet:
     def encoder_build(self):
         print("Building the MobileNet..")
         with tf.variable_scope('mobilenet_encoder'):
-            self.conv1_1 = conv2d('conv_1', self.x_input, num_filters=int(round(32 * self.width_multiplier)),
+            with tf.name_scope('Pre_Processing'):
+                red, green, blue = tf.split(self.x_input, num_or_size_splits=3, axis=3)
+                preprocessed_input = tf.concat([
+                    (blue - MobileNet.MEAN[0])/255.0,
+                    (green - MobileNet.MEAN[1])/255.0,
+                    (red - MobileNet.MEAN[2])/255.0,
+                ], 3)
+
+
+            self.conv1_1 = conv2d('conv_1', preprocessed_input, num_filters=int(round(32 * self.width_multiplier)),
                                   kernel_size=(3, 3),
                                   padding='SAME', stride=(2, 2), activation=tf.nn.relu, batchnorm_enabled=True,
                                   is_training=self.train_flag, l2_strength=self.wd)
@@ -70,88 +80,88 @@ class MobileNet:
             self.conv2_1 = depthwise_separable_conv2d('conv_ds_2', self.conv1_1, width_multiplier=self.width_multiplier,
                                                       num_filters=64, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
                                                       batchnorm_enabled=True, is_training=self.train_flag,
-                                                      l2_strength=self.wd)
+                                                      l2_strength=self.wd, activation= tf.nn.relu)
             self._debug(self.conv2_1)
             self.conv2_2 = depthwise_separable_conv2d('conv_ds_3', self.conv2_1, width_multiplier=self.width_multiplier,
                                                       num_filters=128, kernel_size=(3, 3), padding='SAME',
-                                                      stride=(2, 2),
+                                                      stride=(2, 2), activation= tf.nn.relu,
                                                       batchnorm_enabled=True, is_training=self.train_flag,
                                                       l2_strength=self.wd)
             self._debug(self.conv2_2)
             self.conv3_1 = depthwise_separable_conv2d('conv_ds_4', self.conv2_2, width_multiplier=self.width_multiplier,
                                                       num_filters=128, kernel_size=(3, 3), padding='SAME',
-                                                      stride=(1, 1),
+                                                      stride=(1, 1), activation=tf.nn.relu,
                                                       batchnorm_enabled=True, is_training=self.train_flag,
                                                       l2_strength=self.wd)
             self._debug(self.conv3_1)
             self.conv3_2 = depthwise_separable_conv2d('conv_ds_5', self.conv3_1, width_multiplier=self.width_multiplier,
                                                       num_filters=256, kernel_size=(3, 3), padding='SAME',
-                                                      stride=(2, 2),
+                                                      stride=(2, 2), activation= tf.nn.relu,
                                                       batchnorm_enabled=True, is_training=self.train_flag,
                                                       l2_strength=self.wd)
             self._debug(self.conv3_2)
             self.conv4_1 = depthwise_separable_conv2d('conv_ds_6', self.conv3_2, width_multiplier=self.width_multiplier,
                                                       num_filters=256, kernel_size=(3, 3), padding='SAME',
-                                                      stride=(1, 1),
+                                                      stride=(1, 1), activation= tf.nn.relu,
                                                       batchnorm_enabled=True, is_training=self.train_flag,
                                                       l2_strength=self.wd)
             self._debug(self.conv4_1)
             self.conv4_2 = depthwise_separable_conv2d('conv_ds_7', self.conv4_1, width_multiplier=self.width_multiplier,
                                                       num_filters=512, kernel_size=(3, 3), padding='SAME',
-                                                      stride=(2, 2),
+                                                      stride=(2, 2), activation= tf.nn.relu,
                                                       batchnorm_enabled=True, is_training=self.train_flag,
                                                       l2_strength=self.wd)
             self._debug(self.conv4_2)
             self.conv5_1 = depthwise_separable_conv2d('conv_ds_8', self.conv4_2, width_multiplier=self.width_multiplier,
                                                       num_filters=512, kernel_size=(3, 3), padding='SAME',
-                                                      stride=(1, 1),
+                                                      stride=(1, 1), activation= tf.nn.relu,
                                                       batchnorm_enabled=True, is_training=self.train_flag,
                                                       l2_strength=self.wd)
             self._debug(self.conv5_1)
             self.conv5_2 = depthwise_separable_conv2d('conv_ds_9', self.conv5_1, width_multiplier=self.width_multiplier,
                                                       num_filters=512, kernel_size=(3, 3), padding='SAME',
-                                                      stride=(1, 1),
+                                                      stride=(1, 1), activation= tf.nn.relu,
                                                       batchnorm_enabled=True, is_training=self.train_flag,
                                                       l2_strength=self.wd)
             self._debug(self.conv5_2)
             self.conv5_3 = depthwise_separable_conv2d('conv_ds_10', self.conv5_2,
                                                       width_multiplier=self.width_multiplier,
                                                       num_filters=512, kernel_size=(3, 3), padding='SAME',
-                                                      stride=(1, 1),
+                                                      stride=(1, 1), activation= tf.nn.relu,
                                                       batchnorm_enabled=True, is_training=self.train_flag,
                                                       l2_strength=self.wd)
             self._debug(self.conv5_3)
             self.conv5_4 = depthwise_separable_conv2d('conv_ds_11', self.conv5_3,
                                                       width_multiplier=self.width_multiplier,
                                                       num_filters=512, kernel_size=(3, 3), padding='SAME',
-                                                      stride=(1, 1),
+                                                      stride=(1, 1), activation= tf.nn.relu,
                                                       batchnorm_enabled=True, is_training=self.train_flag,
                                                       l2_strength=self.wd)
             self._debug(self.conv5_4)
             self.conv5_5 = depthwise_separable_conv2d('conv_ds_12', self.conv5_4,
                                                       width_multiplier=self.width_multiplier,
                                                       num_filters=512, kernel_size=(3, 3), padding='SAME',
-                                                      stride=(1, 1),
+                                                      stride=(1, 1), activation= tf.nn.relu,
                                                       batchnorm_enabled=True, is_training=self.train_flag,
                                                       l2_strength=self.wd)
             self._debug(self.conv5_5)
             self.conv5_6 = depthwise_separable_conv2d('conv_ds_13', self.conv5_5,
                                                       width_multiplier=self.width_multiplier,
                                                       num_filters=1024, kernel_size=(3, 3), padding='SAME',
-                                                      stride=(2, 2),
+                                                      stride=(2, 2), activation= tf.nn.relu,
                                                       batchnorm_enabled=True, is_training=self.train_flag,
                                                       l2_strength=self.wd)
             self._debug(self.conv5_6)
             self.conv6_1 = depthwise_separable_conv2d('conv_ds_14', self.conv5_6,
                                                       width_multiplier=self.width_multiplier,
                                                       num_filters=1024, kernel_size=(3, 3), padding='SAME',
-                                                      stride=(1, 1),
+                                                      stride=(1, 1), activation=tf.nn.relu,
                                                       batchnorm_enabled=True, is_training=self.train_flag,
                                                       l2_strength=self.wd)
             self._debug(self.conv6_1)
             # Pooling is removed.
             self.score_fr = conv2d('conv_1c_1x1', self.conv6_1, num_filters=self.num_classes, l2_strength=self.wd,
-                                   kernel_size=(1, 1), batchnorm_enabled=True)
+                        kernel_size=(1, 1), batchnorm_enabled=True)
 
             self._debug(self.score_fr)
             self.feed1 = self.conv4_2
