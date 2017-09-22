@@ -6,7 +6,7 @@ from layers.convolution import conv2d_transpose, conv2d, atrous_conv2d
 import tensorflow as tf
 
 
-class DilationMobileNet(BasicModel):
+class FCN8sMobileNet(BasicModel):
     """
     FCN8s with MobileNet as an encoder Model Architecture
     """
