@@ -139,7 +139,7 @@ class MobileNet:
 
             # Pooling is removed.
             self.score_fr = conv2d('conv_1c_1x1', self.conv6_1, num_filters=self.num_classes, l2_strength=self.wd,
-                                   kernel_size=(1, 1))
+                                   kernel_size=(1, 1), batchnorm_enabled= True)
             self.feed1 = self.conv4_2
             self.feed2 = self.conv3_2
 
