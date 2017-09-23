@@ -104,5 +104,5 @@ class LinkNET(BasicModel):
         kernel_shape = [kernel_size[0], kernel_size[1], out_channels, x.shape.as_list()[-1]]
         w = get_deconv_filter(kernel_shape, self.args.weight_decay)
         variable_summaries(w)
-        out = tf.nn.conv2d_transpose(x, w, tf.stack(output_shape), strides=stride, padding="same")
+        out = tf.nn.conv2d_transpose(x, w, tf.stack(output_shape), strides=stride, padding="SAME")
         return out
