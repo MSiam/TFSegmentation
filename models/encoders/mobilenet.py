@@ -10,6 +10,7 @@ class MobileNet:
     """
 
     MEAN = [103.939, 116.779, 123.68]
+
     def __init__(self, x_input,
                  num_classes,
                  pretrained_path,
@@ -70,7 +71,6 @@ class MobileNet:
                     (green - MobileNet.MEAN[1])/255.0,
                     (red - MobileNet.MEAN[2])/255.0,
                 ], 3)
-
 
             self.conv1_1 = conv2d('conv_1', preprocessed_input, num_filters=int(round(32 * self.width_multiplier)),
                                   kernel_size=(3, 3),
