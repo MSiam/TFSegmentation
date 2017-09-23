@@ -13,4 +13,5 @@
 #python3 main.py --load_config=fcn8s_mobilenet_exp_train.yaml overfit Train FCN8sMobileNet
 
 # LinkNET experiment
-python3 main.py --load_config=linknet_exp_overfit.yaml overfit Train LinkNET
+#python3 main.py --load_config=linknet_exp_overfit.yaml overfit Train LinkNET
+python3 main.py --load_config=linknet_exp_1.yaml train Train LinkNET
