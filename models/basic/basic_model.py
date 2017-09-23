@@ -5,6 +5,7 @@ You can override any function you want
 """
 
 from utils.img_utils import decode_labels
+from utils.misc import get_weights
 import numpy as np
 import tensorflow as tf
 
@@ -34,8 +35,7 @@ class BasicModel:
         self.params.img_height = self.args.img_height
         self.params.num_channels = self.args.num_channels
         self.params.num_classes = self.args.num_classes
-        self.params.class_weights= np.ones((self.params.num_classes,))
-        self.params.class_weights[-1]= 0
+        self.params.class_weights= get_weights(self.params.num_classes, self.args.data_dir+'Y_train.npy')
         self.params.weighted_loss= self.args.weighted_loss
         # Input
         self.x_pl = None
