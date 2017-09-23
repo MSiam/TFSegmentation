@@ -91,6 +91,7 @@ class Train(BasicTrain):
         # Init metrics class
         self.metrics = Metrics(self.args.num_classes)
         ##################################################################################
+        # Train.calc_flops()
 
     @timeit
     def load_overfit_data(self):
