@@ -48,6 +48,10 @@ class RESNET18:
         # These feed layers are for the decoder
         self.feed1 = None
         self.feed2 = None
+        self.encoder_1 = None
+        self.encoder_2 = None
+        self.encoder_3 = None
+        self.encoder_4 = None
 
     def build(self):
         """
@@ -102,6 +106,11 @@ class RESNET18:
 
         self.feed1 = self.conv4
         self.feed2 = self.conv3
+
+        self.encoder_1 = self.conv2
+        self.encoder_2 = self.conv3
+        self.encoder_3 = self.conv4
+        self.encoder_4 = self.conv5
         print("\nEncoder RESNET is built successfully\n\n")
 
     def load_pretrained_weights(self, sess):
