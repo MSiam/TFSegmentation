@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 
 from layers.utils import variable_summaries, variable_with_weight_decay
+from utils.misc import timeit
 
 
 class RESNET18:
@@ -13,7 +14,8 @@ class RESNET18:
                  num_classes,
                  pretrained_path,
                  train_flag,
-                 weight_decay=5e-4):
+                 weight_decay=5e-4,
+                 test_classification=False):
         """
 
         :param x_input: Input Images to the RESNET Encoder
@@ -33,6 +35,7 @@ class RESNET18:
         self.num_classes = num_classes
         self.train_flag = train_flag
         self.wd = weight_decay
+        self.test_classification = test_classification
 
         # All layers
         self.resnet_mean = None
@@ -98,11 +101,12 @@ class RESNET18:
             self.conv5 = self._residual_block('conv5_1', self.conv4, 512, pool_first=True, strides=2)
             self.conv5 = self._residual_block('conv5_2', self.conv5, 512)
 
-        with tf.variable_scope('logits'):
-            print('Building unit: logits')
-            self.score = tf.reduce_mean(self.conv5, axis=[1, 2])
-            self.score = self._fc('logits_dense', self.score, output_dim=self.num_classes, l2_strength=self.wd)
-            print('logits-shape: ' + str(self.score.shape.as_list()))
+        if self.test_classification:
+            with tf.variable_scope('logits'):
+                print('Building unit: logits')
+                self.score = tf.reduce_mean(self.conv5, axis=[1, 2])
+                self.score = self._fc('logits_dense', self.score, output_dim=self.num_classes, l2_strength=self.wd)
+                print('logits-shape: ' + str(self.score.shape.as_list()))
 
         self.feed1 = self.conv4
         self.feed2 = self.conv3
@@ -113,14 +117,16 @@ class RESNET18:
         self.encoder_4 = self.conv5
         print("\nEncoder RESNET is built successfully\n\n")
 
+    @timeit
     def load_pretrained_weights(self, sess):
         print("Loading pretrained weights of resnet18")
         all_vars = tf.trainable_variables()
         all_vars += tf.get_collection('mu_sigma_bn')
         for v in all_vars:
-            assign_op = v.assign(self.pretrained_weights[v.op.name])
-            sess.run(assign_op)
-            # print(v.op.name)
+            if v in self.pretrained_weights.keys():
+                assign_op = v.assign(self.pretrained_weights[v.op.name])
+                sess.run(assign_op)
+                print(v.op.name + " - loaded successfully")
         print("All pretrained weights of resnet18 is loaded")
 
     def _residual_block(self, name, x, filters, pool_first=False, strides=1):
