@@ -123,7 +123,7 @@ class RESNET18:
         all_vars = tf.trainable_variables()
         all_vars += tf.get_collection('mu_sigma_bn')
         for v in all_vars:
-            if v in self.pretrained_weights.keys():
+            if v.op.name in self.pretrained_weights.keys():
                 assign_op = v.assign(self.pretrained_weights[v.op.name])
                 sess.run(assign_op)
                 print(v.op.name + " - loaded successfully")
