@@ -97,7 +97,7 @@ class LinkNET(BasicModel):
         return out
 
     def _deconv(self, x, out_channels, kernel_size=(3, 3)):
-        h, w = x.shape.as_list()[1, 2]
+        h, w = x.shape.as_list()[1:3]
         h, w = h * 2, w * 2
         output_shape = [self.args.batch_size, h, w, out_channels]
         stride = [1, 2, 2, 1]
