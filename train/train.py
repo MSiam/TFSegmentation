@@ -565,7 +565,7 @@ class Train(BasicTrain):
                         feed_dict=feed_dict)
                     # summarize
                     summaries_dict = dict()
-                    summaries_dict['prediction_sample'] = segmented_imgs
+                    summaries_dict['train_prediction_sample'] = segmented_imgs
                     self.add_summary(cur_it, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
 
                     # Update the Global step
