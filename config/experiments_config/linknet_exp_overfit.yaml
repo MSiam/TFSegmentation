@@ -1,5 +1,5 @@
 # Directories arguments
-data_dir: "full_cityscapes"
+data_dir: "data_for_test_n_overfit"
 exp_dir:  "linknet_exp_overfit"
 out_dir:  "linknet_exp_overfit"
 
