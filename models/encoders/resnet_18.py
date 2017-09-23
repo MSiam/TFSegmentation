@@ -26,7 +26,7 @@ class RESNET18:
         # Load pretrained path
         self.pretrained_weights = np.load(pretrained_path)
         self.pretrained_weights = self.pretrained_weights.item()  # Load the dictionary
-        print('pretrained weights loaded')
+        print('pretrained weights dictionary loaded from disk')
 
         # init parameters and input
         self.x_input = x_input
