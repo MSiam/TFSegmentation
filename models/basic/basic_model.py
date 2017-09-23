@@ -130,7 +130,7 @@ class BasicModel:
 
     def init_train(self):
         with tf.name_scope('loss'):
-            if self.weighted_loss:
+            if self.params.weighted_loss:
                 self.cross_entropy_loss= self.weighted_loss()
             else:
                 self.cross_entropy_loss = tf.reduce_mean(
