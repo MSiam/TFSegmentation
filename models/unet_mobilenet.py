@@ -45,7 +45,8 @@ class UNetMobileNet(BasicModel):
                                                  self.encoder.conv5_6.shape.as_list()[3]], batchnorm_enabled=True,
                                              kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
             self._debug(self.upscale1)
-            self.concat1 = tf.concat([self.upscale1, self.encoder.conv5_5], 3)
+            #self.concat1 = tf.concat([self.upscale1, self.encoder.conv5_5], 3)
+            self.concat1 = tf.add([self.upscale1, self.encoder.conv5_5])
             self._debug(self.concat1)
             self.expand11 = conv2d('expand1_1', x=self.concat1, batchnorm_enabled=True,
                                       num_filters=self.encoder.conv5_5.shape.as_list()[3], kernel_size=(3, 3),
@@ -61,7 +62,8 @@ class UNetMobileNet(BasicModel):
                                                  self.encoder.conv5_5.shape.as_list()[3]],
                                              kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
             self._debug(self.upscale2)
-            self.concat2 = tf.concat([self.upscale2, self.encoder.conv4_1], 3)
+            #self.concat2 = tf.concat([self.upscale2, self.encoder.conv4_1], 3)
+            self.concat2 = tf.add([self.upscale2, self.encoder.conv4_1])
             self._debug(self.concat2)
             self.expand21 = conv2d('expand2_1', x=self.concat2, batchnorm_enabled=True,
                                       num_filters=self.encoder.conv4_1.shape.as_list()[3], kernel_size=(3, 3),
@@ -77,7 +79,8 @@ class UNetMobileNet(BasicModel):
                                                  self.encoder.conv4_1.shape.as_list()[3]],
                                              kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
             self._debug(self.upscale3)
-            self.concat3 = tf.concat([self.upscale3, self.encoder.conv3_1], 3)
+            #self.concat3 = tf.concat([self.upscale3, self.encoder.conv3_1], 3)
+            self.concat = tf.add([self.upscale3, self.encoder.conv3_1])
             self._debug(self.concat3)
             self.expand31 = conv2d('expand3_1', x=self.concat3, batchnorm_enabled=True,
                                       num_filters=self.encoder.conv3_1.shape.as_list()[3], kernel_size=(3, 3),
@@ -93,7 +96,8 @@ class UNetMobileNet(BasicModel):
                                                  self.encoder.conv3_1.shape.as_list()[3]],
                                              kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
             self._debug(self.upscale4)
-            self.concat4 = tf.concat([self.upscale4, self.encoder.conv2_1], 3)
+            #self.concat4 = tf.concat([self.upscale4, self.encoder.conv2_1], 3)
+            self.concat4 = tf.add([self.upscale4, self.encoder.conv2_1])
             self._debug(self.concat4)
             self.expand41 = conv2d('expand4_1', x=self.concat4, batchnorm_enabled=True,
                                       num_filters=self.encoder.conv2_1.shape.as_list()[3], kernel_size=(3, 3),

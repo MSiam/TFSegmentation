@@ -1,6 +1,24 @@
 import time
 import pickle
+import numpy as np
 
+def get_weights(nclasses, npy_file):
+    yy= np.load(npy_file)
+    label_to_frequency= {}
+    for c in range(nclasses):
+        class_mask= np.equal(yy, c)
+        class_mask= class_mask.astype(np.float32)
+        label_to_frequency[c]= np.sum(class_mask)
+
+    #perform the weighing function label-wise and append the label's class weights to class_weights
+    class_weights = []
+    total_frequency = sum(label_to_frequency.values())
+    for label, frequency in label_to_frequency.items():
+        class_weight = 1 / np.log(1.02 + (frequency / total_frequency))
+        class_weights.append(class_weight)
+
+    class_weights[-1]=0
+    return class_weights
 
 def timeit(f):
     """ Decorator to time Any Function """
