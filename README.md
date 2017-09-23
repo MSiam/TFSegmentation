@@ -7,9 +7,10 @@ VGG-16
 MobileNet  
 
 # Meta Architectures
-FCN32s, 16s, 8s  
+FCN32s, 16s, 8s
 U-Net  
-Dilation  
+Dilation
+LinkNET
 
 This work has started in 2017.  
 

@@ -1,6 +1,6 @@
 from models.basic.basic_model import BasicModel
 from models.encoders.resnet_18 import RESNET18
-from layers.convolution import conv2d_transpose, conv2d
+from layers.utils import get_deconv_filter, variable_summaries
 
 import tensorflow as tf
 
@@ -11,6 +11,16 @@ class LinkNET(BasicModel):
         # init encoder
         self.encoder = None
         # all layers
+        self.fscore = None
+        self.out_decoder_block_4 = None
+        self.out_decoder_block_4 = None
+        self.out_decoder_block_3 = None
+        self.out_decoder_block_3 = None
+        self.out_decoder_block_2 = None
+        self.out_decoder_block_2 = None
+        self.out_decoder_block_1 = None
+        self.out_full_conv1 = None
+        self.out_conv1 = None
 
     def build(self):
         print("\nBuilding the MODEL...")
@@ -38,66 +48,61 @@ class LinkNET(BasicModel):
         self.encoder.build()
 
         # Build Decoding part
-        with tf.name_scope('upscale_1'):
-            self.upscale1 = conv2d_transpose('upscale1', x=self.encoder.conv5_3,
-                                             output_shape=self.encoder.conv4_3.shape.as_list()[0:3] + [
-                                                 self.encoder.conv5_3.shape.as_list()[3]],
-                                             kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
-            self.concat1 = tf.concat([self.upscale1, self.encoder.conv4_3], 3)
-            self.expand11 = conv2d('expand1_1', x=self.concat1,
-                                   num_filters=self.encoder.conv4_3.shape.as_list()[3], kernel_size=(3, 3),
-                                   l2_strength=self.encoder.wd)
-            self.expand12 = conv2d('expand1_2', x=self.expand11,
-                                   num_filters=self.encoder.conv4_3.shape.as_list()[3], kernel_size=(3, 3),
-                                   l2_strength=self.encoder.wd)
-        with tf.name_scope('upscale_2'):
-            self.upscale2 = conv2d_transpose('upscale2', x=self.expand12,
-                                             output_shape=self.encoder.conv3_3.shape.as_list()[0:3] + [
-                                                 self.encoder.conv4_3.shape.as_list()[3]],
-                                             kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
-            self.concat2 = tf.concat([self.upscale2, self.encoder.conv3_3], 3)
-            self.expand21 = conv2d('expand2_1', x=self.concat2,
-                                   num_filters=self.encoder.conv3_3.shape.as_list()[3], kernel_size=(3, 3),
-                                   l2_strength=self.encoder.wd)
-            self.expand22 = conv2d('expand2_2', x=self.expand21,
-                                   num_filters=self.encoder.conv3_3.shape.as_list()[3], kernel_size=(3, 3),
-                                   l2_strength=self.encoder.wd)
-        with tf.name_scope('upscale_3'):
-            self.upscale3 = conv2d_transpose('upscale3', x=self.expand22,
-                                             output_shape=self.encoder.conv2_2.shape.as_list()[0:3] + [
-                                                 self.encoder.conv3_3.shape.as_list()[3]],
-                                             kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
-            self.concat3 = tf.concat([self.upscale3, self.encoder.conv2_2], 3)
-            self.expand31 = conv2d('expand3_1', x=self.concat3,
-                                   num_filters=self.encoder.conv2_2.shape.as_list()[3], kernel_size=(3, 3),
-                                   l2_strength=self.encoder.wd)
-            self.expand32 = conv2d('expand3_2', x=self.expand31,
-                                   num_filters=self.encoder.conv2_2.shape.as_list()[3], kernel_size=(3, 3),
-                                   l2_strength=self.encoder.wd)
-        with tf.name_scope('upscale_4'):
-            self.upscale4 = conv2d_transpose('upscale4', x=self.expand32,
-                                             output_shape=self.encoder.conv1_2.shape.as_list()[0:3] + [
-                                                 self.encoder.conv2_2.shape.as_list()[3]],
-                                             kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
-            self.concat4 = tf.concat([self.upscale4, self.encoder.conv1_2], 3)
-            self.expand41 = conv2d('expand4_1', x=self.concat4,
-                                   num_filters=self.encoder.conv1_2.shape.as_list()[3], kernel_size=(3, 3),
-                                   l2_strength=self.encoder.wd)
-            self.expand42 = conv2d('expand4_2', x=self.expand41,
-                                   num_filters=self.encoder.conv1_2.shape.as_list()[3], kernel_size=(3, 3),
-                                   l2_strength=self.encoder.wd)
+        self.out_decoder_block_4 = self._decoder_block('decoder_block_4', self.encoder.encoder_4, 256)
+        self.out_decoder_block_4 = tf.add(self.out_decoder_block_4, self.encoder.encoder_3, 'add_features_4')
+        self.out_decoder_block_3 = self._decoder_block('decoder_block_3', self.out_decoder_block_4, 128)
+        self.out_decoder_block_3 = tf.add(self.out_decoder_block_3, self.encoder.encoder_2, 'add_features_3')
+        self.out_decoder_block_2 = self._decoder_block('decoder_block_2', self.out_decoder_block_3, 64)
+        self.out_decoder_block_2 = tf.add(self.out_decoder_block_2, self.encoder.encoder_1, 'add_features_2')
+        self.out_decoder_block_1 = self._decoder_block('decoder_block_1', self.out_decoder_block_2, 64)
 
-        with tf.name_scope('final_score'):
-            self.fscore = conv2d('fscore', x=self.expand42,
-                                 num_filters=self.params.num_classes, kernel_size=(1, 1),
-                                 l2_strength=self.encoder.wd)
+        with tf.variable_scope('output_block'):
+            self.out_full_conv1 = self._deconv(self.out_decoder_block_1, 32, (3, 3))
+            print("output_block_full_conv1: %s".format(str(self.out_full_conv1.shape.as_list())))
+            self.out_conv1 = tf.layers.conv2d(self.out_full_conv1, filters=32, kernel_size=(3, 3), padding="same",
+                                              use_bias=False,
+                                              kernel_initializer=tf.contrib.layers.xavier_initializer(),
+                                              kernel_regularizer=tf.contrib.layers.l2_regularizer(
+                                                  self.args.weight_decay))
+            print("output_block_conv1: %s".format(str(self.out_conv1.shape.as_list())))
+            self.fscore = self._deconv(self.out_conv1, self.params.num_classes, (2, 2))
+            print("logits: %s".format(str(self.fscore.shape.as_list())))
+
         self.logits = self.fscore
 
-    def _decoder_block(self, x, out_channels):
-        pass
+    def _decoder_block(self, name, x, out_channels):
+        in_channels = x.shape.as_list()[3]
 
-    def _conv_block(self, x):
-        pass
+        with tf.variable_scope(name):
+            out = self._conv_1x1_block('conv_1', x, in_channels // 4)
+            out = self._full_conv_3x3_block('deconv', out, in_channels // 4)
+            out = self._conv_1x1_block('conv_2', out, out_channels)
+        print("Decoder block - %s: %s".format(name, str(out.shape.as_list())))
+        return out
 
-    def _full_conv_block(self, x):
-        pass
+    def _conv_1x1_block(self, name, x, filters):
+        with tf.variable_scope(name):
+            out = tf.layers.conv2d(x, filters=filters, kernel_size=(1, 1), padding="same", use_bias=False,
+                                   kernel_initializer=tf.contrib.layers.xavier_initializer(),
+                                   kernel_regularizer=tf.contrib.layers.l2_regularizer(self.args.weight_decay))
+            out = tf.layers.batch_normalization(out, training=self.is_training, fused=True)
+            out = tf.nn.relu(out)
+        return out
+
+    def _full_conv_3x3_block(self, name, x, out_channels):
+        with tf.variable_scope(name):
+            out = self._deconv(x, out_channels, kernel_size=(3, 3))
+            out = tf.layers.batch_normalization(out, training=self.is_training, fused=True)
+            out = tf.nn.relu(out)
+        return out
+
+    def _deconv(self, x, out_channels, kernel_size=(3, 3)):
+        h, w = x.shape.as_list()[1, 2]
+        h, w = h * 2, w * 2
+        output_shape = [self.args.batch_size, h, w, out_channels]
+        stride = [1, 2, 2, 1]
+        kernel_shape = [kernel_size[0], kernel_size[1], out_channels, x.shape.as_list()[-1]]
+        w = get_deconv_filter(kernel_shape, self.args.weight_decay)
+        variable_summaries(w)
+        out = tf.nn.conv2d_transpose(x, w, tf.stack(output_shape), strides=stride, padding="same")
+        return out
