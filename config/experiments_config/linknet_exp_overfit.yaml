@@ -1,7 +1,7 @@
 # Directories arguments
 data_dir: "data_for_test_n_overfit"
-exp_dir:  "linknet_exp_overfit"
-out_dir:  "linknet_exp_overfit"
+exp_dir:  "linknet_exp_overfit_2"
+out_dir:  "linknet_exp_overfit_2"
 
 # Data arguments
 img_height:   256
@@ -10,8 +10,8 @@ num_channels: 3
 num_classes:  20
 
 # Train arguments
-num_epochs: 10
-batch_size: 4
+num_epochs: 20
+batch_size: 8
 shuffle: True
 data_mode: "overfit"
 save_every: 5
@@ -20,7 +20,7 @@ max_to_keep: 1
 weighted_loss: True
 
 # Models arguments
-learning_rate:   0.0001
+learning_rate:   0.001
 weight_decay: 0.0005
 pretrained_path: "pretrained_weights/resnet18.npy"
 
