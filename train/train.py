@@ -95,8 +95,8 @@ class Train(BasicTrain):
     @timeit
     def load_overfit_data(self):
         print("Loading data..")
-        self.train_data = {'X': np.load(self.args.data_dir + "X.npy"),
-                           'Y': np.load(self.args.data_dir + "Y.npy")}
+        self.train_data = {'X': np.load(self.args.data_dir + "X_train.npy"),
+                           'Y': np.load(self.args.data_dir + "Y_train.npy")}
         self.train_data_len = self.train_data['X'].shape[0] - self.train_data['X'].shape[0] % self.args.batch_size
         self.num_iterations_training_per_epoch = (
                                                      self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
