@@ -60,6 +60,7 @@ def parse_config():
     parser.add_argument('--save_every', default=1, type=int, help='save every n epochs')
     parser.add_argument('--test_every', default=1, type=int, help='test every n epochs')
     parser.add_argument('--max_to_keep', default=5, type=int, help='Max checkpoints to keep')
+    parser.add_argument('--weighted_loss', action='store_true', help='Flag to use weighted loss or not')
 
     # Test arguments
 
