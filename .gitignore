@@ -2,7 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+*.npy
 # C extensions
 *.so
 
@@ -141,3 +141,5 @@ checkpoints/
 model.pkl
 models/test
 models/test.jpg
+/t.npy
+t.npy
