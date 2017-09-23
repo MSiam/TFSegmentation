@@ -61,7 +61,7 @@ class Metrics(object):
         if nonignore is not None:
             self.iou= self.iou[nonignore]
         else:
-            self.iou= self.iou[1:]
+            self.iou= self.iou[:-1]
 
         self.mean_iou_index= self.getScoreAverage(self.iou)
 
