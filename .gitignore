@@ -135,3 +135,9 @@ pretrained_weights/*.npz
 !data/174_imgs_for_test_n_overfit/Y.npy
 cityscapesScripts/cityscapesscripts/annotation/icons/
 cityscapesScripts/cityscapesscripts/viewer/icons/
+/checkpoints/
+0.jpg
+checkpoints/
+model.pkl
+models/test
+models/test.jpg
