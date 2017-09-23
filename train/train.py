@@ -533,6 +533,13 @@ class Train(BasicTrain):
             # init the current iterations
             cur_iteration = 0
 
+            # init acc and loss lists
+            loss_list = []
+            acc_list = []
+
+            # reset metrics
+            self.metrics.reset()
+
             # loop by the number of iterations
             for x_batch, y_batch in tt:
 
@@ -549,24 +556,37 @@ class Train(BasicTrain):
                 if cur_iteration < self.num_iterations_training_per_epoch - 1:
 
                     # run the feed_forward
-                    _, summaries_merged = self.sess.run(
-                        [self.model.train_op, self.model.merged_summaries],
+                    out_argmax, _, loss, acc, summaries_merged = self.sess.run(
+                        [self.model.out_argmax, self.model.train_op, self.model.loss, self.model.accuracy,
+                         self.model.merged_summaries],
                         feed_dict=feed_dict)
 
                     # summarize
                     self.add_summary(cur_it, summaries_merged=summaries_merged)
 
+                    # log metrics
+                    self.metrics.update_metrics_batch(out_argmax, y_batch)
+                    # log loss and acc
+                    loss_list += [loss]
+                    acc_list += [acc]
+
                 else:
 
                     # run the feed_forward
-                    _, loss, acc, summaries_merged, segmented_imgs = self.sess.run(
-                        [self.model.train_op, self.model.loss, self.model.accuracy,
+                    out_argmax, _, loss, acc, summaries_merged, segmented_imgs = self.sess.run(
+                        [self.model.out_argmax, self.model.train_op, self.model.loss, self.model.accuracy,
                          self.model.merged_summaries, self.model.segmented_summary],
                         feed_dict=feed_dict)
                     # summarize
                     summaries_dict = dict()
                     summaries_dict['train_prediction_sample'] = segmented_imgs
                     self.add_summary(cur_it, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
+
+                    # log metrics
+                    self.metrics.update_metrics_batch(out_argmax, y_batch)
+                    # log loss and acc
+                    loss_list += [loss]
+                    acc_list += [acc]
 
                     # Update the Global step
                     self.model.global_step_assign_op.eval(session=self.sess,
@@ -577,9 +597,14 @@ class Train(BasicTrain):
                     self.model.global_epoch_assign_op.eval(session=self.sess,
                                                            feed_dict={self.model.global_epoch_input: cur_epoch + 1})
 
+                    mean_iou = self.metrics.compute_final_metrics(self.num_iterations_training_per_epoch)
+                    # mean over batches
+                    total_loss = np.mean(loss_list)
+                    total_acc = np.mean(acc_list)
                     # print in console
                     tt.close()
-                    print("epoch-" + str(cur_epoch) + "-" + "loss:" + str(loss) + "-" + "acc-" + str(acc)[:6])
+                    print("epoch-" + str(cur_epoch) + "-" + "loss:" + str(total_loss) + "-" +
+                          "acc-" + str(total_acc)[:6] + "  mean-iou: " + str(mean_iou))
 
                     # Break the loop to finalize this epoch
                     break
