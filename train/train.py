@@ -458,6 +458,7 @@ class Train(BasicTrain):
                 break
 
     def test(self):
+        Train.calc_flops()
         print("Testing mode will begin NOW..")
 
         # load the best model checkpoint to test on it
