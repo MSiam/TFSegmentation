@@ -17,14 +17,14 @@ def plot_imgs(x, folder, mode):
             plt.imsave(folder + str(i) + '.png', x[i])
     elif mode == 'y':
         for i in tqdm(range(n)):
-            plt.imsave(folder + str(i) + '.png', x[i, :, :, 0])
+            plt.imsave(folder + str(i) + '.png', x[i])
 
 
 create_dirs(['../data/data_for_test_n_overfit/x_org', '../data/data_for_test_n_overfit/y_org'])
 create_dirs(['../data/data_for_test_n_overfit/x_aug', '../data/data_for_test_n_overfit/y_aug'])
 
 x = np.load('../data/data_for_test_n_overfit/X_train.npy')
-y = np.expand_dims(np.load('../data/data_for_test_n_overfit/Y_train.npy'), axis=3)
+y = np.load('../data/data_for_test_n_overfit/Y_train.npy')
 print(x.shape)
 print(y.shape)
 print(x.dtype)
@@ -35,16 +35,27 @@ plot_imgs(y, '../data/data_for_test_n_overfit/y_org/', mode='y')
 
 seq = iaa.Sequential([
     iaa.Crop(px=(0, 150)),  # crop images from each side by 0 to 16px (randomly chosen)
-    iaa.Fliplr(0.5),  # horizontally flip 50% of the images
-    iaa.Flipud(0.5),  # horizontally flip 50% of the images
-    # iaa.GaussianBlur(sigma=(0, 3.0))  # blur images with a sigma of 0 to 3.0
-], random_order=True)
-
+])
 # Convert the stochastic sequence of augmenters to a deterministic one.
 # The deterministic sequence will always apply the exactly same effects to the images.
 seq_det = seq.to_deterministic()  # call this for each batch again, NOT only once at the start
 x_aug = seq_det.augment_images(x)
 y_aug = seq_det.augment_images(y)
+
+seq = iaa.Sequential([
+    iaa.Fliplr(1),  # horizontally flip 50% of the images
+])
+# Convert the stochastic sequence of augmenters to a deterministic one.
+# The deterministic sequence will always apply the exactly same effects to the images.
+seq_det = seq.to_deterministic()  # call this for each batch again, NOT only once at the start
+x_aug = np.append(x_aug, seq_det.augment_images(x), axis=0)
+y_aug = np.append(y_aug, seq_det.augment_images(y), axis=0)
+seq = iaa.Sequential([
+    iaa.Flipud(1),  # horizontally flip 50% of the images
+])
+seq_det = seq.to_deterministic()  # call this for each batch again, NOT only once at the start
+x_aug = np.append(x_aug, seq_det.augment_images(x), axis=0)
+y_aug = np.append(y_aug, seq_det.augment_images(y), axis=0)
 
 print(x_aug.shape)
 print(y_aug.shape)
