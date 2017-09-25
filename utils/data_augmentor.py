@@ -64,3 +64,8 @@ print(y_aug.dtype)
 
 plot_imgs(x_aug, '../data/data_for_test_n_overfit/x_aug/', mode='x')
 plot_imgs(y_aug, '../data/data_for_test_n_overfit/y_aug/', mode='y')
+
+# TODO
+# crop -> 0.5
+# fliplr -> 0.25
+# translate # rkzzz fe elbackground lw eswed eh elabels hatob2a ehhhhh 19
