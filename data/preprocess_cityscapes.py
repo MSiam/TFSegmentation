@@ -71,6 +71,8 @@ def readCityScapes(hf, path_images, path_labels, args, split='train'):
 def main(args):
     hf = h5py.File(args.output_file, 'w')
     for d in os.listdir(args.root+'images/'):
+        if d=='test':
+            continue
         train_images_path = args.root + 'images/'+d
         train_labels_path = args.root + 'labels/'+d
         custom_read_cityscape(hf, train_images_path, train_labels_path, args, split=d)
