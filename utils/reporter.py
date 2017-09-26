@@ -2,27 +2,8 @@
 This File will contain a reporter class which will allow us to report the whole experiment.
 """
 
-"""
-# TODO mainly how mean iou 
- a nd loss are chaning thats what I mainly care about isA mean iou on validation 
- of course if you can also log the inference time
- avg inference time a2so
-on validation
-the problem with tensorboard
-is that sometimes
-I am running on a server with no gui
-then I have to reroute the tensorboard
-its a headache
-so its much easier to have a log file that I can open in vim
-to observe these
-one last thing can you also
-log the perclass iou
-so if you have the metrics object metrics lets say
-just do metrics.iou
-
-"""
-
 import json
+import numpy as np
 
 
 class Reporter:
@@ -30,10 +11,41 @@ class Reporter:
     This class will contain APIs to facilitate the process of reporting the experiment
     """
 
-    def __init__(self, file_json_to_save):
+    def __init__(self, file_json_to_save, args):
         self.report_dict = dict()
         self.json_file = file_json_to_save
         # init main keys in the report
+        self.report_dict['train-acc'] = {}
+        self.report_dict['train-loss'] = {}
+        self.report_dict['validation-acc'] = {}
+        self.report_dict['validation-loss'] = {}
+        self.report_dict['avg_inference_time_on_validation'] = {}
+        self.report_dict['validation-mean-iou'] = {}
+        self.report_dict['validation-total-mean-iou'] = {}
+        self.report_dict['validation-mean-iou']['road'] = {}
+        self.report_dict['validation-mean-iou']['sidewalk'] = {}
+        self.report_dict['validation-mean-iou']['building'] = {}
+        self.report_dict['validation-mean-iou']['wall'] = {}
+        self.report_dict['validation-mean-iou']['fence'] = {}
+        self.report_dict['validation-mean-iou']['pole'] = {}
+        self.report_dict['validation-mean-iou']['traffic light'] = {}
+        self.report_dict['validation-mean-iou']['traffic sign'] = {}
+        self.report_dict['validation-mean-iou']['vegetation'] = {}
+        self.report_dict['validation-mean-iou']['terrain'] = {}
+        self.report_dict['validation-mean-iou']['sky'] = {}
+        self.report_dict['validation-mean-iou']['person'] = {}
+        self.report_dict['validation-mean-iou']['rider'] = {}
+        self.report_dict['validation-mean-iou']['car'] = {}
+        self.report_dict['validation-mean-iou']['truck'] = {}
+        self.report_dict['validation-mean-iou']['bus'] = {}
+        self.report_dict['validation-mean-iou']['train'] = {}
+        self.report_dict['validation-mean-iou']['motorcycle'] = {}
+        self.report_dict['validation-mean-iou']['bicycle'] = {}
+        self.report_dict['validation-mean-iou']['ignore'] = {}
+        # put the arguments of the report
+        self.report_dict['arguments of the experiment'] = {}
+        for key, value in sorted(vars(args).items()):
+            self.report_dict['arguments of the experiment'][key] = value
 
     def finalize(self):
         with open(self.json_file, 'w') as file:
@@ -42,11 +54,43 @@ class Reporter:
     def report(self, key, value):
         self.report_dict[key] = value
 
+    def report_experiment_statistics(self, statistics, epoch, value):
+        self.report_dict[statistics][epoch] = value
+
+    def report_experiment_validation_iou(self, epoch, mean_iou, per_class_mean_iou):
+        self.report_dict['validation-total-mean-iou'][epoch] = mean_iou
+        self.report_dict['validation-mean-iou']['road'][epoch] = per_class_mean_iou[0]
+        self.report_dict['validation-mean-iou']['sidewalk'][epoch] = per_class_mean_iou[1]
+        self.report_dict['validation-mean-iou']['building'][epoch] = per_class_mean_iou[2]
+        self.report_dict['validation-mean-iou']['wall'][epoch] = per_class_mean_iou[3]
+        self.report_dict['validation-mean-iou']['fence'][epoch] = per_class_mean_iou[4]
+        self.report_dict['validation-mean-iou']['pole'][epoch] = per_class_mean_iou[5]
+        self.report_dict['validation-mean-iou']['traffic light'][epoch] = per_class_mean_iou[6]
+        self.report_dict['validation-mean-iou']['traffic sign'][epoch] = per_class_mean_iou[7]
+        self.report_dict['validation-mean-iou']['vegetation'][epoch] = per_class_mean_iou[8]
+        self.report_dict['validation-mean-iou']['terrain'][epoch] = per_class_mean_iou[9]
+        self.report_dict['validation-mean-iou']['sky'][epoch] = per_class_mean_iou[10]
+        self.report_dict['validation-mean-iou']['person'][epoch] = per_class_mean_iou[11]
+        self.report_dict['validation-mean-iou']['rider'][epoch] = per_class_mean_iou[12]
+        self.report_dict['validation-mean-iou']['car'][epoch] = per_class_mean_iou[13]
+        self.report_dict['validation-mean-iou']['truck'][epoch] = per_class_mean_iou[14]
+        self.report_dict['validation-mean-iou']['bus'][epoch] = per_class_mean_iou[15]
+        self.report_dict['validation-mean-iou']['train'][epoch] = per_class_mean_iou[16]
+        self.report_dict['validation-mean-iou']['motorcycle'][epoch] = per_class_mean_iou[17]
+        self.report_dict['validation-mean-iou']['bicycle'][epoch] = per_class_mean_iou[18]
+        self.report_dict['validation-mean-iou']['ignore'][epoch] = per_class_mean_iou[19]
+
 
 if __name__ == '__main__':
-    reporter = Reporter('../logs/x.json')
-    reporter.report('mean-iou', [[1, 1], 2, 3, 4, 5, 6, 7])
-    reporter.report('mean-iou_2', [1, 2, 3, 4, 5, 6, 7])
-    reporter.report('mean-iou_3', [1, 2, 3, 4, 5, 6, 7])
-    reporter.report('mean-iou_4', {'x': 'y'})
+    class Empty():
+        pass
+
+
+    empty = Empty()
+    empty.lololololololo = 1
+    empty.tatatatatatattt = 2
+    reporter = Reporter('../logs/x.json', empty)
+    reporter.report_experiment_validation_iou('epoch-0', 0.0, np.zeros((20,)))
+    reporter.report_experiment_validation_iou('epoch-1', 0.0, np.zeros((20,)))
+    reporter.report_experiment_validation_iou('epoch-2', 0.0, np.zeros((20,)))
     reporter.finalize()
