@@ -8,4 +8,4 @@
 
 
 # FCN8sMobileNet experiment
-python3 main.py --load_config=unet_mobilenet_exp_test.yaml test Train UNetMobileNet
+python main.py --load_config=unet_mobilenet_exp_train.yaml train Train UNetMobileNet
