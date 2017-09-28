@@ -1,7 +1,7 @@
 # Directories arguments
 data_dir: "full_cityscapes"
-exp_dir:  "linknet_exp_2_test"
-out_dir:  "linknet_exp_2_test"
+exp_dir:  "linknet_exp_3_test"
+out_dir:  "linknet_exp_3_test"
 
 # Data arguments
 img_height:   512
