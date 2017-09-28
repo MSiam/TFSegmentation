@@ -307,58 +307,57 @@ class Train(BasicTrain):
                              }
 
                 # Run the feed forward but the last iteration finalize what you want to do
-            #    if cur_iteration < self.num_iterations_training_per_epoch - 1:
+                if cur_iteration < self.num_iterations_training_per_epoch - 1:
 
-            #        # run the feed_forward
-            #        _, loss, acc, summaries_merged = self.sess.run(
-            #            [self.model.train_op, self.model.loss, self.model.accuracy, self.model.merged_summaries],
-            #            feed_dict=feed_dict)
-            #        # log loss and acc
-            #        loss_list += [loss]
-            #        acc_list += [acc]
-            #        # summarize
-            #        self.add_summary(cur_it, summaries_merged=summaries_merged)
+                    # run the feed_forward
+                    _, loss, acc, summaries_merged = self.sess.run(
+                        [self.model.train_op, self.model.loss, self.model.accuracy, self.model.merged_summaries],
+                        feed_dict=feed_dict)
+                    # log loss and acc
+                    loss_list += [loss]
+                    acc_list += [acc]
+                    # summarize
+                    self.add_summary(cur_it, summaries_merged=summaries_merged)
 
-            #    else:
+                else:
+                    # run the feed_forward
+                    _, loss, acc, summaries_merged, segmented_imgs = self.sess.run(
+                        [self.model.train_op, self.model.loss, self.model.accuracy,
+                         self.model.merged_summaries, self.model.segmented_summary],
+                        feed_dict=feed_dict)
+                    # log loss and acc
+                    loss_list += [loss]
+                    acc_list += [acc]
+                    total_loss = np.mean(loss_list)
+                    total_acc = np.mean(acc_list)
+                    # summarize
+                    summaries_dict = dict()
+                    summaries_dict['train-loss-per-epoch'] = total_loss
+                    summaries_dict['train-acc-per-epoch'] = total_acc
+                    summaries_dict['train_prediction_sample'] = segmented_imgs
+                    self.add_summary(cur_it, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
 
-                # run the feed_forward
-                _, loss, acc, summaries_merged, segmented_imgs = self.sess.run(
-                    [self.model.train_op, self.model.loss, self.model.accuracy,
-                     self.model.merged_summaries, self.model.segmented_summary],
-                    feed_dict=feed_dict)
-                # log loss and acc
-                loss_list += [loss]
-                acc_list += [acc]
-                total_loss = np.mean(loss_list)
-                total_acc = np.mean(acc_list)
-                # summarize
-                summaries_dict = dict()
-                summaries_dict['train-loss-per-epoch'] = total_loss
-                summaries_dict['train-acc-per-epoch'] = total_acc
-                summaries_dict['train_prediction_sample'] = segmented_imgs
-                self.add_summary(cur_it, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
+                    # report
+                    self.reporter.report_experiment_statistics('train-acc', 'epoch-' + str(cur_epoch), str(total_acc))
+                    self.reporter.report_experiment_statistics('train-loss', 'epoch-' + str(cur_epoch), str(total_loss))
+                    self.reporter.finalize()
 
-                # report
-                self.reporter.report_experiment_statistics('train-acc', 'epoch-' + str(cur_epoch), str(total_acc))
-                self.reporter.report_experiment_statistics('train-loss', 'epoch-' + str(cur_epoch), str(total_loss))
-                self.reporter.finalize()
+                    # Update the Global step
+                    self.model.global_step_assign_op.eval(session=self.sess,
+                                                          feed_dict={self.model.global_step_input: cur_it + 1})
 
-                # Update the Global step
-                self.model.global_step_assign_op.eval(session=self.sess,
-                                                      feed_dict={self.model.global_step_input: cur_it + 1})
+                    # Update the Cur Epoch tensor
+                    # it is the last thing because if it is interrupted it repeat this
+                    self.model.global_epoch_assign_op.eval(session=self.sess,
+                                                           feed_dict={self.model.global_epoch_input: cur_epoch + 1})
 
-                # Update the Cur Epoch tensor
-                # it is the last thing because if it is interrupted it repeat this
-                self.model.global_epoch_assign_op.eval(session=self.sess,
-                                                       feed_dict={self.model.global_epoch_input: cur_epoch + 1})
+                    # print in console
+                    tt.close()
+                    print("epoch-" + str(cur_epoch) + "-" + "loss:" + str(total_loss) + "-" + " acc:" + str(total_acc)[
+                                                                                                        :6])
 
-                # print in console
-                tt.close()
-                print("epoch-" + str(cur_epoch) + "-" + "loss:" + str(total_loss) + "-" + " acc:" + str(total_acc)[
-                                                                                                    :6])
-
-                # Break the loop to finalize this epoch
-                break
+                    # Break the loop to finalize this epoch
+                    break
 
                 # Update the Global step
                 self.model.global_step_assign_op.eval(session=self.sess,
