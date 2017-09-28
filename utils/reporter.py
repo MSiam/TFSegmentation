@@ -78,7 +78,6 @@ class Reporter:
         self.report_dict['validation-mean-iou']['train'][epoch] = str(per_class_mean_iou[16])
         self.report_dict['validation-mean-iou']['motorcycle'][epoch] = str(per_class_mean_iou[17])
         self.report_dict['validation-mean-iou']['bicycle'][epoch] = str(per_class_mean_iou[18])
-        self.report_dict['validation-mean-iou']['ignore'][epoch] = str(per_class_mean_iou[19])
 
 
 if __name__ == '__main__':
