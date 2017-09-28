@@ -34,7 +34,7 @@ class BasicModel:
         self.params.img_height = self.args.img_height
         self.params.num_channels = self.args.num_channels
         self.params.num_classes = self.args.num_classes
-        self.params.class_weights= np.load(self.args.outdir+'weights.npy')
+        self.params.class_weights= np.load(self.args.data_dir+'weights.npy')
         self.params.weighted_loss= self.args.weighted_loss
         # Input
         self.x_pl = None
