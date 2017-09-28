@@ -14,4 +14,4 @@
 
 # LinkNET experiment
 #python3 main.py --load_config=linknet_exp_overfit.yaml overfit Train LinkNET
-#python3 main.py --load_config=linknet_exp_1.yaml train Train LinkNET
+python3 main.py --load_config=linknet_exp_1.yaml train Train LinkNET
