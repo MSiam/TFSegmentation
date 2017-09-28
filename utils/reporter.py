@@ -43,11 +43,13 @@ class Reporter:
         self.report_dict['validation-mean-iou']['bicycle'] = {}
         self.report_dict['validation-mean-iou']['ignore'] = {}
         # put the arguments of the report
-        self.report_dict['arguments of the experiment'] = {}
+        self.report_dict['arguments-of-the-experiment'] = {}
         for key, value in sorted(vars(args).items()):
-            self.report_dict['arguments of the experiment'][key] = value
+            self.report_dict['arguments-of-the-experiment'][key] = value
 
     def finalize(self):
+        print(self.report_dict)
+        exit(0)
         with open(self.json_file, 'w') as file:
             json.dump(self.report_dict, file, sort_keys=True, indent=4, separators=(',', ': '))
 
@@ -87,8 +89,8 @@ if __name__ == '__main__':
 
 
     empty = Empty()
-    empty.lololololololo = 1
-    empty.tatatatatatattt = 2
+    empty.lololololololo = 1.23562662436
+    empty.tatatatatatattt = 2.2346346346346
     reporter = Reporter('../logs/x.json', empty)
     reporter.report_experiment_validation_iou('epoch-0', 0.0, np.zeros((20,)))
     reporter.report_experiment_validation_iou('epoch-1', 0.0, np.zeros((20,)))
