@@ -5,10 +5,7 @@ import os
 from scipy import misc
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-
-
-
-
+import pdb
 def main(args):
     hf = h5py.File(args.output_file, 'w')
     for d in os.listdir(args.root+'images/'):
@@ -167,8 +164,8 @@ def custom_read_cityscape(hf, path_images, path_labels, args_, split='train'):
             img= img[:h,:w]
             img = custom_ignore_labels(img, h, w)
         elif args_.rescale is not None:
-            img = misc.imresize(img, (h, w))
-            img = custom_ignore_labels(img, h, w)
+            img = custom_ignore_labels(img, img.shape[0], img.shape[1])
+            img = misc.imresize(img, (h, w), 'nearest')
         if img.shape != (h, w):
             print("an image is skipped due to inconsistent shape with %s" % str(img.shape))
             continue
