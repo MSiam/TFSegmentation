@@ -17,6 +17,7 @@ data_mode: "experiment"
 save_every: 5
 test_every: 5
 max_to_keep: 2
+weighted_loss: True
 
 # Models arguments
 learning_rate:   0.0005
