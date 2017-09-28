@@ -65,8 +65,11 @@ def parse_config():
     # Test arguments
 
     # Models arguments
-    parser.add_argument('--learning_rate', default=1e-5, type=float, help='learning rate')
-    parser.add_argument('--weight_decay', default=5e-4, type=float, help='weight decay')
+    parser.add_argument('--learning_rate', default=5e-4, type=float, help='learning rate')
+    parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
+    parser.add_argument('--learning_decay', default=1e-7, type=float, help='learning decay')
+    parser.add_argument('--learning_decay_every', default=100, type=int, help='learning decay_every')
+    parser.add_argument('--weight_decay', default=2e-4, type=float, help='weight decay')
     parser.add_argument('--pretrained_path', default="", help='The path of pretrained weights')
 
     # Misc arguments

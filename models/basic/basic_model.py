@@ -40,6 +40,7 @@ class BasicModel:
         self.x_pl = None
         self.y_pl = None
         self.is_training = None
+        self.curr_learning_rate= None
         # Output
         self.logits = None
         self.out_softmax = None
@@ -105,6 +106,8 @@ class BasicModel:
             self.x_pl = tf.placeholder(tf.float32,
                                        [self.args.batch_size, self.params.img_height, self.params.img_width, 3])
             self.y_pl = tf.placeholder(tf.int32, [self.args.batch_size, self.params.img_height, self.params.img_width])
+            self.curr_learning_rate= tf.placeholder(tf.float32)
+
             if self.params.weighted_loss:
                 self.wghts = np.zeros((self.args.batch_size, self.params.img_height, self.params.img_width), dtype= np.float32)
             self.is_training = tf.placeholder(tf.bool)
@@ -140,7 +143,7 @@ class BasicModel:
         with tf.name_scope('train-operation'):
             extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
             with tf.control_dependencies(extra_update_ops):
-                self.optimizer = tf.train.AdamOptimizer(self.args.learning_rate)
+                self.optimizer = tf.train.RMSPropOptimizer(self.curr_learning_rate, momentum=self.args.momentum)
                 self.train_op = self.optimizer.minimize(self.loss)
 
     def init_summaries(self):
