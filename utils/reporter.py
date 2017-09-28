@@ -48,10 +48,8 @@ class Reporter:
             self.report_dict['arguments-of-the-experiment'][key] = value
 
     def finalize(self):
-        print(self.report_dict)
-        exit(0)
         with open(self.json_file, 'w') as file:
-            json.dump(self.report_dict, file, sort_keys=True, indent=4, separators=(',', ': '))
+            json.dump(self.report_dict, file, sort_keys=True, indent=4)
 
     def report(self, key, value):
         self.report_dict[key] = value
