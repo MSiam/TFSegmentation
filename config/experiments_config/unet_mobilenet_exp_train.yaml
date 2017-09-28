@@ -22,7 +22,10 @@ weighted_loss: True
 # Models arguments
 learning_rate:   0.0005
 weight_decay: 0.0002
+momentum: 0.9
+learning_decay: 0.00001
 pretrained_path: "pretrained_weights/mobilenet_v1.pkl"
+learning_decay_every: 50
 
 # Misc arguments
 verbose: False
