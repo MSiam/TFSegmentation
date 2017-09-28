@@ -339,8 +339,8 @@ class Train(BasicTrain):
                     self.add_summary(cur_it, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
 
                     # report
-                    self.reporter.report_experiment_statistics('train-acc', 'epoch-' + str(cur_epoch), total_acc)
-                    self.reporter.report_experiment_statistics('train-loss', 'epoch-' + str(cur_epoch), total_loss)
+                    self.reporter.report_experiment_statistics('train-acc', 'epoch-' + str(cur_epoch), str(total_acc))
+                    self.reporter.report_experiment_statistics('train-loss', 'epoch-' + str(cur_epoch), str(total_loss))
                     self.reporter.finalize()
 
                     # Update the Global step
@@ -459,10 +459,10 @@ class Train(BasicTrain):
                 self.add_summary(step, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
 
                 # report
-                self.reporter.report_experiment_statistics('validation-acc', 'epoch-' + str(epoch), total_acc)
-                self.reporter.report_experiment_statistics('validation-loss', 'epoch-' + str(epoch), total_loss)
-                self.reporter.report_experiment_statistics('avg_inference_time_on_validation', 'epoch-' + str(epoch), mean_inference)
-                self.reporter.report_experiment_validation_iou('epoch-' + str(epoch), mean_iou, mean_iou_arr)
+                self.reporter.report_experiment_statistics('validation-acc', 'epoch-' + str(epoch), str(total_acc))
+                self.reporter.report_experiment_statistics('validation-loss', 'epoch-' + str(epoch), str(total_loss))
+                self.reporter.report_experiment_statistics('avg_inference_time_on_validation', 'epoch-' + str(epoch), str(mean_inference))
+                self.reporter.report_experiment_validation_iou('epoch-' + str(epoch), str(mean_iou), mean_iou_arr)
                 self.reporter.finalize()
 
                 # print in console
@@ -628,6 +628,10 @@ class Train(BasicTrain):
                     # mean over batches
                     total_loss = np.mean(loss_list)
                     total_acc = np.mean(acc_list)
+                    # report
+                    self.reporter.report_experiment_statistics('train-acc', 'epoch-' + str(cur_epoch), str(total_acc))
+                    self.reporter.report_experiment_statistics('train-loss', 'epoch-' + str(cur_epoch), str(total_loss))
+                    self.reporter.finalize()
                     # print in console
                     tt.close()
                     print("epoch-" + str(cur_epoch) + "-" + "loss:" + str(total_loss) + "-" +
