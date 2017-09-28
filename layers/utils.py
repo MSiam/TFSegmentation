@@ -57,7 +57,8 @@ def get_deconv_filter(f_shape, l2_strength):
             bilinear[x, y] = value
     weights = np.zeros(f_shape)
     for i in range(f_shape[2]):
-        weights[:, :, i, i] = bilinear
+        for j in range(f_shape[3]):
+            weights[:, :, i, j] = bilinear
 
     init = tf.constant_initializer(value=weights, dtype=tf.float32)
     return variable_with_weight_decay(weights.shape, init, l2_strength)
