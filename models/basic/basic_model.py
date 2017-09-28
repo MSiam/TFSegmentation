@@ -5,7 +5,6 @@ You can override any function you want
 """
 
 from utils.img_utils import decode_labels
-from utils.misc import get_weights
 import numpy as np
 import tensorflow as tf
 
