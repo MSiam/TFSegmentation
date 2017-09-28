@@ -71,6 +71,8 @@ def readCityScapes(hf, path_images, path_labels, args, split='train'):
 def main(args):
     hf = h5py.File(args.output_file, 'w')
     for d in os.listdir(args.root+'images/'):
+        if d=='test':
+            continue
         train_images_path = args.root + 'images/'+d
         train_labels_path = args.root + 'labels/'+d
         custom_read_cityscape(hf, train_images_path, train_labels_path, args, split=d)
@@ -143,10 +145,15 @@ def custom_read_cityscape(hf, path_images, path_labels, args_, split='train'):
     h, w, c = img.shape
 
     # rescale the shape
-    if args_.rescale is not None:
+    if args_.crop != 0:
+        h = int(h * args_.crop)
+        w = int(w * args_.crop)
+        args_.rescale= None
+        shape = (2*len(names), h, w, c)
+    elif args_.rescale is not None:
         h = int(h * args_.rescale)
         w = int(w * args_.rescale)
-    shape = (len(names), h, w, c)
+        shape = (len(names), h, w, c)
     print("Shape of images is %s" % (str(shape)))
 
     # Create a dataset for images
@@ -155,25 +162,38 @@ def custom_read_cityscape(hf, path_images, path_labels, args_, split='train'):
     i = 0
     for f in tqdm(names):
         img = misc.imread(root + '/' + f)
-        if args_.rescale is not None:
+        if args_.crop !=0:
+            img2= img[:h, :w, :]
+            img= img[h:,w:,:]
+        elif args_.rescale is not None:
             img = misc.imresize(img, (h, w))
         if img.shape != (h, w, c):
             print("an image is skipped due to inconsistet shape with %s" % str(img.shape))
             continue
         image_dataset[i, :h, :w, :c] = img
+        if args.crop !=0 :
+            image_dataset[i+1, :h, :w, :c] = img2
+            i+= 1
+
         i = i + 1
 
     print("%s images have processes in total" % str(i))
 
     # Save a numpy
-    assert image_dataset.shape == (len(names), h, w, c)
+    if args_.crop!=0:
+        assert image_dataset.shape == (2*len(names), h, w, c)
+    else:
+        assert image_dataset.shape == (len(names), h, w, c)
     assert image_dataset.dtype == np.uint8
     bs= image_dataset.shape[0] - image_dataset.shape[0]%int(args_.bs)
 
     image_dataset= image_dataset[:bs,:,:,:]
     np.save('X_'+split, image_dataset)
 
-    shape = (len(names), h, w)
+    if args_.crop!=0:
+        shape= (len(names)*2,h,w)
+    else:
+        shape = (len(names), h, w)
     print("Shape of labels is %s" % (str(shape)))
 
     # Read all image files in the path_images directory
@@ -192,6 +212,11 @@ def custom_read_cityscape(hf, path_images, path_labels, args_, split='train'):
     i = 0
     for f in tqdm(names):
         img = misc.imread(root + '/' + f)
+        if args_.crop !=0:
+            img2= img[:h, :w]
+            img2 = custom_ignore_labels(img2, h, w)
+            img= img[h:,w:]
+            img = custom_ignore_labels(img, h, w)
         if args_.rescale is not None:
             img = misc.imresize(img, (h, w))
             img = custom_ignore_labels(img, h, w)
@@ -199,6 +224,9 @@ def custom_read_cityscape(hf, path_images, path_labels, args_, split='train'):
             print("an image is skipped due to inconsistent shape with %s" % str(img.shape))
             continue
         image_dataset[i, :h, :w] = img
+        if args.crop !=0 :
+            image_dataset[i+1, :h, :w] = img2
+            i+= 1
         i = i + 1
     print("%s labels was processed in total" % str(i))
 
@@ -220,6 +248,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", default='/data/cityscapes/',
                         help='path to the dataset root that includes leftImg8bit_trainextra leftImg8bit_valid/train and gtCoarse')
+    parser.add_argument("--crop", default=0, type=float,
+                        help="rescale ratio. eg --crop 0")
     parser.add_argument("--rescale", default=0.25, type=float,
                         help="rescale ratio. eg --rescale 0.5")
     parser.add_argument("--output_file", default='leftImg8bit_extra.h5',
