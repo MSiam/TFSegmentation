@@ -628,6 +628,10 @@ class Train(BasicTrain):
                     # mean over batches
                     total_loss = np.mean(loss_list)
                     total_acc = np.mean(acc_list)
+                    # report
+                    self.reporter.report_experiment_statistics('train-acc', 'epoch-' + str(cur_epoch), total_acc)
+                    self.reporter.report_experiment_statistics('train-loss', 'epoch-' + str(cur_epoch), total_loss)
+                    self.reporter.finalize()
                     # print in console
                     tt.close()
                     print("epoch-" + str(cur_epoch) + "-" + "loss:" + str(total_loss) + "-" +
