@@ -10,7 +10,7 @@ num_channels: 3
 num_classes:  20
 
 # Train arguments
-num_epochs: 20
+num_epochs: 22
 batch_size: 8
 shuffle: True
 data_mode: "overfit"
