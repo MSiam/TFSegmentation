@@ -1,7 +1,7 @@
 # Directories arguments
 data_dir: "data_for_test_n_overfit"
-exp_dir:  "linknet_exp_overfit_3"
-out_dir:  "linknet_exp_overfit_3"
+exp_dir:  "linknet_exp_overfit_4"
+out_dir:  "linknet_exp_overfit_4"
 
 # Data arguments
 img_height:   256
