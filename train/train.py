@@ -656,6 +656,9 @@ class Train(BasicTrain):
             # Save the current checkpoint
             if cur_epoch != 0 and cur_epoch % self.args.save_every == 0:
                 self.save_model()
+            if cur_epoch % self.args.learning_decay_every == 0:
+                curr_lr = curr_lr * self.args.learning_decay
+                print('Current learning rate is ', curr_lr)
 
         print("Overfitting Finished")
 
