@@ -5,7 +5,7 @@ You can override any function you want
 """
 
 from utils.img_utils import decode_labels
-from utils.misc import get_class_weights
+import numpy as np
 import tensorflow as tf
 
 
@@ -36,12 +36,13 @@ class BasicModel:
         self.params.img_height = self.args.img_height
         self.params.num_channels = self.args.num_channels
         self.params.num_classes = self.args.num_classes
-        self.params.class_weights = get_class_weights(self.params.num_classes, self.args.data_dir + 'Y_train.npy')
-        self.params.weighted_loss = self.args.weighted_loss
+        self.params.class_weights= np.load(self.args.data_dir+'weights.npy')
+        self.params.weighted_loss= self.args.weighted_loss
         # Input
         self.x_pl = None
         self.y_pl = None
         self.is_training = None
+        self.curr_learning_rate= None
         # Output
         self.logits = None
         self.out_softmax = None
@@ -109,6 +110,10 @@ class BasicModel:
             self.x_pl = tf.placeholder(tf.float32,
                                        [self.args.batch_size, self.params.img_height, self.params.img_width, 3])
             self.y_pl = tf.placeholder(tf.int32, [self.args.batch_size, self.params.img_height, self.params.img_width])
+            self.curr_learning_rate= tf.placeholder(tf.float32)
+
+            if self.params.weighted_loss:
+                self.wghts = np.zeros((self.args.batch_size, self.params.img_height, self.params.img_width), dtype= np.float32)
             self.is_training = tf.placeholder(tf.bool)
 
     def init_network(self):
@@ -143,7 +148,7 @@ class BasicModel:
         with tf.name_scope('train-operation'):
             extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
             with tf.control_dependencies(extra_update_ops):
-                self.optimizer = tf.train.AdamOptimizer(self.args.learning_rate)
+                self.optimizer = tf.train.RMSPropOptimizer(self.curr_learning_rate, momentum=self.args.momentum)
                 self.train_op = self.optimizer.minimize(self.loss)
 
     def init_summaries(self):

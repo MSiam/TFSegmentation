@@ -281,6 +281,7 @@ class Train(BasicTrain):
 
     def train(self):
         print("Training mode will begin NOW ..")
+        curr_lr= self.model.args.learning_rate
         for cur_epoch in range(self.model.global_epoch_tensor.eval(self.sess) + 1, self.args.num_epochs + 1, 1):
 
             # init tqdm and get the epoch value
@@ -303,7 +304,8 @@ class Train(BasicTrain):
                 # Feed this variables to the network
                 feed_dict = {self.model.x_pl: x_batch,
                              self.model.y_pl: y_batch,
-                             self.model.is_training: True
+                             self.model.is_training: True,
+                             self.model.curr_learning_rate:curr_lr
                              }
 
                 # Run the feed forward but the last iteration finalize what you want to do
@@ -320,7 +322,6 @@ class Train(BasicTrain):
                     self.add_summary(cur_it, summaries_merged=summaries_merged)
 
                 else:
-
                     # run the feed_forward
                     _, loss, acc, summaries_merged, segmented_imgs = self.sess.run(
                         [self.model.train_op, self.model.loss, self.model.accuracy,
@@ -339,8 +340,8 @@ class Train(BasicTrain):
                     self.add_summary(cur_it, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
 
                     # report
-                    self.reporter.report_experiment_statistics('train-acc', 'epoch-' + str(cur_epoch), total_acc)
-                    self.reporter.report_experiment_statistics('train-loss', 'epoch-' + str(cur_epoch), total_loss)
+                    self.reporter.report_experiment_statistics('train-acc', 'epoch-' + str(cur_epoch), str(total_acc))
+                    self.reporter.report_experiment_statistics('train-loss', 'epoch-' + str(cur_epoch), str(total_loss))
                     self.reporter.finalize()
 
                     # Update the Global step
@@ -360,6 +361,7 @@ class Train(BasicTrain):
                     # Break the loop to finalize this epoch
                     break
 
+
                 # Update the Global step
                 self.model.global_step_assign_op.eval(session=self.sess,
                                                       feed_dict={self.model.global_step_input: cur_it + 1})
@@ -375,6 +377,9 @@ class Train(BasicTrain):
             if cur_epoch % self.args.test_every == 0:
                 self.test_per_epoch(step=self.model.global_step_tensor.eval(self.sess),
                                     epoch=self.model.global_epoch_tensor.eval(self.sess))
+            if cur_epoch % self.args.learning_decay_every == 0:
+                curr_lr= curr_lr*self.args.learning_decay
+                print('Current learning rate is ', curr_lr)
 
         print("Training Finished")
 
@@ -459,10 +464,10 @@ class Train(BasicTrain):
                 self.add_summary(step, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
 
                 # report
-                self.reporter.report_experiment_statistics('validation-acc', 'epoch-' + str(epoch), total_acc)
-                self.reporter.report_experiment_statistics('validation-loss', 'epoch-' + str(epoch), total_loss)
-                self.reporter.report_experiment_statistics('avg_inference_time_on_validation', 'epoch-' + str(epoch), mean_inference)
-                self.reporter.report_experiment_validation_iou('epoch-' + str(epoch), mean_iou, mean_iou_arr)
+                self.reporter.report_experiment_statistics('validation-acc', 'epoch-' + str(epoch), str(total_acc))
+                self.reporter.report_experiment_statistics('validation-loss', 'epoch-' + str(epoch), str(total_loss))
+                self.reporter.report_experiment_statistics('avg_inference_time_on_validation', 'epoch-' + str(epoch), str(mean_inference))
+                self.reporter.report_experiment_validation_iou('epoch-' + str(epoch), str(mean_iou), mean_iou_arr)
                 self.reporter.finalize()
 
                 # print in console
