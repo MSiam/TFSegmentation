@@ -65,12 +65,15 @@ def parse_config():
     # Test arguments
 
     # Models arguments
+    parser.add_argument('--num_groups', default=3, type=int, help='number of groups in group conv.')
     parser.add_argument('--learning_rate', default=5e-4, type=float, help='learning rate')
     parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
     parser.add_argument('--learning_decay', default=1e-7, type=float, help='learning decay')
     parser.add_argument('--learning_decay_every', default=100, type=int, help='learning decay_every')
     parser.add_argument('--weight_decay', default=2e-4, type=float, help='weight decay')
+    parser.add_argument('--bias', default=0.0, type=float, help='bias')
     parser.add_argument('--pretrained_path', default="", help='The path of pretrained weights')
+    parser.add_argument('--batchnorm_enabled', action='store_false', help='Batchnorm Enabled flag')
 
     # Misc arguments
     parser.add_argument('--verbose', action='store_true', help='verbosity in the code')
