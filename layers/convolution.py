@@ -101,9 +101,10 @@ def __conv2d_transpose_p(name, x, w=None, output_shape=None, kernel_size=(3, 3),
 
     return out
 
+
 def __depthwise_conv2d_atrous_p(name, x, w=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
-                         initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0,
-                         dilation_rate= 1):
+                                initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0,
+                                dilation_rate=1):
     with tf.variable_scope(name):
         stride = [1, stride[0], stride[1], 1]
         kernel_shape = [kernel_size[0], kernel_size[1], x.shape[-1], 1]
@@ -339,17 +340,18 @@ def load_depthwise_separable_conv_layer(x, name, pretrained_depthwise_weights, p
                                       activation=tf.nn.relu, padding=padding, stride=stride, is_training=is_training)
 
 
-def depthwise_conv2d(name, x, w=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1),dilation_factor=1,
+def depthwise_conv2d(name, x, w=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1), dilation_factor=1,
                      initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0, activation=None,
                      batchnorm_enabled=False, is_training=True):
     with tf.variable_scope(name) as scope:
-        if dilation_factor>1:
-             conv_o_b = __depthwise_conv2d_atrous_p(name=scope, x=x, w=w, kernel_size=kernel_size, padding=padding,
-                                        stride=stride, initializer=initializer, l2_strength=l2_strength, bias=bias,
-                                        dilation_factor= dilation_factor)
+        if dilation_factor > 1:
+            conv_o_b = __depthwise_conv2d_atrous_p(name=scope, x=x, w=w, kernel_size=kernel_size, padding=padding,
+                                                   stride=stride, initializer=initializer, l2_strength=l2_strength,
+                                                   bias=bias,
+                                                   dilation_factor=dilation_factor)
         else:
             conv_o_b = __depthwise_conv2d_p(name=scope, x=x, w=w, kernel_size=kernel_size, padding=padding,
-                                        stride=stride, initializer=initializer, l2_strength=l2_strength, bias=bias)
+                                            stride=stride, initializer=initializer, l2_strength=l2_strength, bias=bias)
 
         if batchnorm_enabled:
             conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training)
@@ -385,16 +387,18 @@ def depthwise_separable_conv2d(name, x, w_depthwise=None, w_pointwise=None, widt
 
     return conv_o
 
+
 def depthwise_separable_atrous_conv2d(name, x, w_depthwise=None, w_pointwise=None, width_multiplier=1.0, num_filters=16,
-                               kernel_size=(3, 3), dilation_factor=1,
-                               padding='SAME', stride=(1, 1),
-                               initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, biases=(0.0, 0.0),
-                               activation=None, batchnorm_enabled=True,
-                               is_training=True):
+                                      kernel_size=(3, 3), dilation_factor=1,
+                                      padding='SAME', stride=(1, 1),
+                                      initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0,
+                                      biases=(0.0, 0.0),
+                                      activation=None, batchnorm_enabled=True,
+                                      is_training=True):
     total_num_filters = int(round(num_filters * width_multiplier))
     with tf.variable_scope(name) as scope:
         conv_a = depthwise_conv2d('depthwise', x=x, w=w_depthwise, kernel_size=kernel_size, padding=padding,
-                                  stride=stride, dilation_factor=filation_factor,
+                                  stride=stride, dilation_factor=dilation_factor,
                                   initializer=initializer, l2_strength=l2_strength, bias=biases[0],
                                   activation=activation,
                                   batchnorm_enabled=batchnorm_enabled, is_training=is_training)
