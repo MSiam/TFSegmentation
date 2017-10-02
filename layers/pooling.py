@@ -14,7 +14,7 @@ def max_pool_2d(x, size=(2, 2), name='pooling'):
                           name=name)
 
 
-def avg_pool_2d(x, size=(2, 2), name='avg_pooling'):
+def avg_pool_2d(x, size=(2, 2), stride=(2, 2), name='avg_pooling'):
     """
         Average pooling 2D Wrapper
         :param x: (tf.tensor) The input to the layer (N,H,W,C).
@@ -23,7 +23,8 @@ def avg_pool_2d(x, size=(2, 2), name='avg_pooling'):
         :return: The output is the same input but halfed in both width and height (N,H/2,W/2,C).
     """
     size_x, size_y = size
-    return tf.nn.avg_pool(x, ksize=[1, size_x, size_y, 1], strides=[1, size_x, size_y, 1], padding='VALID',
+    stride_x, stride_y = stride
+    return tf.nn.avg_pool(x, ksize=[1, size_x, size_y, 1], strides=[1, stride_x, stride_y, 1], padding='VALID',
                           name=name)
 
 
