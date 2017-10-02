@@ -1,5 +1,5 @@
 # Directories arguments
-data_dir: "full_cityscapes"
+data_dir: "full_cityscapes_res"
 exp_dir:  "unet_mobilenet_exp"
 out_dir:  "unet_mobilenet_exp"
 

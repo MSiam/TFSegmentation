@@ -17,10 +17,6 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 
-# import pdb
-
-
-
 class Train(BasicTrain):
     """
     Trainer class
@@ -281,7 +277,7 @@ class Train(BasicTrain):
 
     def train(self):
         print("Training mode will begin NOW ..")
-        curr_lr= self.model.args.learning_rate
+        #curr_lr= self.model.args.learning_rate
         for cur_epoch in range(self.model.global_epoch_tensor.eval(self.sess) + 1, self.args.num_epochs + 1, 1):
 
             # init tqdm and get the epoch value
@@ -304,8 +300,8 @@ class Train(BasicTrain):
                 # Feed this variables to the network
                 feed_dict = {self.model.x_pl: x_batch,
                              self.model.y_pl: y_batch,
-                             self.model.is_training: True,
-                             self.model.curr_learning_rate:curr_lr
+                             self.model.is_training: True
+#                             self.model.curr_learning_rate:curr_lr
                              }
 
                 # Run the feed forward but the last iteration finalize what you want to do
@@ -377,9 +373,9 @@ class Train(BasicTrain):
             if cur_epoch % self.args.test_every == 0:
                 self.test_per_epoch(step=self.model.global_step_tensor.eval(self.sess),
                                     epoch=self.model.global_epoch_tensor.eval(self.sess))
-            if cur_epoch % self.args.learning_decay_every == 0:
-                curr_lr= curr_lr*self.args.learning_decay
-                print('Current learning rate is ', curr_lr)
+#            if cur_epoch % self.args.learning_decay_every == 0:
+#                curr_lr= curr_lr*self.args.learning_decay
+#                print('Current learning rate is ', curr_lr)
 
         print("Training Finished")
 
@@ -496,6 +492,7 @@ class Train(BasicTrain):
 
         # init tqdm and get the epoch value
         tt = tqdm(range(self.test_data_len))
+        naming= np.load(self.args.data_dir+'names_train.npy')
 
         # init acc and loss lists
         loss_list = []
@@ -529,10 +526,12 @@ class Train(BasicTrain):
                  self.model.merged_summaries, self.model.segmented_summary],
                 feed_dict=feed_dict)
 
+            np.save(self.args.out_dir+'npy/'+str(cur_iteration)+'.npy', out_argmax[0])
+            plt.imsave(self.args.out_dir+'imgs/'+ 'test_'+str(cur_iteration)+'.png', segmented_imgs[0])
+
             # log loss and acc
             loss_list += [loss]
             acc_list += [acc]
-            img_list += [segmented_imgs[0]]
 
             # log metrics
             self.metrics.update_metrics(out_argmax[0], y_batch[0], 0, 0)
@@ -550,8 +549,6 @@ class Train(BasicTrain):
         print("mean_iou: " + str(mean_iou))
 
         print("Plotting imgs")
-        for i in range(len(img_list)):
-            plt.imsave(self.args.imgs_dir + 'test_' + str(i) + '.png', img_list[i])
 
     def overfit(self):
         print("Overfitting mode will begin NOW..")

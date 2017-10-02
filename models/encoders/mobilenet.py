@@ -9,8 +9,8 @@ class MobileNet:
     MobileNet Class
     """
 
-    MEAN = [103.939, 116.779, 123.68]
-
+#    MEAN = [103.939, 116.779, 123.68]
+    MEAN = [73.29132098,  83.04442645,  72.5238962]
     def __init__(self, x_input,
                  num_classes,
                  pretrained_path,
