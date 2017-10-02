@@ -15,7 +15,7 @@ except:
 import os
 import numpy
 
-os.environ["CC"] = "g++"
+os.environ["CC"]  = "g++"
 os.environ["CXX"] = "g++"
 
-setup(ext_modules=cythonize("addToConfusionMatrix.pyx"), include_dirs=[numpy.get_include()])
+setup(ext_modules = cythonize("addToConfusionMatrix.pyx"),include_dirs=[numpy.get_include()])

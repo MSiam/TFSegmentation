@@ -74,6 +74,7 @@ def custom_read_cityscape(hf, path_images, path_labels, args_, split='train'):
                 else:
                     continue
 
+    np.save('names_'+split, np.array(names))
     # Print statistics
     print("number of found images in \n %s is %s img" % (path_images, len(names)))
     print(root)
@@ -148,6 +149,7 @@ def custom_read_cityscape(hf, path_images, path_labels, args_, split='train'):
                 else:
                     continue
 
+    np.save('ynames_'+split, np.array(names))
     # Create a dataset for labels
     image_dataset = hf.create_dataset('labels_' + split, shape, dtype=np.uint8)
     root = path_labels
