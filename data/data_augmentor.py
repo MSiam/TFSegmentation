@@ -55,8 +55,8 @@ print(y.dtype)
 #plot_imgs(x, 'full_cityscapes_res/x_org/', mode='x')
 #plot_imgs(y, 'full_cityscapes_res/y_org/', mode='y')
 
-x_aug = np.empty([0] + list(x.shape[1:]))
-y_aug = np.empty([0] + list(y.shape[1:]))
+x_aug = np.empty([0] + list(x.shape[1:]),dtype=np.uint8)
+y_aug = np.empty([0] + list(y.shape[1:]),dtype=np.uint8)
 
 seq = iaa.Sequential([
     iaa.Fliplr(1),  # horizontally flip 50% of the images
