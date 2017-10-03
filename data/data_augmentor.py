@@ -73,8 +73,8 @@ print(y_aug.shape)
 print(x_aug.dtype)
 print(y_aug.dtype)
 
-plot_imgs(x_aug, 'full_cityscapes_aug/x_aug/', mode='x')
-plot_imgs(y_aug, 'full_cityscapes_aug/y_aug/', mode='y')
+plot_imgs(x_aug, 'full_cityscapes_res/x_aug/', mode='x')
+plot_imgs(y_aug, 'full_cityscapes_res/y_aug/', mode='y')
 
 # save the new numpys of the augmented data or append it with the real data
 np.save('full_cityscapes_res/x_aug.npy',x_aug)
