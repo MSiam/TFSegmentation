@@ -110,7 +110,7 @@ class UNetMobileNet(BasicModel):
                                              kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
             self._debug(self.upscale5)
             self.expand5 = conv2d('expand5', x=self.upscale5, batchnorm_enabled=True,is_training= self.is_training,
-                                      num_filters=self.encoder.conv1_1.shape.as_list()[3], kernel_size=(1, 1),
+                                      num_filters=self.encoder.conv1_1.shape.as_list()[3], kernel_size=(1, 1),dropout_keep_prob=0.5,
                                       l2_strength=self.encoder.wd)
             self._debug(self.expand5)
 
