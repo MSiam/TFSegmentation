@@ -130,13 +130,27 @@ class BasicModel:
         losses= tf.losses.sparse_softmax_cross_entropy(logits= self.logits, labels=self.y_pl, weights= self.wghts)
         return tf.reduce_mean(losses)
 
+    def bootstrapped_ce_loss(self, ce, fraction):
+        # only consider k worst pixels (lowest posterior probability) per image
+        assert fraction is not None
+        batch_size = ce.get_shape().as_list()[0]
+        if batch_size is None:
+            batch_size = tf.shape(ce)[0]
+        k = tf.cast(tf.cast(tf.shape(ce)[1] * tf.shape(ce)[2], tf.float32) * fraction, tf.int32)
+        bs_ce, _ = tf.nn.top_k(tf.reshape(ce, shape=[batch_size, -1]), k=k, sorted=False)
+        bs_ce = tf.reduce_mean(bs_ce, axis=1)
+        bs_ce = tf.reduce_sum(bs_ce, axis=0)
+        return bs_ce
+
     def init_train(self):
         with tf.name_scope('loss'):
             if self.params.weighted_loss:
                 self.cross_entropy_loss= self.weighted_loss()
             else:
-                self.cross_entropy_loss = tf.reduce_mean(
-                    tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_pl))
+#                self.ce = tf.reduce_mean(
+#                    tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_pl))
+                self.ce = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_pl)
+                self.cross_entropy_loss = self.bootstrapped_ce_loss(self.ce, 0.25)
             self.regularization_loss = tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
             self.loss = self.cross_entropy_loss + self.regularization_loss
 
