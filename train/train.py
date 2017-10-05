@@ -277,7 +277,7 @@ class Train(BasicTrain):
 
     def train(self):
         print("Training mode will begin NOW ..")
-        #curr_lr= self.model.args.learning_rate
+        # curr_lr= self.model.args.learning_rate
         for cur_epoch in range(self.model.global_epoch_tensor.eval(self.sess) + 1, self.args.num_epochs + 1, 1):
 
             # init tqdm and get the epoch value
@@ -301,7 +301,7 @@ class Train(BasicTrain):
                 feed_dict = {self.model.x_pl: x_batch,
                              self.model.y_pl: y_batch,
                              self.model.is_training: True
-#                             self.model.curr_learning_rate:curr_lr
+                             # self.model.curr_learning_rate:curr_lr
                              }
 
                 # Run the feed forward but the last iteration finalize what you want to do
@@ -357,7 +357,6 @@ class Train(BasicTrain):
                     # Break the loop to finalize this epoch
                     break
 
-
                 # Update the Global step
                 self.model.global_step_assign_op.eval(session=self.sess,
                                                       feed_dict={self.model.global_step_input: cur_it + 1})
@@ -373,9 +372,9 @@ class Train(BasicTrain):
             if cur_epoch % self.args.test_every == 0:
                 self.test_per_epoch(step=self.model.global_step_tensor.eval(self.sess),
                                     epoch=self.model.global_epoch_tensor.eval(self.sess))
-#            if cur_epoch % self.args.learning_decay_every == 0:
-#                curr_lr= curr_lr*self.args.learning_decay
-#                print('Current learning rate is ', curr_lr)
+                #            if cur_epoch % self.args.learning_decay_every == 0:
+                #                curr_lr= curr_lr*self.args.learning_decay
+                #                print('Current learning rate is ', curr_lr)
 
         print("Training Finished")
 
@@ -420,8 +419,8 @@ class Train(BasicTrain):
 
                 start = time.time()
                 # run the feed_forward
-                out_argmax, loss, acc, summaries_merged = self.sess.run(
-                    [self.model.out_argmax, self.model.loss, self.model.accuracy, self.model.merged_summaries],
+                out_argmax, loss, acc = self.sess.run(
+                    [self.model.out_argmax, self.model.loss, self.model.accuracy],
                     feed_dict=feed_dict)
                 end = time.time()
                 # log loss and acc
@@ -462,7 +461,8 @@ class Train(BasicTrain):
                 # report
                 self.reporter.report_experiment_statistics('validation-acc', 'epoch-' + str(epoch), str(total_acc))
                 self.reporter.report_experiment_statistics('validation-loss', 'epoch-' + str(epoch), str(total_loss))
-                self.reporter.report_experiment_statistics('avg_inference_time_on_validation', 'epoch-' + str(epoch), str(mean_inference))
+                self.reporter.report_experiment_statistics('avg_inference_time_on_validation', 'epoch-' + str(epoch),
+                                                           str(mean_inference))
                 self.reporter.report_experiment_validation_iou('epoch-' + str(epoch), str(mean_iou), mean_iou_arr)
                 self.reporter.finalize()
 
@@ -492,7 +492,7 @@ class Train(BasicTrain):
 
         # init tqdm and get the epoch value
         tt = tqdm(range(self.test_data_len))
-        naming= np.load(self.args.data_dir+'names_train.npy')
+        naming = np.load(self.args.data_dir + 'names_train.npy')
 
         # init acc and loss lists
         loss_list = []
@@ -526,15 +526,15 @@ class Train(BasicTrain):
                  self.model.merged_summaries, self.model.segmented_summary],
                 feed_dict=feed_dict)
 
-            np.save(self.args.out_dir+'npy/'+str(cur_iteration)+'.npy', out_argmax[0])
-            plt.imsave(self.args.out_dir+'imgs/'+ 'test_'+str(cur_iteration)+'.png', segmented_imgs[0])
+            np.save(self.args.out_dir + 'npy/' + str(cur_iteration) + '.npy', out_argmax[0])
+            plt.imsave(self.args.out_dir + 'imgs/' + 'test_' + str(cur_iteration) + '.png', segmented_imgs[0])
 
             # log loss and acc
             loss_list += [loss]
             acc_list += [acc]
 
             # log metrics
-            self.metrics.update_metrics(out_argmax[0], y_batch[0], 0, 0)
+            self.metrics.update_metrics_batch(out_argmax, y_batch)
 
         # mean over batches
         total_loss = np.mean(loss_list)
