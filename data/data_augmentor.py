@@ -13,6 +13,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from imgaug import augmenters as iaa
 import os
+import pdb
 
 def create_dirs(dirs):
     """
@@ -59,14 +60,14 @@ x_aug = np.empty([0] + list(x.shape[1:]),dtype=np.uint8)
 y_aug = np.empty([0] + list(y.shape[1:]),dtype=np.uint8)
 
 seq = iaa.Sequential([
-    iaa.Fliplr(1),  # horizontally flip 50% of the images
-#    iaa.Crop(px=(0, 50)),
+    iaa.Crop(px=(0, 150)),
 ])
 # Convert the stochastic sequence of augmenters to a deterministic one.
 # The deterministic sequence will always apply the exactly same effects to the images.
 seq_det = seq.to_deterministic()  # call this for each batch again, NOT only once at the start
 x_aug = np.append(x_aug, seq_det.augment_images(x), axis=0)
 y_aug = np.append(y_aug, seq_det.augment_images(y), axis=0)
+pdb.set_trace()
 
 print(x_aug.shape)
 print(y_aug.shape)
