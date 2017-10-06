@@ -7,6 +7,8 @@ You can override any function you want
 from utils.img_utils import decode_labels
 import numpy as np
 import tensorflow as tf
+from utils.augmentation import flip_randomly_left_right_image_with_annotation, scale_randomly_image_with_annotation_with_fixed_size_output
+
 
 class Params:
     """
@@ -106,7 +108,12 @@ class BasicModel:
             self.x_pl = tf.placeholder(tf.float32,
                                        [self.args.batch_size, self.params.img_height, self.params.img_width, 3])
             self.y_pl = tf.placeholder(tf.int32, [self.args.batch_size, self.params.img_height, self.params.img_width])
-#            self.curr_learning_rate= tf.placeholder(tf.float32)
+
+            print('X_batch shape ', self.x_pl.get_shape().as_list(), ' ' , self.y_pl.get_shape().as_list())
+            self.x_pl, self.y_pl = flip_randomly_left_right_image_with_annotation(self.x_pl, self.y_pl)
+            print('Afterwards: X_batch shape ', self.x_pl.get_shape().as_list(), ' ' , self.y_pl.get_shape().as_list())
+
+            self.curr_learning_rate= tf.placeholder(tf.float32)
 
             if self.params.weighted_loss:
                 self.wghts = np.zeros((self.args.batch_size, self.params.img_height, self.params.img_width), dtype= np.float32)
@@ -147,17 +154,18 @@ class BasicModel:
             if self.params.weighted_loss:
                 self.cross_entropy_loss= self.weighted_loss()
             else:
-#                self.ce = tf.reduce_mean(
-#                    tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_pl))
-                self.ce = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_pl)
-                self.cross_entropy_loss = self.bootstrapped_ce_loss(self.ce, 0.25)
+                self.cross_entropy_loss = tf.reduce_mean(
+                    tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_pl))
+#                self.ce = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_pl)
+#                self.cross_entropy_loss = self.bootstrapped_ce_loss(self.ce, 0.25)
             self.regularization_loss = tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
             self.loss = self.cross_entropy_loss + self.regularization_loss
+            self.loss= self.loss*10
 
         with tf.name_scope('train-operation'):
             extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
             with tf.control_dependencies(extra_update_ops):
-                self.optimizer = tf.train.AdamOptimizer(self.args.learning_rate)
+                self.optimizer = tf.train.AdamOptimizer(self.curr_learning_rate)
                 self.train_op = self.optimizer.minimize(self.loss)
 
     def init_summaries(self):
