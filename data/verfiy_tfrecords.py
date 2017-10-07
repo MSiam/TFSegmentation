@@ -46,7 +46,7 @@ x_pl, y_pl = next_img
 x_pl.set_shape([None, 512, 1024, 3])
 y_pl.set_shape([None, 512, 1024])
 
-with tf.get_default_session() as sess:
+with tf.Session() as sess:
     while not sess.should_stop():
         next_element = sess.run(next_img)
         x,y = next_element[0]
