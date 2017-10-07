@@ -1,7 +1,6 @@
 from models.basic.basic_model import BasicModel
-from models.encoders.VGG import VGG16
 from models.encoders.mobilenet import MobileNet
-from layers.convolution import conv2d_transpose, conv2d, atrous_conv2d
+from layers.convolution import conv2d_transpose, conv2d
 
 import tensorflow as tf
 
@@ -28,6 +27,10 @@ class FCN8sMobileNetTFRecords(BasicModel):
         self.training_iterator = None
         self.validation_iterator = None
         self.next_img = None
+        self.training_handle = None
+        self.validation_handle = None
+        # get the default session
+        self.sess = tf.get_default_session()
 
     def build(self):
         print("\nBuilding the MODEL...")
@@ -83,16 +86,21 @@ class FCN8sMobileNetTFRecords(BasicModel):
             val_dataset = val_dataset.map(parser)
             val_dataset = val_dataset.batch(self.args.batch_size)
 
+            self.training_iterator = train_dataset.make_one_shot_iterator()
+            self.validation_iterator = val_dataset.make_initializable_iterator()
+
+            self.training_handle = self.sess.run(self.training_iterator.string_handle())
+            self.validation_handle = self.sess.run(self.validation_iterator.string_handle())
+
             self.handle = tf.placeholder(tf.string, shape=[])
             iterator = tf.contrib.data.Iterator.from_string_handle(self.handle,
                                                                    train_dataset.output_types,
                                                                    train_dataset.output_shapes)
 
-            self.training_iterator = train_dataset.make_one_shot_iterator()
-            self.validation_iterator = val_dataset.make_initializable_iterator()
-
             self.next_img = iterator.get_next()
             self.x_pl, self.y_pl = self.next_img
+            self.x_pl.set_shape([None, self.args.img_height, self.args.img_width, 3])
+            self.y_pl.set_shape([None, self.args.img_height, self.args.img_width])
 
     def init_network(self):
         """
