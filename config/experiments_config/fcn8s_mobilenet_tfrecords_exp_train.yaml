@@ -1,5 +1,5 @@
 # Directories arguments
-data_dir: "full_cityscapes_res"
+data_dir: "full_cityscapes"
 tfrecord_train_file: "cscapestrain.tfrecords"
 tfrecord_val_file: "cscapesval.tfrecords"
 tfrecord_train_len: 20000
@@ -21,7 +21,7 @@ data_mode: "experiment"
 save_every: 1
 test_every: 2
 max_to_keep: 2
-weighted_loss: True
+weighted_loss: False
 
 # Models arguments
 learning_rate:   1e-4
