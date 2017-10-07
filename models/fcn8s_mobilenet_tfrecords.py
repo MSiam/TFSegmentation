@@ -111,8 +111,9 @@ class FCN8sMobileNetTFRecords(BasicModel):
         # Build Decoding part
         with tf.name_scope('upscore_2s'):
             self.upscore2 = conv2d_transpose('upscore2', x=self.encoder.score_fr,
-                                             output_shape=self.encoder.feed1.shape.as_list()[0:3] + [
-                                                 self.params.num_classes],
+                                             output_shape=[self.args.batch_size] +
+                                                          self.encoder.feed1.shape.as_list()[1:3] +
+                                                          [self.params.num_classes],
                                              kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
             self.score_feed1 = conv2d('score_feed1', x=self.encoder.feed1,
                                       num_filters=self.params.num_classes, kernel_size=(1, 1),
@@ -121,8 +122,9 @@ class FCN8sMobileNetTFRecords(BasicModel):
 
         with tf.name_scope('upscore_4s'):
             self.upscore4 = conv2d_transpose('upscore4', x=self.fuse_feed1,
-                                             output_shape=self.encoder.feed2.shape.as_list()[0:3] + [
-                                                 self.params.num_classes],
+                                             output_shape=[self.args.batch_size] +
+                                                          self.encoder.feed2.shape.as_list()[1:3] +
+                                                          [self.params.num_classes],
                                              kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
             self.score_feed2 = conv2d('score_feed2', x=self.encoder.feed2,
                                       num_filters=self.params.num_classes, kernel_size=(1, 1),
@@ -131,7 +133,8 @@ class FCN8sMobileNetTFRecords(BasicModel):
 
         with tf.name_scope('upscore_8s'):
             self.upscore8 = conv2d_transpose('upscore8', x=self.fuse_feed2,
-                                             output_shape=self.x_pl.shape.as_list()[0:3] + [self.params.num_classes],
+                                             output_shape=[self.args.batch_size] + self.x_pl.shape.as_list()[1:3] +
+                                                          [self.params.num_classes],
                                              kernel_size=(16, 16), stride=(8, 8), l2_strength=self.encoder.wd)
 
         self.logits = self.upscore8
