@@ -22,9 +22,9 @@ def parser(record):
     height = tf.cast(parsed['height'], tf.int32)
     width = tf.cast(parsed['width'], tf.int32)
 
-    image_shape = tf.stack([height, width, 3])
+    image_shape = tf.stack([256, 512, 3])
 
-    annotation_shape = tf.stack([height, width])
+    annotation_shape = tf.stack([256, 512])
 
     image = tf.reshape(image, image_shape)
     annotation = tf.reshape(annotation, annotation_shape)
@@ -43,8 +43,6 @@ iterator = dataset.make_one_shot_iterator()
 
 next_img = iterator.get_next()
 x_pl, y_pl = next_img
-x_pl.set_shape([None, 512, 1024, 3])
-y_pl.set_shape([None, 512, 1024])
 
 with tf.Session() as sess:
     next_element = sess.run(next_img)
