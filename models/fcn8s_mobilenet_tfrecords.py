@@ -54,8 +54,8 @@ class FCN8sMobileNetTFRecords(BasicModel):
                 }
                 parsed = tf.parse_single_example(record, keys_to_features)
 
-                image = tf.decode_raw(parsed['image_raw'], tf.uint8)
-                annotation = tf.decode_raw(parsed['mask_raw'], tf.uint8)
+                image = tf.decode_raw(parsed['image_raw'], tf.float32)
+                annotation = tf.decode_raw(parsed['mask_raw'], tf.int32)
 
                 height = tf.cast(parsed['height'], tf.int32)
                 width = tf.cast(parsed['width'], tf.int32)
