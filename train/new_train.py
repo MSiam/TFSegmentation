@@ -62,8 +62,6 @@ class NewTrain(object):
         self.summary_writer = tf.summary.FileWriter(self.args.summary_dir, self.sess.graph)
         ##################################################################################
         if self.args.mode == 'train':
-            self.training_handle = sess.run(self.model.training_iterator.string_handle())
-            self.validation_handle = sess.run(self.model.validation_iterator.string_handle())
             self.num_iterations_training_per_epoch = self.args.tfrecord_train_len // self.args.batch_size
             self.num_iterations_validation_per_epoch = self.args.tfrecord_val_len // self.args.batch_size
         else:
@@ -206,7 +204,7 @@ class NewTrain(object):
 
                 # Feed this variables to the network
                 feed_dict = {
-                    self.model.handle: self.training_handle,
+                    self.model.handle: self.model.training_handle,
                     self.model.is_training: True,
                     self.model.curr_learning_rate: curr_lr
                 }
@@ -308,7 +306,7 @@ class NewTrain(object):
         for cur_iteration in tt:
             # Feed this variables to the network
             feed_dict = {
-                self.model.handle: self.validation_handle,
+                self.model.handle: self.model.validation_handle,
                 self.model.is_training: False
             }
 
