@@ -47,13 +47,12 @@ x_pl.set_shape([None, 512, 1024, 3])
 y_pl.set_shape([None, 512, 1024])
 
 with tf.Session() as sess:
-    while not sess.should_stop():
-        next_element = sess.run(next_img)
-        x,y = next_element[0]
-        print(x.dtype)
-        print(y.dtype)
-        print(x.shape)
-        print(y.shape)
-        print(x)
-        print(y)
-        exit(0)
+    next_element = sess.run(next_img)
+    x, y = next_element[0]
+    print(x.dtype)
+    print(y.dtype)
+    print(x.shape)
+    print(y.shape)
+    print(x)
+    print(y)
+    exit(0)
