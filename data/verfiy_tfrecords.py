@@ -16,15 +16,15 @@ def parser(record):
     }
     parsed = tf.parse_single_example(record, keys_to_features)
 
-    image = tf.decode_raw(parsed['image_raw'], tf.float32)
-    annotation = tf.decode_raw(parsed['mask_raw'], tf.int32)
+    image = tf.cast(tf.decode_raw(parsed['image_raw'], tf.uint8), tf.float32)
+    annotation = tf.cast(tf.decode_raw(parsed['mask_raw'], tf.uint8), tf.int32)
 
     height = tf.cast(parsed['height'], tf.int32)
     width = tf.cast(parsed['width'], tf.int32)
 
-    image_shape = tf.stack([256, 512, 3])
+    image_shape = tf.stack([height, width, 3])
 
-    annotation_shape = tf.stack([256, 512])
+    annotation_shape = tf.stack([height, width])
 
     image = tf.reshape(image, image_shape)
     annotation = tf.reshape(annotation, annotation_shape)
@@ -46,11 +46,11 @@ x_pl, y_pl = next_img
 
 with tf.Session() as sess:
     next_element = sess.run(next_img)
-    x, y = next_element[0]
+    x, y = next_element
+    print(x)
+    print(y)
     print(x.dtype)
     print(y.dtype)
     print(x.shape)
     print(y.shape)
-    print(x)
-    print(y)
     exit(0)
