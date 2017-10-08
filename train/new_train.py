@@ -324,7 +324,6 @@ class NewTrain(object):
                 acc_list += [acc]
                 inf_list += [end - start]
                 # log metrics
-                print(next_img[1].shape)
                 self.metrics.update_metrics_batch(out_argmax, next_img[1])
 
             else:
