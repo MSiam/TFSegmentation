@@ -420,7 +420,7 @@ class Train(BasicTrain):
 
                 start = time.time()
                 # run the feed_forward
-                out_argmax, loss, acc, summaries_merged = self.sess.run(
+                out_argmax, loss, acc = self.sess.run(
                     [self.model.out_argmax, self.model.loss, self.model.accuracy],
                     feed_dict=feed_dict)
                 end = time.time()
@@ -434,7 +434,7 @@ class Train(BasicTrain):
             else:
                 start = time.time()
                 # run the feed_forward
-                out_argmax, loss, acc, summaries_merged, segmented_imgs = self.sess.run(
+                out_argmax, loss, acc, segmented_imgs = self.sess.run(
                     [self.model.out_argmax, self.model.loss, self.model.accuracy, self.model.segmented_summary],
                     feed_dict=feed_dict)
                 end = time.time()
