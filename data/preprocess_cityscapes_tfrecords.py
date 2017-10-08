@@ -6,6 +6,8 @@ from scipy import misc
 from tqdm import tqdm
 import tensorflow as tf
 from PIL import Image
+import scipy.misc as misc
+import pdb
 
 def _bytes_feature(value):
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
@@ -28,13 +30,15 @@ def write_image_annotation_pairs_to_tfrecord(filename_pairs, tfrecords_filename)
     writer = tf.python_io.TFRecordWriter(tfrecords_filename)
     h=512; w= 1024;
     for img_path, annotation_path in filename_pairs:
-        img = np.array(Image.open(img_path))
+        print('processing image ', img_path)
+#        img = np.array(Image.open(img_path))
+        img= misc.imread(img_path)
         img = misc.imresize(img, (h, w))
 
-        annotation = np.array(Image.open(annotation_path))
+#        annotation = np.array(Image.open(annotation_path))
+        annotation= misc.imread(annotation_path)
         annotation = custom_ignore_labels(annotation, img.shape[0], img.shape[1])
         annotation = misc.imresize(annotation, (h, w), 'nearest')
-
         # Unomment this one when working with surgical data
         # annotation = annotation[:, :, 0]
 
@@ -60,9 +64,10 @@ def write_image_annotation_pairs_to_tfrecord(filename_pairs, tfrecords_filename)
     writer.close()
 
 def main(args):
-    train_images_path = args.root + 'images/train_extra/'
-    train_labels_path = args.root + 'labels/train_extra/'
-    custom_read_cityscape(train_images_path, train_labels_path, args)
+    d= args.dir
+    train_images_path = args.root + 'images/'+d+'/'
+    train_labels_path = args.root + 'labels/'+d+'/'
+    custom_read_cityscape(train_images_path, train_labels_path, args, split='d')
 
 labelID_2_trainID = {0: 19,  # 'unlabeled'
                      1: 19,  # 'ego vehicle'
@@ -103,7 +108,7 @@ labelID_2_trainID = {0: 19,  # 'unlabeled'
 
 
 def custom_ignore_labels(img, h, w):
-    img_temp= np.zeros_like(img)*-2
+    img_temp= np.zeros(img.shape, dtype=np.uint8)
     for k, v in labelID_2_trainID.items():
         img_temp[img==k] = v
     return img_temp
@@ -121,7 +126,7 @@ def custom_read_cityscape(path_images, path_labels, args_, split='train'):
                         path_labels+d+'/'+f.replace('leftImg8bit','gtCoarse_labelIds')) )
                 else:
                     continue
-    write_image_annotation_pairs_to_tfrecord(filename_pairs, 'cscapes.tfrecords')
+    write_image_annotation_pairs_to_tfrecord(filename_pairs, args_.out)
 
 
 
@@ -129,6 +134,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", default='/data/cityscapes/',
                         help='path to the dataset root')
+    parser.add_argument("--dir", default='train_extra',
+                        help='path to the dataset folder')
+    parser.add_argument("--out", default='cscapes_train.tfrecords',
+                        help='name of output tfrecords file')
     parser.add_argument("--rescale", default=0.25, type=float,
                         help="rescale ratio. eg --rescale 0.5")
     args = parser.parse_args()

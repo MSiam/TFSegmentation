@@ -4,7 +4,7 @@ import numpy as np
 # Reset the graph
 tf.reset_default_graph()
 
-filename = 'cscapesval.tfrecords'
+filename = 'cscapes_val.tfrecords'
 
 
 def parser(record):
