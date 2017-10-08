@@ -15,7 +15,7 @@ batch_size: 4
 shuffle: True
 data_mode: "experiment"
 save_every: 10
-test_every: 3
+test_every: 2
 max_to_keep: 2
 weighted_loss: True
 
@@ -23,7 +23,7 @@ weighted_loss: True
 learning_rate:   9e-5
 weight_decay: 0.000005
 momentum: 0.9
-learning_decay: 0.5
+learning_decay: 0.7
 pretrained_path: "pretrained_weights/mobilenet_v1.pkl"
 learning_decay_every: 10
 
