@@ -456,7 +456,7 @@ class Train(BasicTrain):
                 summaries_dict['val-acc-per-epoch'] = total_acc
                 summaries_dict['mean_iou_on_val'] = mean_iou
                 summaries_dict['val_prediction_sample'] = segmented_imgs
-                self.add_summary(step, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
+                self.add_summary(step, summaries_dict=summaries_dict)
                 self.summary_writer.flush()
 
                 # report
