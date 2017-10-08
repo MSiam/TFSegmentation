@@ -20,12 +20,12 @@ max_to_keep: 2
 weighted_loss: True
 
 # Models arguments
-learning_rate:   5e-5
-weight_decay: 0.00005
+learning_rate:   5e-4
+weight_decay: 0.000005
 momentum: 0.9
-learning_decay: 0.1
+learning_decay: 0.5
 pretrained_path: "pretrained_weights/mobilenet_v1.pkl"
-learning_decay_every: 70
+learning_decay_every: 10
 
 # Misc arguments
 verbose: False
