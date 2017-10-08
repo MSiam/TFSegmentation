@@ -359,7 +359,7 @@ class Train(BasicTrain):
             # Test the model on validation
             if cur_epoch % self.args.test_every == 0:
                 self.test_per_epoch(step=self.model.global_step_tensor.eval(self.sess),
-                                    epoch=self.model.global_epoch_tensor.eval(self.sess))
+                                    epoch=cur_epoch)
 
             if cur_epoch % self.args.learning_decay_every == 0:
                 curr_lr = curr_lr * self.args.learning_decay
