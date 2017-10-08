@@ -448,4 +448,6 @@ class NewTrain(object):
         print("Plotting imgs")
 
     def finalize(self):
-        raise NotImplementedError("finalize function is not implemented in the trainer")
+        self.reporter.finalize()
+        self.summary_writer.close()
+        self.save_model()
