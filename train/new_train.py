@@ -185,6 +185,7 @@ class NewTrain(object):
 
     def train(self):
         print("Training mode will begin NOW ..")
+        tf.train.start_queue_runners()
         curr_lr = self.model.args.learning_rate
         for cur_epoch in range(self.model.global_epoch_tensor.eval(self.sess) + 1, self.args.num_epochs + 1, 1):
 
