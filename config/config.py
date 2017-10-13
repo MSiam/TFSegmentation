@@ -47,6 +47,10 @@ def parse_config():
     parser.add_argument('--tfrecord_val_file', default=None, help='the tf_record to use it ')
     parser.add_argument('--tfrecord_train_len', default=None, help='the tf_record to use it ')
     parser.add_argument('--tfrecord_val_len', default=None, help='the tf_record to use it ')
+    parser.add_argument('--h5_train_file', default=None, help='the h5 to use it ')
+    parser.add_argument('--h5_val_file', default=None, help='the h5 to use it ')
+    parser.add_argument('--h5_train_len', default=None, help='')
+    parser.add_argument('--h5_val_len', default=None, help='')
     parser.add_argument('--exp_dir', default=None, help='The experiment folder')
     parser.add_argument('--out_dir', default=None, help='The output folder')
 

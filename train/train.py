@@ -12,6 +12,7 @@ import numpy as np
 import tensorflow as tf
 import matplotlib
 import time
+import h5py
 from utils.augmentation import flip_randomly_left_right_image_with_annotation, \
     scale_randomly_image_with_annotation_with_fixed_size_output
 
@@ -55,7 +56,16 @@ class Train(BasicTrain):
         ##################################################################################
         # Init load data and generator
         self.generator = None
-        if self.args.data_mode == "experiment":
+        if self.args.data_mode == "experiment_h5":
+            self.train_data = None
+            self.train_data_len = None
+            self.val_data = None
+            self.val_data_len = None
+            self.num_iterations_training_per_epoch = None
+            self.num_iterations_validation_per_epoch = None
+            self.load_train_data_h5()
+            self.generator = self.train_h5_generator
+        elif self.args.data_mode == "experiment":
             self.train_data = None
             self.train_data_len = None
             self.val_data = None
@@ -184,7 +194,7 @@ class Train(BasicTrain):
                            'Y': np.load(self.args.data_dir + "Y_train.npy")}
         self.train_data_len = self.train_data['X'].shape[0]
         self.num_iterations_training_per_epoch = (
-                                                 self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+                                                     self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Train-shape-x -- " + str(self.train_data['X'].shape) + " " + str(self.train_data_len))
         print("Train-shape-y -- " + str(self.train_data['Y'].shape))
         print("Num of iterations on training data in one epoch -- " + str(self.num_iterations_training_per_epoch))
@@ -195,7 +205,30 @@ class Train(BasicTrain):
                          'Y': np.load(self.args.data_dir + "Y_val.npy")}
         self.val_data_len = self.val_data['X'].shape[0] - self.val_data['X'].shape[0] % self.args.batch_size
         self.num_iterations_validation_per_epoch = (
-                                                   self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
+                                                       self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
+        print("Val-shape-x -- " + str(self.val_data['X'].shape) + " " + str(self.val_data_len))
+        print("Val-shape-y -- " + str(self.val_data['Y'].shape))
+        print("Num of iterations on validation data in one epoch -- " + str(self.num_iterations_validation_per_epoch))
+        print("Validation data is loaded")
+
+    @timeit
+    def load_train_data_h5(self):
+        print("Loading Training data..")
+        self.train_data = h5py.File(self.args.h5_train_file, 'r')
+        self.train_data_len = self.args.h5_train_len
+        self.num_iterations_training_per_epoch = (
+                                                     self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+        print("Train-shape-x -- " + str(self.train_data['X'].shape) + " " + str(self.train_data_len))
+        print("Train-shape-y -- " + str(self.train_data['Y'].shape))
+        print("Num of iterations on training data in one epoch -- " + str(self.num_iterations_training_per_epoch))
+        print("Training data is loaded")
+
+        print("Loading Validation data..")
+        self.val_data = {'X': np.load(self.args.data_dir + "X_val.npy"),
+                         'Y': np.load(self.args.data_dir + "Y_val.npy")}
+        self.val_data_len = self.val_data['X'].shape[0] - self.val_data['X'].shape[0] % self.args.batch_size
+        self.num_iterations_validation_per_epoch = (
+                                                       self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Val-shape-x -- " + str(self.val_data['X'].shape) + " " + str(self.val_data_len))
         print("Val-shape-y -- " + str(self.val_data['Y'].shape))
         print("Num of iterations on validation data in one epoch -- " + str(self.num_iterations_validation_per_epoch))
@@ -263,10 +296,28 @@ class Train(BasicTrain):
             # update start idx
             start += self.args.batch_size
 
+            yield x_batch, y_batch
+
             if start >= self.train_data_len:
                 return
 
+    def train_h5_generator(self):
+        start = 0
+        idx = np.random.choice(self.train_data_len, self.num_iterations_training_per_epoch * self.args.batch_size,
+                               replace=True)
+        while True:
+            # select the mini_batches
+            mask = idx[start:start + self.args.batch_size]
+            x_batch = self.train_data['X'][mask]
+            y_batch = self.train_data['Y'][mask]
+
+            # update start idx
+            start += self.args.batch_size
+
             yield x_batch, y_batch
+
+            if start >= self.train_data_len:
+                return
 
     def train(self):
         print("Training mode will begin NOW ..")
@@ -301,36 +352,37 @@ class Train(BasicTrain):
                 if cur_iteration < self.num_iterations_training_per_epoch - 1:
 
                     # run the feed_forward
-                    _ = self.sess.run(
-                        [self.model.train_op],
+                    _, loss, acc, summaries_merged = self.sess.run(
+                        [self.model.train_op, self.model.loss, self.model.accuracy, self.model.merged_summaries],
                         feed_dict=feed_dict)
-                    # # log loss and acc
-                    # loss_list += [loss]
-                    # acc_list += [acc]
-                    # # summarize
-                    # self.add_summary(cur_it, summaries_merged=summaries_merged)
+                    # log loss and acc
+                    loss_list += [loss]
+                    acc_list += [acc]
+                    # summarize
+                    self.add_summary(cur_it, summaries_merged=summaries_merged)
 
                 else:
                     # run the feed_forward
-                    _, = self.sess.run(
-                        [self.model.train_op],
+                    _, loss, acc, summaries_merged, segmented_imgs = self.sess.run(
+                        [self.model.train_op, self.model.loss, self.model.accuracy, self.model.merged_summaries,
+                         self.model.segmented_summary],
                         feed_dict=feed_dict)
                     # log loss and acc
-                    # loss_list += [loss]
-                    # acc_list += [acc]
-                    # total_loss = np.mean(loss_list)
-                    # total_acc = np.mean(acc_list)
+                    loss_list += [loss]
+                    acc_list += [acc]
+                    total_loss = np.mean(loss_list)
+                    total_acc = np.mean(acc_list)
                     # summarize
-                    # summaries_dict = dict()
-                    # summaries_dict['train-loss-per-epoch'] = total_loss
-                    # summaries_dict['train-acc-per-epoch'] = total_acc
-                    # summaries_dict['train_prediction_sample'] = segmented_imgs
-                    # self.add_summary(cur_it, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
+                    summaries_dict = dict()
+                    summaries_dict['train-loss-per-epoch'] = total_loss
+                    summaries_dict['train-acc-per-epoch'] = total_acc
+                    summaries_dict['train_prediction_sample'] = segmented_imgs
+                    self.add_summary(cur_it, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
 
                     # report
-                    # self.reporter.report_experiment_statistics('train-acc', 'epoch-' + str(cur_epoch), str(total_acc))
-                    # self.reporter.report_experiment_statistics('train-loss', 'epoch-' + str(cur_epoch), str(total_loss))
-                    # self.reporter.finalize()
+                    self.reporter.report_experiment_statistics('train-acc', 'epoch-' + str(cur_epoch), str(total_acc))
+                    self.reporter.report_experiment_statistics('train-loss', 'epoch-' + str(cur_epoch), str(total_loss))
+                    self.reporter.finalize()
 
                     # Update the Global step
                     self.model.global_step_assign_op.eval(session=self.sess,
