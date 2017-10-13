@@ -308,8 +308,10 @@ class Train(BasicTrain):
         while True:
             # select the mini_batches
             mask = idx[start:start + self.args.batch_size]
-            x_batch = self.train_data['X'][mask]
-            y_batch = self.train_data['Y'][mask]
+            print(sorted(mask.tolist()))
+            exit(-1)
+            x_batch = self.train_data['X'][mask.tolist().sort()]
+            y_batch = self.train_data['Y'][mask.tolist().sort()]
 
             # update start idx
             start += self.args.batch_size
