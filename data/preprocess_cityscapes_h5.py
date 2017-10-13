@@ -20,8 +20,8 @@ def write_image_annotation_pairs_to_h5(filename_pairs, h5_filename):
         annotation = misc.imread(annotation_path)
         annotation = custom_ignore_labels(annotation)
         annotation = misc.imresize(annotation, (h, w), 'nearest')
-        array_x.append(img)
-        array_y.append(annotation)
+        array_x.append(np.expand_dims(img, 0))
+        array_y.append(np.expand_dims(annotation, 0))
     h5_file.close()
 
 
