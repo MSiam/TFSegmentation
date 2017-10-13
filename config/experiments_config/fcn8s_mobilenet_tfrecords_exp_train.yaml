@@ -1,8 +1,8 @@
 # Directories arguments
 data_dir: "full_cityscapes"
-tfrecord_train_file: "cscapes_val.tfrecords"
+tfrecord_train_file: "cscapes_train.tfrecords"
 tfrecord_val_file: "cscapes_val.tfrecords"
-tfrecord_train_len: 500
+tfrecord_train_len: 20000
 tfrecord_val_len: 500
 exp_dir:  "fcn8s_mobilenet_exp_coarse"
 out_dir:  "fcn8s_mobilenet_exp_coarse"
