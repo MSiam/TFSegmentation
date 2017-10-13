@@ -303,15 +303,14 @@ class Train(BasicTrain):
 
     def train_h5_generator(self):
         start = 0
-        lenn = self.num_iterations_training_per_epoch * self.args.batch_size
-        idx = np.random.choice(self.train_data_len, lenn,
-                               replace=True)
-        big_batch = lenn // 10
+        idx = np.random.choice(self.train_data_len, self.train_data_len,
+                               replace=False)
+        big_batch = (self.train_data_len + 9) // 10
         while True:
             mask = idx[start:start + big_batch]
             x_big_batch = self.train_data['X'][sorted(mask.tolist())]
             y_big_batch = self.train_data['Y'][sorted(mask.tolist())]
-            while start != 0 and start % big_batch != 0:
+            while start != 0 and start % big_batch != 0 and start < self.train_data_len:
                 # select the mini_batches
                 x_batch = x_big_batch[start:start + self.args.batch_size]
                 y_batch = y_big_batch[start:start + self.args.batch_size]
