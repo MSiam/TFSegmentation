@@ -2,17 +2,12 @@ import numpy as np
 import h5py
 import argparse
 import os
-from scipy import misc
 from tqdm import tqdm
-import tensorflow as tf
-from PIL import Image
 import scipy.misc as misc
-import pdb
 import tables
 
 
 def write_image_annotation_pairs_to_h5(filename_pairs, h5_filename):
-    writer = None
     atom = tables.Int8Atom()
     h5_file = tables.open_file(h5_filename, mode='a')
     array_x = h5_file.create_earray(h5_file.root, 'X', atom, (0, 512, 1024, 3))
@@ -25,12 +20,9 @@ def write_image_annotation_pairs_to_h5(filename_pairs, h5_filename):
         annotation = misc.imread(annotation_path)
         annotation = custom_ignore_labels(annotation)
         annotation = misc.imresize(annotation, (h, w), 'nearest')
-        print(img.dtype)
-        print(img.shape)
-        print(annotation.dtype)
-        print(annotation.shape)
-        exit(-1)
-    writer.close()
+        array_x.append(img)
+        array_y.append(annotation)
+    h5_file.close()
 
 
 def main(args):
