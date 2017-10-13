@@ -1,11 +1,12 @@
+
 import h5py
 import numpy as np
 
-filename = 'cscapes_train.h5'
+filename = 'full_cityscapes/cscapes_train.h5'
 f = h5py.File(filename, 'r')
 
-inputs = f['X'][0:100]
-outputs = f['Y'][0:100]
+inputs = f['X'][[0,1,2,5]]
+outputs = f['Y'][[0,1,2,5]]
 
 print(inputs.shape)
 print(inputs.dtype)
