@@ -214,7 +214,7 @@ class Train(BasicTrain):
     @timeit
     def load_train_data_h5(self):
         print("Loading Training data..")
-        self.train_data = h5py.File(self.args.h5_train_file, 'r')
+        self.train_data = h5py.File(self.args.data_dir + self.args.h5_train_file, 'r')
         self.train_data_len = self.args.h5_train_len
         self.num_iterations_training_per_epoch = (
                                                      self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
