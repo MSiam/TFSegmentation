@@ -25,7 +25,11 @@ def write_image_annotation_pairs_to_h5(filename_pairs, h5_filename):
         annotation = misc.imread(annotation_path)
         annotation = custom_ignore_labels(annotation)
         annotation = misc.imresize(annotation, (h, w), 'nearest')
-
+        print(img.dtype)
+        print(img.shape)
+        print(annotation.dtype)
+        print(annotation.shape)
+        exit(-1)
     writer.close()
 
 
