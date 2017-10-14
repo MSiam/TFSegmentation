@@ -395,7 +395,7 @@ class Train(BasicTrain):
 
                     # print in console
                     tt.close()
-                    print("epoch-" + str(cur_epoch))
+                    print("epoch-" + str(cur_epoch) + "-loss:" + str(total_loss) + "-acc:" + str(total_acc)[:6])
 
                 # Update the Global step
                 self.model.global_step_assign_op.eval(session=self.sess,
