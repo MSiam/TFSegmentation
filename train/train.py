@@ -305,22 +305,19 @@ class Train(BasicTrain):
         start = 0
         idx = np.random.choice(self.train_data_len, self.train_data_len,
                                replace=False)
-        big_batch = (self.train_data_len + 39) // 40
         while True:
-            mask = idx[start:start + big_batch]
-            x_big_batch = self.train_data['X'][sorted(mask.tolist())]
-            y_big_batch = self.train_data['Y'][sorted(mask.tolist())]
-            while start != 0 and start % big_batch != 0 and start < self.train_data_len:
-                # select the mini_batches
-                x_batch = x_big_batch[start:start + self.args.batch_size]
-                y_batch = y_big_batch[start:start + self.args.batch_size]
-                # update start idx
-                start += self.args.batch_size
+            # select the mini_batches
+            mask = idx[start:start + self.args.batch_size]
+            x_batch = self.train_data['X'][sorted(mask.tolist())]
+            y_batch = self.train_data['Y'][sorted(mask.tolist())]
 
-                yield x_batch, y_batch
+            # update start idx
+            start += self.args.batch_size
 
             if start >= self.train_data_len:
                 return
+
+            yield x_batch, y_batch
 
     def train(self):
         print("Training mode will begin NOW ..")
