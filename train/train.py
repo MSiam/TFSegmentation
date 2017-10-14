@@ -305,7 +305,7 @@ class Train(BasicTrain):
         start = 0
         idx = np.random.choice(self.train_data_len, self.train_data_len,
                                replace=False)
-        big_batch = (self.train_data_len + 9) // 20
+        big_batch = (self.train_data_len + 39) // 40
         while True:
             mask = idx[start:start + big_batch]
             x_big_batch = self.train_data['X'][sorted(mask.tolist())]
