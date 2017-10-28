@@ -31,10 +31,10 @@ class FCN8sShuffleNet(BasicModel):
         :return:
         """
 
-        # Init MobileNet as an encoder
+        # Init ShuffleNet as an encoder
         self.encoder = ShuffleNet(x_input=self.x_pl, num_classes=self.params.num_classes,
                                   pretrained_path=self.args.pretrained_path, train_flag=self.is_training,
-                                  batchnorm_enabled=self.params.batchnorm_enabled, num_groups=self.args.num_groups,
+                                  batchnorm_enabled=self.args.batchnorm_enabled, num_groups=self.args.num_groups,
                                   weight_decay=self.args.weight_decay, bias=self.args.bias)
 
         # Build Encoding part
