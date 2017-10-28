@@ -86,14 +86,9 @@ class ShuffleNet:
             self.feed1 = stage3
             self.feed2 = stage2
 
-            # First Experiment is to use the group convolution (This is initialized from scratch!)
-            self.score_fr = shufflenet_unit('conv_1c_1x1', stage4, None, self.num_groups, num_filters=self.num_classes,
-                                            l2_strength=self.wd, bias=self.bias,
-                                            is_training=self.train_flag, batchnorm_enabled=self.batchnorm_enabled,
-                                            fusion='add')
-            # Second Experiment is to use the regular conv2d
-            # self.score_fr = conv2d('conv_1c_1x1', stage4, num_filters=self.num_classes, l2_strength=self.wd,
-            #                        kernel_size=(1, 1), batchnorm_enabled=self.batchnorm_enabled)
+            # First Experiment is to use the regular conv2d
+            self.score_fr = conv2d('conv_1c_1x1', stage4, num_filters=self.num_classes, l2_strength=self.wd,
+                                   kernel_size=(1, 1))
 
             print("\nEncoder ShuffleNet is built successfully\n\n")
 
