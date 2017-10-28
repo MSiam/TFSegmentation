@@ -593,6 +593,7 @@ class Train(BasicTrain):
 
     def overfit(self):
         print("Overfitting mode will begin NOW..")
+        curr_lr = self.model.args.learning_rate
 
         for cur_epoch in range(self.model.global_epoch_tensor.eval(self.sess) + 1, self.args.num_epochs + 1, 1):
 
@@ -619,7 +620,8 @@ class Train(BasicTrain):
                 # Feed this variables to the network
                 feed_dict = {self.model.x_pl: x_batch,
                              self.model.y_pl: y_batch,
-                             self.model.is_training: True
+                             self.model.is_training: True,
+                             self.model.curr_learning_rate: curr_lr
                              }
 
                 # Run the feed forward but the last iteration finalize what you want to do
