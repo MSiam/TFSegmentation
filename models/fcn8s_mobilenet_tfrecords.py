@@ -75,7 +75,10 @@ class FCN8sMobileNetTFRecords(BasicModel):
             # Use `Dataset.map()` to build a pair of a feature dictionary and a label
             # tensor for each example.
             train_filename = "./data/" + self.args.tfrecord_train_file
-            train_dataset = tf.contrib.data.TFRecordDataset(train_filename)
+            train_dataset = tf.contrib.data.TFRecordDataset(['./data/cscapes_train_1.tfrecords', \
+                                './data/cscapes_train_2.tfrecords',\
+                                './data/cscapes_train_3.tfrecord', \
+                                './data/cscapes_train_4.tfrecords' ])#train_filename)
             train_dataset = train_dataset.map(parser)
             train_dataset = train_dataset.shuffle(buffer_size=self.args.tfrecord_train_len)
             train_dataset = train_dataset.batch(self.args.batch_size)

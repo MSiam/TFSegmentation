@@ -74,7 +74,7 @@ def __atrous_conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), paddi
 
 def __conv2d_transpose_p(name, x, w=None, output_shape=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
                          l2_strength=0.0,
-                         bias=0.0):
+                         bias=-1):
     """
     Convolution Transpose 2D Wrapper
     :param name: (string) The name scope provided by the upper tf.name_scope('name') as scope.
@@ -94,10 +94,14 @@ def __conv2d_transpose_p(name, x, w=None, output_shape=None, kernel_size=(3, 3),
             w = get_deconv_filter(kernel_shape, l2_strength)
         variable_summaries(w)
         deconv = tf.nn.conv2d_transpose(x, w, tf.stack(output_shape), strides=stride, padding=padding)
-        if isinstance(bias, float):
+        if bias != -1 and isinstance(bias, float):
             bias = tf.get_variable('layer_biases', [output_shape[-1]], initializer=tf.constant_initializer(bias))
-        variable_summaries(bias)
-        out = tf.nn.bias_add(deconv, bias)
+        if bias != -1:
+            variable_summaries(bias)
+            out = tf.nn.bias_add(deconv, bias)
+        else:
+            print("No bias ya zmolah")
+            out = deconv
 
     return out
 
@@ -263,7 +267,7 @@ def atrous_conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='
 
 def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
                      l2_strength=0.0,
-                     bias=0.0, activation=None, batchnorm_enabled=False, dropout_keep_prob=-1,
+                     bias=-1, activation=None, batchnorm_enabled=False, dropout_keep_prob=-1,
                      is_training=True):
     """
     This block is responsible for a convolution transpose 2D followed by optional (non-linearity, dropout, max-pooling).

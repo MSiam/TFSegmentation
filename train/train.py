@@ -12,9 +12,13 @@ import numpy as np
 import tensorflow as tf
 import matplotlib
 import time
-from utils.augmentation import flip_randomly_left_right_image_with_annotation, scale_randomly_image_with_annotation_with_fixed_size_output
+import h5py
+from utils.augmentation import flip_randomly_left_right_image_with_annotation, \
+    scale_randomly_image_with_annotation_with_fixed_size_output
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+
 
 class Train(BasicTrain):
     """
@@ -52,7 +56,16 @@ class Train(BasicTrain):
         ##################################################################################
         # Init load data and generator
         self.generator = None
-        if self.args.data_mode == "experiment":
+        if self.args.data_mode == "experiment_h5":
+            self.train_data = None
+            self.train_data_len = None
+            self.val_data = None
+            self.val_data_len = None
+            self.num_iterations_training_per_epoch = None
+            self.num_iterations_validation_per_epoch = None
+            self.load_train_data_h5()
+            self.generator = self.train_h5_generator
+        elif self.args.data_mode == "experiment":
             self.train_data = None
             self.train_data_len = None
             self.val_data = None
@@ -179,7 +192,30 @@ class Train(BasicTrain):
         print("Loading Training data..")
         self.train_data = {'X': np.load(self.args.data_dir + "X_train.npy"),
                            'Y': np.load(self.args.data_dir + "Y_train.npy")}
-        self.train_data_len = self.train_data['X'].shape[0] - self.train_data['X'].shape[0] % self.args.batch_size
+        self.train_data_len = self.train_data['X'].shape[0]
+        self.num_iterations_training_per_epoch = (
+                                                     self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+        print("Train-shape-x -- " + str(self.train_data['X'].shape) + " " + str(self.train_data_len))
+        print("Train-shape-y -- " + str(self.train_data['Y'].shape))
+        print("Num of iterations on training data in one epoch -- " + str(self.num_iterations_training_per_epoch))
+        print("Training data is loaded")
+
+        print("Loading Validation data..")
+        self.val_data = {'X': np.load(self.args.data_dir + "X_val.npy"),
+                         'Y': np.load(self.args.data_dir + "Y_val.npy")}
+        self.val_data_len = self.val_data['X'].shape[0] - self.val_data['X'].shape[0] % self.args.batch_size
+        self.num_iterations_validation_per_epoch = (
+                                                       self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
+        print("Val-shape-x -- " + str(self.val_data['X'].shape) + " " + str(self.val_data_len))
+        print("Val-shape-y -- " + str(self.val_data['Y'].shape))
+        print("Num of iterations on validation data in one epoch -- " + str(self.num_iterations_validation_per_epoch))
+        print("Validation data is loaded")
+
+    @timeit
+    def load_train_data_h5(self):
+        print("Loading Training data..")
+        self.train_data = h5py.File(self.args.data_dir + self.args.h5_train_file, 'r')
+        self.train_data_len = self.args.h5_train_len
         self.num_iterations_training_per_epoch = (
                                                      self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Train-shape-x -- " + str(self.train_data['X'].shape) + " " + str(self.train_data_len))
@@ -249,17 +285,9 @@ class Train(BasicTrain):
 
     def train_generator(self):
         start = 0
-        new_epoch_flag = True
-        idx = None
+        idx = np.random.choice(self.train_data_len, self.num_iterations_training_per_epoch * self.args.batch_size,
+                               replace=True)
         while True:
-            # init index array if it is a new_epoch
-            if new_epoch_flag:
-                if self.args.shuffle:
-                    idx = np.random.choice(self.train_data_len, self.train_data_len, replace=False)
-                else:
-                    idx = np.arange(self.train_data_len)
-                new_epoch_flag = False
-
             # select the mini_batches
             mask = idx[start:start + self.args.batch_size]
             x_batch = self.train_data['X'][mask]
@@ -268,15 +296,32 @@ class Train(BasicTrain):
             # update start idx
             start += self.args.batch_size
 
+            yield x_batch, y_batch
+
             if start >= self.train_data_len:
-                start = 0
-                new_epoch_flag = True
+                return
+
+    def train_h5_generator(self):
+        start = 0
+        idx = np.random.choice(self.train_data_len, self.train_data_len,
+                               replace=False)
+        while True:
+            # select the mini_batches
+            mask = idx[start:start + self.args.batch_size]
+            x_batch = self.train_data['X'][sorted(mask.tolist())]
+            y_batch = self.train_data['Y'][sorted(mask.tolist())]
+
+            # update start idx
+            start += self.args.batch_size
+
+            if start >= self.train_data_len:
+                return
 
             yield x_batch, y_batch
 
     def train(self):
         print("Training mode will begin NOW ..")
-        curr_lr= self.model.args.learning_rate
+        curr_lr = self.model.args.learning_rate
         for cur_epoch in range(self.model.global_epoch_tensor.eval(self.sess) + 1, self.args.num_epochs + 1, 1):
 
             # init tqdm and get the epoch value
@@ -300,7 +345,7 @@ class Train(BasicTrain):
                 feed_dict = {self.model.x_pl: x_batch,
                              self.model.y_pl: y_batch,
                              self.model.is_training: True,
-                             self.model.curr_learning_rate:curr_lr
+                             self.model.curr_learning_rate: curr_lr
                              }
 
                 # Run the feed forward but the last iteration finalize what you want to do
@@ -319,8 +364,8 @@ class Train(BasicTrain):
                 else:
                     # run the feed_forward
                     _, loss, acc, summaries_merged, segmented_imgs = self.sess.run(
-                        [self.model.train_op, self.model.loss, self.model.accuracy,
-                         self.model.merged_summaries, self.model.segmented_summary],
+                        [self.model.train_op, self.model.loss, self.model.accuracy, self.model.merged_summaries,
+                         self.model.segmented_summary],
                         feed_dict=feed_dict)
                     # log loss and acc
                     loss_list += [loss]
@@ -350,12 +395,7 @@ class Train(BasicTrain):
 
                     # print in console
                     tt.close()
-                    print("epoch-" + str(cur_epoch) + "-" + "loss:" + str(total_loss) + "-" + " acc:" + str(total_acc)[
-                                                                                                        :6])
-
-                    # Break the loop to finalize this epoch
-                    break
-
+                    print("epoch-" + str(cur_epoch) + "-loss:" + str(total_loss) + "-acc:" + str(total_acc)[:6])
 
                 # Update the Global step
                 self.model.global_step_assign_op.eval(session=self.sess,
@@ -371,11 +411,11 @@ class Train(BasicTrain):
             # Test the model on validation
             if cur_epoch % self.args.test_every == 0:
                 self.test_per_epoch(step=self.model.global_step_tensor.eval(self.sess),
-                                    epoch=self.model.global_epoch_tensor.eval(self.sess))
+                                    epoch=cur_epoch)
 
             if cur_epoch % self.args.learning_decay_every == 0:
-                curr_lr= curr_lr*self.args.learning_decay
-                print('Current learning rate is ', curr_lr)
+                curr_lr = curr_lr * self.args.learning_decay
+            print('Current learning rate is ', curr_lr)
 
         print("Training Finished")
 
@@ -462,7 +502,8 @@ class Train(BasicTrain):
                 # report
                 self.reporter.report_experiment_statistics('validation-acc', 'epoch-' + str(epoch), str(total_acc))
                 self.reporter.report_experiment_statistics('validation-loss', 'epoch-' + str(epoch), str(total_loss))
-                self.reporter.report_experiment_statistics('avg_inference_time_on_validation', 'epoch-' + str(epoch), str(mean_inference))
+                self.reporter.report_experiment_statistics('avg_inference_time_on_validation', 'epoch-' + str(epoch),
+                                                           str(mean_inference))
                 self.reporter.report_experiment_validation_iou('epoch-' + str(epoch), str(mean_iou), mean_iou_arr)
                 self.reporter.finalize()
 
@@ -492,7 +533,7 @@ class Train(BasicTrain):
 
         # init tqdm and get the epoch value
         tt = tqdm(range(self.test_data_len))
-        naming= np.load(self.args.data_dir+'names_train.npy')
+        naming = np.load(self.args.data_dir + 'names_train.npy')
 
         # init acc and loss lists
         loss_list = []
@@ -526,8 +567,8 @@ class Train(BasicTrain):
                  self.model.merged_summaries, self.model.segmented_summary],
                 feed_dict=feed_dict)
 
-            np.save(self.args.out_dir+'npy/'+str(cur_iteration)+'.npy', out_argmax[0])
-            plt.imsave(self.args.out_dir+'imgs/'+ 'test_'+str(cur_iteration)+'.png', segmented_imgs[0])
+            np.save(self.args.out_dir + 'npy/' + str(cur_iteration) + '.npy', out_argmax[0])
+            plt.imsave(self.args.out_dir + 'imgs/' + 'test_' + str(cur_iteration) + '.png', segmented_imgs[0])
 
             # log loss and acc
             loss_list += [loss]
