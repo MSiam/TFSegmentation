@@ -7,8 +7,10 @@ import os
 class ShuffleNet:
     """ShuffleNet is implemented here!"""
 
-    MEAN = [103.94, 116.78, 123.68]
-    NORMALIZER = 0.017
+    # MEAN = [103.94, 116.78, 123.68]
+    MEAN = [73.29132098, 83.04442645, 72.5238962]
+
+    # NORMALIZER = 0.017
 
     def __init__(self, x_input, num_classes, pretrained_path, train_flag, batchnorm_enabled=True, num_groups=3,
                  weight_decay=4e-5,
@@ -68,9 +70,9 @@ class ShuffleNet:
             with tf.name_scope('Pre_Processing'):
                 red, green, blue = tf.split(self.x_input, num_or_size_splits=3, axis=3)
                 preprocessed_input = tf.concat([
-                    tf.subtract(blue, ShuffleNet.MEAN[0]) * ShuffleNet.NORMALIZER,
-                    tf.subtract(green, ShuffleNet.MEAN[1]) * ShuffleNet.NORMALIZER,
-                    tf.subtract(red, ShuffleNet.MEAN[2]) * ShuffleNet.NORMALIZER,
+                    tf.subtract(blue, ShuffleNet.MEAN[0]) / tf.constant(255.0),
+                    tf.subtract(green, ShuffleNet.MEAN[1]) / tf.constant(255.0),
+                    tf.subtract(red, ShuffleNet.MEAN[2]) / tf.constant(255.0),
                 ], 3)
             conv1 = conv2d('conv1', x=preprocessed_input, w=None, num_filters=self.output_channels['conv1'],
                            kernel_size=(3, 3),

@@ -165,7 +165,6 @@ class BasicModel:
             #                self.cross_entropy_loss = self.bootstrapped_ce_loss(self.ce, 0.25)
             self.regularization_loss = tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
             self.loss = self.cross_entropy_loss + self.regularization_loss
-            self.loss = self.loss * 10
 
         with tf.name_scope('train-operation'):
             extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
