@@ -32,7 +32,8 @@ class FCN8sShuffleNet(BasicModel):
         """
 
         # Init MobileNet as an encoder
-        self.encoder = ShuffleNet(x_input=self.x_pl, num_classes=self.params.num_classes, train_flag=self.is_training,
+        self.encoder = ShuffleNet(x_input=self.x_pl, num_classes=self.params.num_classes,
+                                  pretrained_path=self.args.pretrained_path, train_flag=self.is_training,
                                   batchnorm_enabled=self.params.batchnorm_enabled, num_groups=self.args.num_groups,
                                   weight_decay=self.args.weight_decay, bias=self.args.bias)
 
@@ -41,28 +42,28 @@ class FCN8sShuffleNet(BasicModel):
 
         # Build Decoding part
         with tf.name_scope('upscore_2s'):
-            self.upscore2 = conv2d_transpose('upscore2', x=self.encoder.score_fr, batchnorm_enabled=True,
+            self.upscore2 = conv2d_transpose('upscore2', x=self.encoder.score_fr,
                                              output_shape=self.encoder.feed1.shape.as_list()[0:3] + [
                                                  self.params.num_classes],
-                                             kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
-            self.score_feed1 = conv2d('score_feed1', x=self.encoder.feed1, batchnorm_enabled=True,
+                                             kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd, bias=-1)
+            self.score_feed1 = conv2d('score_feed1', x=self.encoder.feed1,
                                       num_filters=self.params.num_classes, kernel_size=(1, 1),
                                       l2_strength=self.encoder.wd)
             self.fuse_feed1 = tf.add(self.score_feed1, self.upscore2)
 
         with tf.name_scope('upscore_4s'):
-            self.upscore4 = conv2d_transpose('upscore4', x=self.fuse_feed1, batchnorm_enabled=True,
+            self.upscore4 = conv2d_transpose('upscore4', x=self.fuse_feed1,
                                              output_shape=self.encoder.feed2.shape.as_list()[0:3] + [
                                                  self.params.num_classes],
-                                             kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
-            self.score_feed2 = conv2d('score_feed2', x=self.encoder.feed2, batchnorm_enabled=True,
+                                             kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd, bias=-1)
+            self.score_feed2 = conv2d('score_feed2', x=self.encoder.feed2,
                                       num_filters=self.params.num_classes, kernel_size=(1, 1),
                                       l2_strength=self.encoder.wd)
             self.fuse_feed2 = tf.add(self.score_feed2, self.upscore4)
 
         with tf.name_scope('upscore_8s'):
-            self.upscore8 = conv2d_transpose('upscore8', x=self.fuse_feed2, batchnorm_enabled=True,
+            self.upscore8 = conv2d_transpose('upscore8', x=self.fuse_feed2,
                                              output_shape=self.x_pl.shape.as_list()[0:3] + [self.params.num_classes],
-                                             kernel_size=(16, 16), stride=(8, 8), l2_strength=self.encoder.wd)
+                                             kernel_size=(16, 16), stride=(8, 8), l2_strength=self.encoder.wd, bias=-1)
 
         self.logits = self.upscore8
