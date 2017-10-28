@@ -172,17 +172,24 @@ class MobileNet:
 
     def __restore(self, file_name, sess):
         variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="mobilenet_encoder")
-        dict = load_obj(file_name)
-        for variable in variables:
-            for key, value in dict.items():
-                if key in variable.name:
-                    sess.run(tf.assign(variable, value))
+        try:
+            print("Loading ImageNet pretrained weights...")
+            dict = load_obj(file_name)
+            run_list = []
+            for variable in variables:
+                for key, value in dict.items():
+                    # Adding ':' means that we are interested in the variable itself and not the variable parameters
+                    # that are used in adaptive optimizers
+                    if key + ":" in variable.name:
+                        run_list.append(tf.assign(variable, value))
+            sess.run(run_list)
+            print("ImageNet Pretrained Weights Loaded Initially\n\n")
+        except KeyboardInterrupt:
+            print("No pretrained ImageNet weights exist. Skipping...\n\n")
 
     def load_pretrained_weights(self, sess):
-        print("Loading ImageNet Pretrained Weights...")
         # self.__convert_graph_names(os.path.realpath(os.getcwd()) + '/pretrained_weights/mobilenet_v1_vanilla.pkl')
         self.__restore(self.pretrained_path, sess)
-        print("ImageNet Pretrained Weights Loaded Initially")
 
     def __convert_graph_names(self, path):
         """
