@@ -27,47 +27,67 @@ def write_image_annotation_pairs_to_tfrecord(filename_pairs, tfrecords_filename)
     tfrecords_filename : string
         Tfrecords filename to write the image/annotation pairs
     """
-    writer = tf.python_io.TFRecordWriter(tfrecords_filename)
-    h=512; w= 1024;
-    for img_path, annotation_path in filename_pairs:
-        print('processing image ', img_path)
-#        img = np.array(Image.open(img_path))
-        img= misc.imread(img_path)
-        img = misc.imresize(img, (h, w))
+    if len(tfrecords_filename)==1:
+        tfrecords_filename= tfrecords_filename[0]
+        writer = tf.python_io.TFRecordWriter(tfrecords_filename)
+        h=512; w= 1024;
+        for img_path, annotation_path in filename_pairs:
+            print('processing image ', img_path)
+            img= misc.imread(img_path)
+            img = misc.imresize(img, (h, w))
+            annotation= misc.imread(annotation_path)
+            annotation = custom_ignore_labels(annotation, img.shape[0], img.shape[1])
+            annotation = misc.imresize(annotation, (h, w), 'nearest')
+            height = img.shape[0]
+            width = img.shape[1]
 
-#        annotation = np.array(Image.open(annotation_path))
-        annotation= misc.imread(annotation_path)
-        annotation = custom_ignore_labels(annotation, img.shape[0], img.shape[1])
-        annotation = misc.imresize(annotation, (h, w), 'nearest')
-        # Unomment this one when working with surgical data
-        # annotation = annotation[:, :, 0]
+            img_raw = img.tostring()
+            annotation_raw = annotation.tostring()
 
-        # The reason to store image sizes was demonstrated
-        # in the previous example -- we have to know sizes
-        # of images to later read raw serialized string,
-        # convert to 1d array and convert to respective
-        # shape that image used to have.
-        height = img.shape[0]
-        width = img.shape[1]
+            example = tf.train.Example(features=tf.train.Features(feature={
+                'height': _int64_feature(height),
+                'width': _int64_feature(width),
+                'image_raw': _bytes_feature(img_raw),
+                'mask_raw': _bytes_feature(annotation_raw)}))
 
-        img_raw = img.tostring()
-        annotation_raw = annotation.tostring()
+            writer.write(example.SerializeToString())
 
-        example = tf.train.Example(features=tf.train.Features(feature={
-            'height': _int64_feature(height),
-            'width': _int64_feature(width),
-            'image_raw': _bytes_feature(img_raw),
-            'mask_raw': _bytes_feature(annotation_raw)}))
+        writer.close()
+    else:
+        for i in range(len(tfrecords_filename)):
+            writer = tf.python_io.TFRecordWriter(tfrecords_filename[i])
+            h=512; w= 1024;
+            length= len(filename_pairs)//len(tfrecords_filename)
+            curr_filename_pairs= filename_pairs[i*length: (i+1)*length]
+            pdb.set_trace()
+            for img_path, annotation_path in curr_filename_pairs:
+                print('processing image ', img_path)
+                img= misc.imread(img_path)
+                img = misc.imresize(img, (h, w))
+                annotation= misc.imread(annotation_path)
+                annotation = custom_ignore_labels(annotation, img.shape[0], img.shape[1])
+                annotation = misc.imresize(annotation, (h, w), 'nearest')
+                height = img.shape[0]
+                width = img.shape[1]
 
-        writer.write(example.SerializeToString())
+                img_raw = img.tostring()
+                annotation_raw = annotation.tostring()
 
-    writer.close()
+                example = tf.train.Example(features=tf.train.Features(feature={
+                    'height': _int64_feature(height),
+                    'width': _int64_feature(width),
+                    'image_raw': _bytes_feature(img_raw),
+                    'mask_raw': _bytes_feature(annotation_raw)}))
+
+                writer.write(example.SerializeToString())
+
+            writer.close()
 
 def main(args):
     d= args.dir
     train_images_path = args.root + 'images/'+d+'/'
     train_labels_path = args.root + 'labels/'+d+'/'
-    custom_read_cityscape(train_images_path, train_labels_path, args, split='d')
+    custom_read_cityscape(train_images_path, train_labels_path, args, split=d)
 
 labelID_2_trainID = {0: 19,  # 'unlabeled'
                      1: 19,  # 'ego vehicle'
@@ -118,6 +138,13 @@ def custom_read_cityscape(path_images, path_labels, args_, split='train'):
     filename_pairs= []
     root = path_images
     # Read all image files in the path_images directory
+    out_dir= args_.out
+    if split=='train_extra':
+        sp= out_dir.split('.')[0]
+        out_dir= [sp+'_1.tfrecords', sp+'_2.tfrecords', sp+'_3.tfrecords', sp+'_4.tfrecords']
+    else:
+        out_dir= [out_dir]
+
     for d in os.listdir(path_images):
         for _, dirs, files in os.walk(path_images+'/'+d):
             for f in sorted(files):
@@ -126,7 +153,7 @@ def custom_read_cityscape(path_images, path_labels, args_, split='train'):
                         path_labels+d+'/'+f.replace('leftImg8bit','gtCoarse_labelIds')) )
                 else:
                     continue
-    write_image_annotation_pairs_to_tfrecord(filename_pairs, args_.out)
+    write_image_annotation_pairs_to_tfrecord(filename_pairs, out_dir)
 
 
 
