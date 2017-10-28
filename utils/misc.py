@@ -54,3 +54,9 @@ def calculate_flops():
     tf.profiler.profile(
         tf.get_default_graph(),
         options=tf.profiler.ProfileOptionBuilder.float_operation(), cmd='scope')
+
+
+def show_parameters():
+    tf.profiler.profile(
+        tf.get_default_graph(),
+        options=tf.profiler.ProfileOptionBuilder.trainable_variables_parameter(), cmd='scope')
