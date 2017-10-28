@@ -74,7 +74,7 @@ def __atrous_conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), paddi
 
 def __conv2d_transpose_p(name, x, w=None, output_shape=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
                          l2_strength=0.0,
-                         bias=-1):
+                         bias=-1, trainable=True):
     """
     Convolution Transpose 2D Wrapper
     :param name: (string) The name scope provided by the upper tf.name_scope('name') as scope.
@@ -91,7 +91,7 @@ def __conv2d_transpose_p(name, x, w=None, output_shape=None, kernel_size=(3, 3),
         stride = [1, stride[0], stride[1], 1]
         kernel_shape = [kernel_size[0], kernel_size[1], output_shape[-1], x.shape[-1]]
         if w == None:
-            w = get_deconv_filter(kernel_shape, l2_strength)
+            w = get_deconv_filter(kernel_shape, l2_strength, trainable)
         variable_summaries(w)
         deconv = tf.nn.conv2d_transpose(x, w, tf.stack(output_shape), strides=stride, padding=padding)
         if bias != -1:
@@ -266,7 +266,7 @@ def atrous_conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='
 def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
                      l2_strength=0.0,
                      bias=-1, activation=None, batchnorm_enabled=False, dropout_keep_prob=-1,
-                     is_training=True):
+                     is_training=True, trainable=True):
     """
     This block is responsible for a convolution transpose 2D followed by optional (non-linearity, dropout, max-pooling).
     Note that: "is_training" should be passed by a correct value based on being in either training or testing.
@@ -288,7 +288,7 @@ def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), pad
         conv_o_b = __conv2d_transpose_p(name=scope, x=x, w=w, output_shape=output_shape, kernel_size=kernel_size,
                                         padding=padding, stride=stride,
                                         l2_strength=l2_strength,
-                                        bias=bias)
+                                        bias=bias, trainable=trainable)
 
         if batchnorm_enabled:
             conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training)
