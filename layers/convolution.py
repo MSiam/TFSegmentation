@@ -94,13 +94,12 @@ def __conv2d_transpose_p(name, x, w=None, output_shape=None, kernel_size=(3, 3),
             w = get_deconv_filter(kernel_shape, l2_strength)
         variable_summaries(w)
         deconv = tf.nn.conv2d_transpose(x, w, tf.stack(output_shape), strides=stride, padding=padding)
-        if bias != -1 and isinstance(bias, float):
+        if isinstance(bias, float) and bias != -1:
             bias = tf.get_variable('layer_biases', [output_shape[-1]], initializer=tf.constant_initializer(bias))
-        if bias != -1:
+        if not isinstance(bias, float) or bias != -1:
             variable_summaries(bias)
             out = tf.nn.bias_add(deconv, bias)
         else:
-            print("No bias ya zmolah")
             out = deconv
 
     return out
