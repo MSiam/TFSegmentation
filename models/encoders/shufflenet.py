@@ -93,7 +93,7 @@ class ShuffleNet:
             print("\nEncoder ShuffleNet is built successfully\n\n")
 
     def __restore(self, file_name, sess):
-        variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="shufflenet_encoder")
+        variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
         try:
             print("Loading ImageNet pretrained weights...")
             dict = load_obj(file_name)
@@ -104,6 +104,7 @@ class ShuffleNet:
                     # that are used in adaptive optimizers
                     if key + ":" in variable.name:
                         run_list.append(tf.assign(variable, value))
+
             sess.run(run_list)
             print("ImageNet Pretrained Weights Loaded Initially\n\n")
         except KeyboardInterrupt:
