@@ -1,11 +1,11 @@
 # Directories arguments
-data_dir: "full_cityscapes"
+data_dir: "data_for_test_n_overfit"
 exp_dir:  "fcn8s_shufflenet_exp"
 out_dir:  "fcn8s_shufflenet_exp"
 
 # Data arguments
-img_height:   512
-img_width:    1024
+img_height:   256
+img_width:    512
 num_channels: 3
 num_classes:  20
 
@@ -17,7 +17,7 @@ data_mode: "overfit"
 save_every: 5
 test_every: 5
 max_to_keep: 5
-weighted_loss: True
+weighted_loss: False
 
 # Models arguments
 batchnorm_enabled: True
