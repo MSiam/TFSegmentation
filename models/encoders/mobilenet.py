@@ -180,7 +180,7 @@ class MobileNet:
                 for key, value in dict.items():
                     # Adding ':' means that we are interested in the variable itself and not the variable parameters
                     # that are used in adaptive optimizers
-                    if key + ":" in variable.name:
+                    if key in variable.name:
                         run_list.append(tf.assign(variable, value))
             sess.run(run_list)
             print("ImageNet Pretrained Weights Loaded Initially\n\n")
