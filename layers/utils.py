@@ -55,7 +55,7 @@ def get_deconv_filter(f_shape, l2_strength):
         for y in range(height):
             value = (1 - abs(x / f - c)) * (1 - abs(y / f - c))
             bilinear[x, y] = value
-    weights = np.zeros(f_shape)
+    weights = np.zeros(f_shape, dtype=np.float32)
     for i in range(f_shape[2]):
         weights[:, :, i, i] = bilinear
 

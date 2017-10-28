@@ -43,6 +43,10 @@ def parse_config():
 
     # Directories arguments
     parser.add_argument('--data_dir', default=None, help='The data folder')
+    parser.add_argument('--tfrecord_train_file', default=None, help='the tf_record to use it ')
+    parser.add_argument('--tfrecord_val_file', default=None, help='the tf_record to use it ')
+    parser.add_argument('--tfrecord_train_len', default=None, help='the tf_record to use it ')
+    parser.add_argument('--tfrecord_val_len', default=None, help='the tf_record to use it ')
     parser.add_argument('--exp_dir', default=None, help='The experiment folder')
     parser.add_argument('--out_dir', default=None, help='The output folder')
 

@@ -1,7 +1,7 @@
 # Directories arguments
-data_dir: "full_cityscapes_res"
-exp_dir:  "unet_mobilenet_exp_dropout"
-out_dir:  "unet_mobilenet_exp_dropout"
+data_dir: "full_cityscapes_npy"
+exp_dir:  "fcn8s_mobilenet_exp_val_test"
+out_dir:  "fcn8s_mobilenet_exp_val_test"
 
 # Data arguments
 img_height:   512
@@ -11,21 +11,21 @@ num_classes:  20
 
 # Train arguments
 num_epochs: 200
-batch_size: 5
+batch_size: 2
 shuffle: True
 data_mode: "experiment"
-save_every: 5
-test_every: 5
+save_every: 1
+test_every: 2
 max_to_keep: 2
-weighted_loss: True
+weighted_loss: False
 
 # Models arguments
-learning_rate:   0.0005
+learning_rate:   1e-4
 weight_decay: 0.00005
 momentum: 0.9
-learning_decay: 0.00001
+learning_decay: 0.1
 pretrained_path: "pretrained_weights/mobilenet_v1.pkl"
-learning_decay_every: 50
+learning_decay_every: 70
 
 # Misc arguments
 verbose: False

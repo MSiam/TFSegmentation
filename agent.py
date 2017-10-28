@@ -54,7 +54,8 @@ class Agent:
         self.sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
         # Create Model class and build it
-        self.build_model()
+        with self.sess.as_default():
+            self.build_model()
         # Create the operator
         self.operator = self.operator(self.args, self.sess, self.model)
 

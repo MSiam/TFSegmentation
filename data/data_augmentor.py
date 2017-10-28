@@ -12,7 +12,24 @@ import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 from imgaug import augmenters as iaa
-from utils.dirs import create_dirs
+import os
+import pdb
+
+def create_dirs(dirs):
+    """
+    dirs - a list of directories to create if these directories are not found
+    :param dirs:
+    :return exit_code: 0:success -1:failed
+    """
+    try:
+        for dir_ in dirs:
+            if not os.path.exists(dir_):
+                os.makedirs(dir_)
+        return 0
+    except Exception as err:
+        print("Creating directories error: {0}".format(err))
+        exit(-1)
+
 
 
 def plot_imgs(x, folder, mode):
@@ -25,39 +42,41 @@ def plot_imgs(x, folder, mode):
             plt.imsave(folder + str(i) + '.png', x[i])
 
 
-create_dirs(['data_for_test_n_overfit/x_org', 'data_for_test_n_overfit/y_org'])
-create_dirs(['data_for_test_n_overfit/x_aug', 'data_for_test_n_overfit/y_aug'])
+create_dirs(['full_cityscapes_res/x_org', 'full_cityscapes_res/y_org'])
+create_dirs(['full_cityscapes_res/x_aug', 'full_cityscapes_res/y_aug'])
 
-x = np.load('data_for_test_n_overfit/X_train.npy')
-y = np.load('data_for_test_n_overfit/Y_train.npy')
+x = np.load('full_cityscapes_res/X_train.npy')
+y = np.load('full_cityscapes_res/Y_train.npy')
+
 print(x.shape)
 print(y.shape)
 print(x.dtype)
 print(y.dtype)
 
-plot_imgs(x, 'data_for_test_n_overfit/x_org/', mode='x')
-plot_imgs(y, 'data_for_test_n_overfit/y_org/', mode='y')
+#plot_imgs(x, 'full_cityscapes_res/x_org/', mode='x')
+#plot_imgs(y, 'full_cityscapes_res/y_org/', mode='y')
 
-x_aug = np.empty([0] + x.shape[1:])
-y_aug = np.empty([0] + y.shape[1:])
+x_aug = np.empty([0] + list(x.shape[1:]),dtype=np.uint8)
+y_aug = np.empty([0] + list(y.shape[1:]),dtype=np.uint8)
 
 seq = iaa.Sequential([
-    iaa.Fliplr(1),  # horizontally flip 50% of the images
+    iaa.Crop(px=(0, 150)),
 ])
 # Convert the stochastic sequence of augmenters to a deterministic one.
 # The deterministic sequence will always apply the exactly same effects to the images.
 seq_det = seq.to_deterministic()  # call this for each batch again, NOT only once at the start
 x_aug = np.append(x_aug, seq_det.augment_images(x), axis=0)
 y_aug = np.append(y_aug, seq_det.augment_images(y), axis=0)
+pdb.set_trace()
 
 print(x_aug.shape)
 print(y_aug.shape)
 print(x_aug.dtype)
 print(y_aug.dtype)
 
-plot_imgs(x_aug, 'data_for_test_n_overfit/x_aug/', mode='x')
-plot_imgs(y_aug, 'data_for_test_n_overfit/y_aug/', mode='y')
+plot_imgs(x_aug, 'full_cityscapes_res/x_aug/', mode='x')
+plot_imgs(y_aug, 'full_cityscapes_res/y_aug/', mode='y')
 
 # save the new numpys of the augmented data or append it with the real data
-# np.save('x_aug.npy',x_aug)
-# np.save('y_aug.npy',y_aug)
+np.save('full_cityscapes_res/x_aug.npy',x_aug)
+np.save('full_cityscapes_res/y_aug.npy',y_aug)

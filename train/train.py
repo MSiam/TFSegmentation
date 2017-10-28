@@ -12,10 +12,9 @@ import numpy as np
 import tensorflow as tf
 import matplotlib
 import time
-
+from utils.augmentation import flip_randomly_left_right_image_with_annotation, scale_randomly_image_with_annotation_with_fixed_size_output
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-
 
 class Train(BasicTrain):
     """
@@ -277,7 +276,7 @@ class Train(BasicTrain):
 
     def train(self):
         print("Training mode will begin NOW ..")
-        #curr_lr= self.model.args.learning_rate
+        curr_lr= self.model.args.learning_rate
         for cur_epoch in range(self.model.global_epoch_tensor.eval(self.sess) + 1, self.args.num_epochs + 1, 1):
 
             # init tqdm and get the epoch value
@@ -300,8 +299,8 @@ class Train(BasicTrain):
                 # Feed this variables to the network
                 feed_dict = {self.model.x_pl: x_batch,
                              self.model.y_pl: y_batch,
-                             self.model.is_training: True
-#                             self.model.curr_learning_rate:curr_lr
+                             self.model.is_training: True,
+                             self.model.curr_learning_rate:curr_lr
                              }
 
                 # Run the feed forward but the last iteration finalize what you want to do
@@ -373,9 +372,10 @@ class Train(BasicTrain):
             if cur_epoch % self.args.test_every == 0:
                 self.test_per_epoch(step=self.model.global_step_tensor.eval(self.sess),
                                     epoch=self.model.global_epoch_tensor.eval(self.sess))
-#            if cur_epoch % self.args.learning_decay_every == 0:
-#                curr_lr= curr_lr*self.args.learning_decay
-#                print('Current learning rate is ', curr_lr)
+
+            if cur_epoch % self.args.learning_decay_every == 0:
+                curr_lr= curr_lr*self.args.learning_decay
+                print('Current learning rate is ', curr_lr)
 
         print("Training Finished")
 
@@ -420,8 +420,8 @@ class Train(BasicTrain):
 
                 start = time.time()
                 # run the feed_forward
-                out_argmax, loss, acc, summaries_merged = self.sess.run(
-                    [self.model.out_argmax, self.model.loss, self.model.accuracy, self.model.merged_summaries],
+                out_argmax, loss, acc = self.sess.run(
+                    [self.model.out_argmax, self.model.loss, self.model.accuracy],
                     feed_dict=feed_dict)
                 end = time.time()
                 # log loss and acc
@@ -434,9 +434,8 @@ class Train(BasicTrain):
             else:
                 start = time.time()
                 # run the feed_forward
-                out_argmax, loss, acc, summaries_merged, segmented_imgs = self.sess.run(
-                    [self.model.out_argmax, self.model.loss, self.model.accuracy,
-                     self.model.merged_summaries, self.model.segmented_summary],
+                out_argmax, loss, acc, segmented_imgs = self.sess.run(
+                    [self.model.out_argmax, self.model.loss, self.model.accuracy, self.model.segmented_summary],
                     feed_dict=feed_dict)
                 end = time.time()
                 # log loss and acc
@@ -457,7 +456,8 @@ class Train(BasicTrain):
                 summaries_dict['val-acc-per-epoch'] = total_acc
                 summaries_dict['mean_iou_on_val'] = mean_iou
                 summaries_dict['val_prediction_sample'] = segmented_imgs
-                self.add_summary(step, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
+                self.add_summary(step, summaries_dict=summaries_dict)
+                self.summary_writer.flush()
 
                 # report
                 self.reporter.report_experiment_statistics('validation-acc', 'epoch-' + str(epoch), str(total_acc))
