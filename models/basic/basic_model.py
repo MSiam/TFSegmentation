@@ -7,6 +7,9 @@ You can override any function you want
 from utils.img_utils import decode_labels
 import numpy as np
 import tensorflow as tf
+from utils.augmentation import flip_randomly_left_right_image_with_annotation, \
+    scale_randomly_image_with_annotation_with_fixed_size_output
+
 
 class Params:
     """
@@ -18,8 +21,9 @@ class Params:
         self.img_height = None
         self.num_channels = None
         self.num_classes = None
-        self.weighted_loss= True
-        self.class_weights= None
+        self.weighted_loss = True
+        self.class_weights = None
+
 
 class BasicModel:
     """
@@ -34,13 +38,15 @@ class BasicModel:
         self.params.img_height = self.args.img_height
         self.params.num_channels = self.args.num_channels
         self.params.num_classes = self.args.num_classes
-        self.params.class_weights= np.load(self.args.data_dir+'weights.npy')
-        self.params.weighted_loss= self.args.weighted_loss
+        self.params.weighted_loss = self.args.weighted_loss
+        if self.params.weighted_loss:
+            self.params.class_weights = np.load(self.args.data_dir + 'weights.npy')
+
         # Input
         self.x_pl = None
         self.y_pl = None
         self.is_training = None
-        self.curr_learning_rate= None
+        self.curr_learning_rate = None
         # Output
         self.logits = None
         self.out_softmax = None
@@ -106,10 +112,16 @@ class BasicModel:
             self.x_pl = tf.placeholder(tf.float32,
                                        [self.args.batch_size, self.params.img_height, self.params.img_width, 3])
             self.y_pl = tf.placeholder(tf.int32, [self.args.batch_size, self.params.img_height, self.params.img_width])
-#            self.curr_learning_rate= tf.placeholder(tf.float32)
+
+            print('X_batch shape ', self.x_pl.get_shape().as_list(), ' ', self.y_pl.get_shape().as_list())
+            self.x_pl, self.y_pl = flip_randomly_left_right_image_with_annotation(self.x_pl, self.y_pl)
+            print('Afterwards: X_batch shape ', self.x_pl.get_shape().as_list(), ' ', self.y_pl.get_shape().as_list())
+
+            self.curr_learning_rate = tf.placeholder(tf.float32)
 
             if self.params.weighted_loss:
-                self.wghts = np.zeros((self.args.batch_size, self.params.img_height, self.params.img_width), dtype= np.float32)
+                self.wghts = np.zeros((self.args.batch_size, self.params.img_height, self.params.img_width),
+                                      dtype=np.float32)
             self.is_training = tf.placeholder(tf.bool)
 
     def init_network(self):
@@ -121,29 +133,44 @@ class BasicModel:
             self.out_argmax = tf.argmax(self.out_softmax, axis=3, output_type=tf.int32)
 
     def get_class_weighting(self):
-        self.wghts= tf.one_hot(self.y_pl, dtype='float32', depth=self.params.num_classes)* \
-            self.params.class_weights
-        self.wghts= tf.reduce_sum(self.wghts, 3)
+        self.wghts = tf.one_hot(self.y_pl, dtype='float32', depth=self.params.num_classes) * \
+                     self.params.class_weights
+        self.wghts = tf.reduce_sum(self.wghts, 3)
 
     def weighted_loss(self):
         self.get_class_weighting()
-        losses= tf.losses.sparse_softmax_cross_entropy(logits= self.logits, labels=self.y_pl, weights= self.wghts)
+        losses = tf.losses.sparse_softmax_cross_entropy(logits=self.logits, labels=self.y_pl, weights=self.wghts)
         return tf.reduce_mean(losses)
+
+    def bootstrapped_ce_loss(self, ce, fraction):
+        # only consider k worst pixels (lowest posterior probability) per image
+        assert fraction is not None
+        batch_size = ce.get_shape().as_list()[0]
+        if batch_size is None:
+            batch_size = tf.shape(ce)[0]
+        k = tf.cast(tf.cast(tf.shape(ce)[1] * tf.shape(ce)[2], tf.float32) * fraction, tf.int32)
+        bs_ce, _ = tf.nn.top_k(tf.reshape(ce, shape=[batch_size, -1]), k=k, sorted=False)
+        bs_ce = tf.reduce_mean(bs_ce, axis=1)
+        bs_ce = tf.reduce_sum(bs_ce, axis=0)
+        return bs_ce
 
     def init_train(self):
         with tf.name_scope('loss'):
             if self.params.weighted_loss:
-                self.cross_entropy_loss= self.weighted_loss()
+                self.cross_entropy_loss = self.weighted_loss()
             else:
                 self.cross_entropy_loss = tf.reduce_mean(
                     tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_pl))
+            #                self.ce = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_pl)
+            #                self.cross_entropy_loss = self.bootstrapped_ce_loss(self.ce, 0.25)
             self.regularization_loss = tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
             self.loss = self.cross_entropy_loss + self.regularization_loss
+            self.loss = self.loss * 10
 
         with tf.name_scope('train-operation'):
             extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
             with tf.control_dependencies(extra_update_ops):
-                self.optimizer = tf.train.AdamOptimizer(self.args.learning_rate)
+                self.optimizer = tf.train.AdamOptimizer(self.curr_learning_rate)
                 self.train_op = self.optimizer.minimize(self.loss)
 
     def init_summaries(self):
@@ -161,6 +188,7 @@ class BasicModel:
         with tf.name_scope('train-summary'):
             tf.summary.scalar('loss', self.loss)
             tf.summary.scalar('pixel_wise_accuracy', self.accuracy)
+            tf.summary.scalar('learning_rate', self.curr_learning_rate)
 
         self.merged_summaries = tf.summary.merge_all()
 

@@ -9,8 +9,9 @@ class MobileNet:
     MobileNet Class
     """
 
-#    MEAN = [103.939, 116.779, 123.68]
-    MEAN = [73.29132098,  83.04442645,  72.5238962]
+    #    MEAN = [103.939, 116.779, 123.68]
+    MEAN = [73.29132098, 83.04442645, 72.5238962]
+
     def __init__(self, x_input,
                  num_classes,
                  pretrained_path,
@@ -67,9 +68,9 @@ class MobileNet:
             with tf.name_scope('Pre_Processing'):
                 red, green, blue = tf.split(self.x_input, num_or_size_splits=3, axis=3)
                 preprocessed_input = tf.concat([
-                    (blue - MobileNet.MEAN[0]) / 255.0,
-                    (green - MobileNet.MEAN[1]) / 255.0,
-                    (red - MobileNet.MEAN[2]) / 255.0,
+                    tf.subtract(blue, MobileNet.MEAN[0]) / tf.constant(255.0),
+                    tf.subtract(green, MobileNet.MEAN[1]) / tf.constant(255.0),
+                    tf.subtract(red, MobileNet.MEAN[2]) / tf.constant(255.0),
                 ], 3)
 
             self.conv1_1 = conv2d('conv_1', preprocessed_input, num_filters=int(round(32 * self.width_multiplier)),
@@ -161,7 +162,7 @@ class MobileNet:
             self._debug(self.conv6_1)
             # Pooling is removed.
             self.score_fr = conv2d('conv_1c_1x1', self.conv6_1, num_filters=self.num_classes, l2_strength=self.wd,
-                                   kernel_size=(1, 1), batchnorm_enabled=True)
+                                   kernel_size=(1, 1))
 
             self._debug(self.score_fr)
             self.feed1 = self.conv4_2
