@@ -21,4 +21,4 @@
 #python main.py --load_config=fcn8s_mobilenet_coarse_no_bias_exp_train.yaml train NewTrain FCN8sMobileNetTFRecords
 #python main.py --load_config=fcn8s_mobilenet_h5_exp_train.yaml train Train FCN8sMobileNet
 
-python main.py --load_config=fcn8s_shufflenet_exp_overfit.yaml overfit Train FCN8sShuffleNet
+python main.py --load_config=fcn8s_shufflenet_exp_train.yaml train Train FCN8sShuffleNet

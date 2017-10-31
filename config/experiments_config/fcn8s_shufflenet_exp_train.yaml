@@ -1,5 +1,5 @@
 # Directories arguments
-data_dir: "full_cityscapes"
+data_dir: "full_cityscapes_res"
 exp_dir:  "fcn8s_shufflenet_exp"
 out_dir:  "fcn8s_shufflenet_exp"
 
@@ -16,7 +16,7 @@ shuffle: True
 data_mode: "experiment"
 save_every: 5
 test_every: 5
-max_to_keep: 5
+max_to_keep: 2
 weighted_loss: True
 
 # Models arguments
