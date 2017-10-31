@@ -413,8 +413,8 @@ class Train(BasicTrain):
                 self.test_per_epoch(step=self.model.global_step_tensor.eval(self.sess),
                                     epoch=cur_epoch)
 
-            if cur_epoch % self.args.learning_decay_every == 0:
-                curr_lr = curr_lr * self.args.learning_decay
+#            if cur_epoch % self.args.learning_decay_every == 0:
+#                curr_lr = curr_lr * self.args.learning_decay
             print('Current learning rate is ', curr_lr)
 
         print("Training Finished")
