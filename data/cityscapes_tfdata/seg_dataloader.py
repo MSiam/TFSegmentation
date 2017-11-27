@@ -6,6 +6,9 @@ import random
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework.ops import convert_to_tensor
 from tensorflow.contrib.data import Iterator
+import cv2
+import matplotlib.pyplot as plt
+import scipy
 
 class SegDataLoader(object):
     def __init__(self, main_dir, batch_size, resize_shape, crop_shape, paths_file, buffer_size=100, split='train'):
@@ -49,15 +52,14 @@ class SegDataLoader(object):
     def parse_train(self, im_path, label_path):
         # Load image
         img= tf.read_file(im_path)
-        img= tf.image.decode_jpeg(img, channels=3)
-        img= tf.image.resize_images(img, self.resize_shape, method=3)
+        img= tf.image.decode_png(img, channels=3)
+        img= tf.image.resize_images(img, self.resize_shape, method=tf.image.ResizeMethod.BICUBIC)
 
         # Load label
-        label= label_path
-#        label= tf.read_file(label_path)
-#        label= tf.image.decode_jpeg(label, channels=1)
-#        label= tf.image.resize_images(label, self.resize_shape, method=3)
-
+        label= tf.read_file(label_path)
+        #label= tf.image.decode_png(label, channels=3)
+        #label= tf.image.decode_png(label, channels=3)
+        #label= tf.image.resize_images(label, self.resize_shape, method=tf.image.ResizeMethod.BILINEAR)
         return img, label
 
     #def parse_val(self):
@@ -69,6 +71,7 @@ class SegDataLoader(object):
         for line in ff:
             tokens= line.split(' ')
             self.imgs_files.append(self.main_dir+tokens[0])
+#            tokens[1]= tokens[1].replace('labelIds','color')
             self.labels_files.append(self.main_dir+tokens[1])
 
 
@@ -83,7 +86,7 @@ if __name__=="__main__":
     session= tf.Session(config=config)
 
     with tf.device('/cpu:0'):
-        segdl= SegDataLoader('/home/eren/Data/Cityscapes/', 10, (1024,512), (500,500), 'train.txt')
+        segdl= SegDataLoader('/home/eren/Data/Cityscapes/', 1, (512,1024), (500,500), 'train.txt')
         iterator = Iterator.from_structure(segdl.data_tr.output_types, segdl.data_tr.output_shapes)
         next_batch= iterator.get_next()
 
@@ -91,8 +94,9 @@ if __name__=="__main__":
         session.run(training_init_op)
 
     for i in range(10):
-        img_batch, label_batch = session.run(next_batch)
-        pdb.set_trace()
-
+       img_batch, label_batch = session.run(next_batch)
+       img_batch= np.asarray(img_batch,dtype=np.uint8)
+       plt.imshow(img_batch[0,:,:,:]);plt.show()
+       pdb.set_trace()
 
 
