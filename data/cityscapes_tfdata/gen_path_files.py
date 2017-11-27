@@ -8,7 +8,9 @@ def main(main_path, split, out_path):
     path_file= open(out_path, 'w')
 
     img_dir= main_path+'images/'+split+'/'
+    short_img_dir= 'images/'+split+'/'
     label_dir= main_path+'labels/'+split+'/'
+    short_label_dir= 'labels/'+split+'/'
 
     imgs_folders= sorted(os.listdir(img_dir))
     labels_folders= sorted(os.listdir(label_dir))
@@ -18,7 +20,7 @@ def main(main_path, split, out_path):
         labels_files= sorted(os.listdir(label_dir+labels_folders[i]))
 
         for j in range(len(imgs_files)):
-            path_file.write(img_dir+imgs_folders[i]+'/'+imgs_files[j]+' '+label_dir+labels_folders[i]+'/'+labels_files[j*4+2]+'\n')
+            path_file.write(short_img_dir+imgs_folders[i]+'/'+imgs_files[j]+' '+short_label_dir+labels_folders[i]+'/'+labels_files[j*4+2]+'\n')
 
 
     path_file.close()
