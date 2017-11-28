@@ -53,27 +53,42 @@ class SegDataLoader(object):
         # Load image
         img= tf.read_file(im_path)
         img= tf.image.decode_png(img, channels=3)
-        img= tf.image.resize_images(img, self.resize_shape, method=tf.image.ResizeMethod.BICUBIC)
+	last_image_dim = tf.shape(img)[-1]
 
         # Load label
         label= tf.read_file(label_path)
-        #label= tf.image.decode_png(label, channels=3)
-        #label= tf.image.decode_png(label, channels=3)
-        #label= tf.image.resize_images(label, self.resize_shape, method=tf.image.ResizeMethod.BILINEAR)
+        label= tf.image.decode_png(label, channels=1)
+
+	# Scale
+	img = tf.image.resize_images(img, self.resize_shape, method=tf.image.ResizeMethod.BICUBIC)
+	label = tf.image.resize_images(label, self.resize_shape, method= tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+
+	# combine input and label
+	label = tf.cast(label, dtype=tf.float32)
+	combined = tf.concat([img, label], 2)
+
+	# flipping
+	combined= tf.image.random_flip_left_right(combined)
+
+	# cropping
+	combined_crop = tf.random_crop(combined,[self.crop_shape[0],self.crop_shape[1],4]) # TODO: Make cropping size a variable
+	img, label = (combined_crop[:, :, :last_image_dim], combined_crop[:, :, last_image_dim:])
+	label = tf.cast(label, dtype=tf.uint8)
+	img.set_shape((self.crop_shape[0], self.crop_shape[1], 3))
+	label.set_shape((self.crop_shape[0], self.crop_shape[1], 1))
         return img, label
 
-    #def parse_val(self):
+   #def parse_val(self):
         # Load image
         # Load label
 
     def parse_file(self, path):
         ff= open(path, 'r')
         for line in ff:
-            tokens= line.split(' ')
+            tokens= line.strip().split(' ')
             self.imgs_files.append(self.main_dir+tokens[0])
-#            tokens[1]= tokens[1].replace('labelIds','color')
+            tokens[1]= tokens[1].replace('labelIds', 'labelIds_proc')
             self.labels_files.append(self.main_dir+tokens[1])
-
 
     def print_files(self):
         for x, y in zip(self.imgs_files, self.labels_files):
@@ -96,6 +111,7 @@ if __name__=="__main__":
     for i in range(10):
        img_batch, label_batch = session.run(next_batch)
        img_batch= np.asarray(img_batch,dtype=np.uint8)
+       plt.imshow(label_batch[0,:,:,0]);plt.show()
        plt.imshow(img_batch[0,:,:,:]);plt.show()
        pdb.set_trace()
 
