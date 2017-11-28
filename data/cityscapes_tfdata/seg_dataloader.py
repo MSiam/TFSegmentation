@@ -78,9 +78,31 @@ class SegDataLoader(object):
 	label.set_shape((self.crop_shape[0], self.crop_shape[1], 1))
         return img, label
 
-   #def parse_val(self):
+    def parse_val(self, im_path, label_path):
         # Load image
+        img= tf.read_file(im_path)
+        img= tf.image.decode_png(img, channels=3)
+	last_image_dim = tf.shape(img)[-1]
+
         # Load label
+        label= tf.read_file(label_path)
+        label= tf.image.decode_png(label, channels=1)
+
+	# Scale
+	img = tf.image.resize_images(img, self.resize_shape, method=tf.image.ResizeMethod.BICUBIC)
+	label = tf.image.resize_images(label, self.resize_shape, method= tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+
+	label = tf.cast(label, dtype=tf.float32)
+	combined = tf.concat([img, label], 2)
+	c1= tf.image.crop_to_bounding_box(combined, 0, 0, self.crop_shape[0], self.crop_shape[1])
+	c2= tf.image.crop_to_bounding_box(combined, 0, self.crop_shape[1], self.crop_shape[0], self.crop_shape[1])
+	imgs= tf.stack([c1,c2],axis=0)
+	img, label = (imgs[:,:, :, :3], imgs[:,:, :, 3:])
+	label = tf.cast(label, dtype=tf.uint8)
+	img.set_shape((2,self.crop_shape[0], self.crop_shape[1], 3))
+	label.set_shape((2,self.crop_shape[0], self.crop_shape[1], 1))
+
+	return img, label
 
     def parse_file(self, path):
         ff= open(path, 'r')
@@ -101,7 +123,8 @@ if __name__=="__main__":
     session= tf.Session(config=config)
 
     with tf.device('/cpu:0'):
-        segdl= SegDataLoader('/home/eren/Data/Cityscapes/', 1, (512,1024), (500,500), 'train.txt')
+        #segdl= SegDataLoader('/home/eren/Data/Cityscapes/', 10, (512,1024), (512,512), 'train.txt')
+        segdl= SegDataLoader('/home/eren/Data/Cityscapes/', 10, (512,1024), (512,512), 'val.txt', split='val')
         iterator = Iterator.from_structure(segdl.data_tr.output_types, segdl.data_tr.output_shapes)
         next_batch= iterator.get_next()
 
@@ -111,8 +134,8 @@ if __name__=="__main__":
     for i in range(10):
        img_batch, label_batch = session.run(next_batch)
        img_batch= np.asarray(img_batch,dtype=np.uint8)
-       plt.imshow(label_batch[0,:,:,0]);plt.show()
-       plt.imshow(img_batch[0,:,:,:]);plt.show()
+       plt.imshow(label_batch[0,0,:,:,0]);plt.show()
+       plt.imshow(img_batch[0,0,:,:,:]);plt.show()
        pdb.set_trace()
 
 
