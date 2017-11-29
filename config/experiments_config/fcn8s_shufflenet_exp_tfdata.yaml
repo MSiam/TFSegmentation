@@ -1,8 +1,8 @@
 # Directories arguments
 data_dir: "full_cityscapes"
-abs_data_dir: "/home/nray1/ms/Cityscapes/"
-exp_dir:  "fcn8s_shufflenet_coarse_exp"
-out_dir:  "fcn8s_shufflenet_coarse_exp"
+abs_data_dir: "/home/nray1/ms/cityscapes/"
+exp_dir:  "fcn8s_shufflenet_tfdata_exp"
+out_dir:  "fcn8s_shufflenet_tfdata_exp"
 
 # Data arguments
 img_height:   512
