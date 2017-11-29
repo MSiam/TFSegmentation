@@ -32,9 +32,9 @@ class SegDataLoader(object):
         self.data_len= len(self.imgs_files)
 
         if split == 'train':
-            data_tr = data_tr.map(self.parse_train)#, num_threads=8, output_buffer_size=100*self.batch_size)
+            data_tr = data_tr.map(self.parse_train, num_parallel_calls=16)#, num_threads=8, output_buffer_size=100*self.batch_size)
         else:
-            data_tr = data_tr.map(self.parse_val)#, num_threads=8, output_buffer_size=100*self.batch_size)
+            data_tr = data_tr.map(self.parse_val,num_parallel_calls=16)#, num_threads=8, output_buffer_size=100*self.batch_size)
 
         data_tr= data_tr.shuffle(buffer_size)
         self.data_tr= data_tr.batch(batch_size)
