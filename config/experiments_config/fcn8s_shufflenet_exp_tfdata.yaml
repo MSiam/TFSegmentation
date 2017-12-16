@@ -1,14 +1,12 @@
 # Directories arguments
 data_dir: "full_cityscapes"
-h5_train_file: "cscapes_train.h5"
-h5_train_len: 19997
-
-exp_dir:  "fcn8s_shufflenet_coarse_exp"
-out_dir:  "fcn8s_shufflenet_coarse_exp"
+abs_data_dir: "/home/nray1/ms/cityscapes/"
+exp_dir:  "fcn8s_shufflenet_tfdata_exp"
+out_dir:  "fcn8s_shufflenet_tfdata_exp"
 
 # Data arguments
 img_height:   512
-img_width:    1024
+img_width:    512
 num_channels: 3
 num_classes:  20
 
@@ -16,7 +14,7 @@ num_classes:  20
 num_epochs: 200
 batch_size: 8
 shuffle: True
-data_mode: "experiment_h5"
+data_mode: "experiment_tfdata"
 save_every: 5
 test_every: 5
 max_to_keep: 2

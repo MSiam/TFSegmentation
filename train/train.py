@@ -20,6 +20,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from utils.misc import calculate_flops
 
+from utils.seg_dataloader import SegDataLoader
+from tensorflow.contrib.data import Iterator
 
 class Train(BasicTrain):
     """
@@ -57,7 +59,12 @@ class Train(BasicTrain):
         ##################################################################################
         # Init load data and generator
         self.generator = None
-        if self.args.data_mode == "experiment_h5":
+        if self.args.data_mode == "experiment_tfdata":
+            self.data_session= None
+            self.train_next_batch, self.train_data_len= self.init_tfdata(self.args.batch_size, self.args.abs_data_dir, (self.args.img_height, self.args.img_width), mode='train')
+            self.num_iterations_training_per_epoch = (self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+            self.generator = self.train_tfdata_generator
+        elif self.args.data_mode == "experiment_h5":
             self.train_data = None
             self.train_data_len = None
             self.val_data = None
@@ -75,6 +82,12 @@ class Train(BasicTrain):
             self.num_iterations_validation_per_epoch = None
             self.load_train_data()
             self.generator = self.train_generator
+        elif self.args.data_mode == "test_tfdata":
+            self.test_data = None
+            self.test_data_len = None
+            self.num_iterations_testing_per_epoch = None
+            self.load_test_data()
+            self.generator = self.test_tfdata_generator
         elif self.args.data_mode == "test":
             self.test_data = None
             self.test_data_len = None
@@ -108,6 +121,50 @@ class Train(BasicTrain):
         elif self.args.mode == 'test':
             self.reporter = Reporter(self.args.out_dir + 'report_test.json', self.args)
             ##################################################################################
+
+    def crop(self):
+        sh= self.val_data['X'].shape
+        temp_val_data={'X':np.zeros((sh[0]*2, sh[1], sh[2]//2, sh[3]), self.val_data['X'].dtype),
+                            'Y': np.zeros((sh[0]*2, sh[1], sh[2]//2), self.val_data['Y'].dtype)}
+        for i in range(sh[0]):
+            temp_val_data['X'][i*2,:,:,:]= self.val_data['X'][i,:,:sh[2]//2,:]
+            temp_val_data['X'][i*2+1,:,:,:]= self.val_data['X'][i,:,sh[2]//2:,:]
+            temp_val_data['Y'][i*2,:,:]= self.val_data['Y'][i,:,:sh[2]//2]
+            temp_val_data['Y'][i*2+1,:,:]= self.val_data['Y'][i,:,sh[2]//2:]
+
+        self.val_data= temp_val_data
+
+    def init_tfdata(self, batch_size, main_dir, resize_shape, mode='train'):
+        self.data_session= tf.Session()
+        print("Creating the iterator for training data")
+        with tf.device('/cpu:0'):
+            segdl= SegDataLoader(main_dir, batch_size, (resize_shape[0], resize_shape[1]*2), resize_shape, 'data/cityscapes_tfdata/train.txt')
+            iterator = Iterator.from_structure(segdl.data_tr.output_types, segdl.data_tr.output_shapes)
+            next_batch= iterator.get_next()
+
+            init_op = iterator.make_initializer(segdl.data_tr)
+            self.data_session.run(init_op)
+
+        print("Loading Validation data in memoryfor faster training..")
+        self.val_data = {'X': np.load(self.args.data_dir + "X_val.npy"),
+                         'Y': np.load(self.args.data_dir + "Y_val.npy")}
+        self.crop()
+        #import cv2
+        #cv2.imshow('crop1', self.val_data['X'][0,:,:,:])
+        #cv2.imshow('crop2', self.val_data['X'][1,:,:,:])
+        #cv2.imshow('seg1', self.val_data['Y'][0,:,:])
+        #cv2.imshow('seg2', self.val_data['Y'][1,:,:])
+        #cv2.waitKey()
+
+        self.val_data_len = self.val_data['X'].shape[0] - self.val_data['X'].shape[0] % self.args.batch_size
+        self.num_iterations_validation_per_epoch = (
+                                                       self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
+        print("Val-shape-x -- " + str(self.val_data['X'].shape) + " " + str(self.val_data_len))
+        print("Val-shape-y -- " + str(self.val_data['Y'].shape))
+        print("Num of iterations on validation data in one epoch -- " + str(self.num_iterations_validation_per_epoch))
+        print("Validation data is loaded")
+
+        return next_batch, segdl.data_len
 
     @timeit
     def load_overfit_data(self):
@@ -303,6 +360,12 @@ class Train(BasicTrain):
             if start >= self.train_data_len:
                 return
 
+    def train_tfdata_generator(self):
+        with tf.device('/cpu:0'):
+            while True:
+                x_batch, y_batch = self.data_session.run(self.train_next_batch)
+                yield x_batch, y_batch[:,:,:,0]
+
     def train_h5_generator(self):
         start = 0
         idx = np.random.choice(self.train_data_len, self.train_data_len,
@@ -426,7 +489,7 @@ class Train(BasicTrain):
 
         # init tqdm and get the epoch value
         tt = tqdm(range(self.num_iterations_validation_per_epoch), total=self.num_iterations_validation_per_epoch,
-                  desc="Val-epoch-" + str(epoch) + "-")
+              desc="Val-epoch-" + str(epoch) + "-")
 
         # init acc and loss lists
         loss_list = []
