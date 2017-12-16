@@ -47,6 +47,7 @@ class FCN8sShuffleNet(BasicModel):
                                                  self.params.num_classes],
                                              kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd, bias=-1,
                                              trainable=True)
+
             self.score_feed1 = conv2d('score_feed1', x=self.encoder.feed1,
                                       num_filters=self.params.num_classes, kernel_size=(1, 1),
                                       l2_strength=self.encoder.wd)

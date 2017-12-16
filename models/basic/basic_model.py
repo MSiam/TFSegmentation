@@ -117,7 +117,7 @@ class BasicModel:
             self.y_pl = tf.placeholder(tf.int32, [self.args.batch_size, self.params.img_height, self.params.img_width])
 
             print('X_batch shape ', self.x_pl.get_shape().as_list(), ' ', self.y_pl.get_shape().as_list())
-            self.x_pl, self.y_pl = flip_randomly_left_right_image_with_annotation(self.x_pl, self.y_pl)
+            #self.x_pl, self.y_pl = flip_randomly_left_right_image_with_annotation(self.x_pl, self.y_pl)
             print('Afterwards: X_batch shape ', self.x_pl.get_shape().as_list(), ' ', self.y_pl.get_shape().as_list())
 
             self.curr_learning_rate = tf.placeholder(tf.float32)
