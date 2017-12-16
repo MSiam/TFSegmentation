@@ -39,7 +39,7 @@ class FCN8s(BasicModel):
         :return:
         """
 
-        # Init a VGG16 as an encoder
+        # Init a RESNET as an encoder
         self.encoder = RESNET18(x_input=self.x_pl,
                                 num_classes=self.params.num_classes,
                                 pretrained_path=self.args.pretrained_path,
