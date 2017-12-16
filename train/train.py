@@ -18,6 +18,7 @@ from utils.augmentation import flip_randomly_left_right_image_with_annotation, \
 
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from utils.misc import calculate_flops
 
 
 class Train(BasicTrain):
@@ -100,6 +101,7 @@ class Train(BasicTrain):
         ##################################################################################
         # Init metrics class
         self.metrics = Metrics(self.args.num_classes)
+        calculate_flops()
         # Init reporter class
         if self.args.mode == 'train' or 'overfit':
             self.reporter = Reporter(self.args.out_dir + 'report_train.json', self.args)
