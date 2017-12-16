@@ -1,7 +1,7 @@
 # Directories arguments
-data_dir: "full_cityscapes"
-exp_dir:  "unet_mobilenet_exp"
-out_dir:  "unet_mobilenet_exp"
+data_dir: "full_cityscapes_res"
+exp_dir:  "unet_mobilenet_exp_fixedbn"
+out_dir:  "unet_mobilenet_exp_fixedbn"
 
 # Data arguments
 img_height:   512

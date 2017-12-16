@@ -1,6 +1,7 @@
 import time
 import pickle
 import numpy as np
+import tensorflow as tf
 
 
 def timeit(f):
@@ -73,3 +74,17 @@ def get_class_weights(nclasses, npy_file):
 
     class_weights[-1] = 0
     return class_weights
+
+def calculate_flops():
+    # Print to stdout an analysis of the number of floating point operations in the
+    # model broken down by individual operations.
+    tf.profiler.profile(
+        tf.get_default_graph(),
+        options=tf.profiler.ProfileOptionBuilder.float_operation(), cmd='scope')
+
+
+def show_parameters():
+    tf.profiler.profile(
+        tf.get_default_graph(),
+        options=tf.profiler.ProfileOptionBuilder.trainable_variables_parameter(), cmd='scope')
+
