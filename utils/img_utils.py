@@ -1,7 +1,6 @@
 from PIL import Image
 import numpy as np
 
-# TODO Check for num_classes and zbotha w 3leha
 # colour map
 label_colours_global = [(128, 64, 128),  # 'road'
                         (244, 35, 232),  # 'sidewalk'

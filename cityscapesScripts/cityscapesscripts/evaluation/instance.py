@@ -4,17 +4,17 @@
 #
 
 class Instance(object):
-    instID = 0
-    labelID = 0
+    instID     = 0
+    labelID    = 0
     pixelCount = 0
-    medDist = -1
-    distConf = 0.0
+    medDist    = -1
+    distConf   = 0.0
 
     def __init__(self, imgNp, instID):
         if (instID == -1):
             return
-        self.instID = int(instID)
-        self.labelID = int(self.getLabelID(instID))
+        self.instID     = int(instID)
+        self.labelID    = int(self.getLabelID(instID))
         self.pixelCount = int(self.getInstancePixels(imgNp, instID))
 
     def getLabelID(self, instID):
@@ -31,20 +31,20 @@ class Instance(object):
 
     def toDict(self):
         buildDict = {}
-        buildDict["instID"] = self.instID
-        buildDict["labelID"] = self.labelID
+        buildDict["instID"]     = self.instID
+        buildDict["labelID"]    = self.labelID
         buildDict["pixelCount"] = self.pixelCount
-        buildDict["medDist"] = self.medDist
-        buildDict["distConf"] = self.distConf
+        buildDict["medDist"]    = self.medDist
+        buildDict["distConf"]   = self.distConf
         return buildDict
 
     def fromJSON(self, data):
-        self.instID = int(data["instID"])
-        self.labelID = int(data["labelID"])
+        self.instID     = int(data["instID"])
+        self.labelID    = int(data["labelID"])
         self.pixelCount = int(data["pixelCount"])
         if ("medDist" in data):
-            self.medDist = float(data["medDist"])
-            self.distConf = float(data["distConf"])
+            self.medDist    = float(data["medDist"])
+            self.distConf   = float(data["distConf"])
 
     def __str__(self):
-        return "(" + str(self.instID) + ")"
+        return "("+str(self.instID)+")"

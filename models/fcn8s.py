@@ -1,5 +1,6 @@
 from models.basic.basic_model import BasicModel
 from models.encoders.VGG import VGG16
+from models.encoders.mobilenet import MobileNet
 from layers.convolution import conv2d_transpose, conv2d
 
 import tensorflow as tf

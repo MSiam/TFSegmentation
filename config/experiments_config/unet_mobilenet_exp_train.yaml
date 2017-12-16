@@ -1,0 +1,32 @@
+# Directories arguments
+data_dir: "full_cityscapes_res"
+exp_dir:  "unet_mobilenet_exp_dropout"
+out_dir:  "unet_mobilenet_exp_dropout"
+
+# Data arguments
+img_height:   512
+img_width:    1024
+num_channels: 3
+num_classes:  20
+
+# Train arguments
+num_epochs: 200
+batch_size: 5
+shuffle: True
+data_mode: "experiment"
+save_every: 5
+test_every: 5
+max_to_keep: 2
+weighted_loss: True
+
+# Models arguments
+learning_rate:   0.0005
+weight_decay: 0.00005
+momentum: 0.9
+learning_decay: 0.00001
+pretrained_path: "pretrained_weights/mobilenet_v1.pkl"
+learning_decay_every: 50
+
+# Misc arguments
+verbose: False
+

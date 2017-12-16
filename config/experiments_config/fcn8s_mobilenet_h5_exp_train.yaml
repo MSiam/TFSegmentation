@@ -1,0 +1,36 @@
+# Directories arguments
+data_dir: "full_cityscapes"
+h5_train_file: "cscapes_train.h5"
+h5_val_file: "cscapes_val.h5"
+h5_train_len: 19998
+h5_val_len: 500
+exp_dir:  "fcn8s_mobilenet_exp_h5_coarse"
+out_dir:  "fcn8s_mobilenet_exp_h5_coarse"
+
+# Data arguments
+img_height:   512
+img_width:    1024
+num_channels: 3
+num_classes:  20
+
+# Train arguments
+num_epochs: 200
+batch_size: 4
+shuffle: True
+data_mode: "experiment_h5"
+save_every: 1
+test_every: 5
+max_to_keep: 2
+weighted_loss: False
+
+# Models arguments
+learning_rate:   1e-4
+weight_decay: 0.0002
+momentum: 0.9
+learning_decay: 0.1
+pretrained_path: "pretrained_weights/mobilenet_v1.pkl"
+learning_decay_every: 70
+
+# Misc arguments
+verbose: False
+
