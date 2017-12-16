@@ -43,6 +43,15 @@ def parse_config():
 
     # Directories arguments
     parser.add_argument('--data_dir', default=None, help='The data folder')
+    parser.add_argument('--abs_data_dir', default=None, help='The data folder')
+    parser.add_argument('--tfrecord_train_file', default=None, help='the tf_record to use it ')
+    parser.add_argument('--tfrecord_val_file', default=None, help='the tf_record to use it ')
+    parser.add_argument('--tfrecord_train_len', default=None, help='the tf_record to use it ')
+    parser.add_argument('--tfrecord_val_len', default=None, help='the tf_record to use it ')
+    parser.add_argument('--h5_train_file', default=None, help='the h5 to use it ')
+    parser.add_argument('--h5_val_file', default=None, help='the h5 to use it ')
+    parser.add_argument('--h5_train_len', default=None, help='')
+    parser.add_argument('--h5_val_len', default=None, help='')
     parser.add_argument('--exp_dir', default=None, help='The experiment folder')
     parser.add_argument('--out_dir', default=None, help='The output folder')
 
@@ -60,13 +69,20 @@ def parse_config():
     parser.add_argument('--save_every', default=1, type=int, help='save every n epochs')
     parser.add_argument('--test_every', default=1, type=int, help='test every n epochs')
     parser.add_argument('--max_to_keep', default=5, type=int, help='Max checkpoints to keep')
+    parser.add_argument('--weighted_loss', action='store_true', help='Flag to use weighted loss or not')
 
     # Test arguments
 
     # Models arguments
-    parser.add_argument('--learning_rate', default=1e-5, type=float, help='learning rate')
-    parser.add_argument('--weight_decay', default=5e-4, type=float, help='weight decay')
+    parser.add_argument('--num_groups', default=3, type=int, help='number of groups in group conv.')
+    parser.add_argument('--learning_rate', default=5e-4, type=float, help='learning rate')
+    parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
+    parser.add_argument('--learning_decay', default=1e-7, type=float, help='learning decay')
+    parser.add_argument('--learning_decay_every', default=100, type=int, help='learning decay_every')
+    parser.add_argument('--weight_decay', default=2e-4, type=float, help='weight decay')
+    parser.add_argument('--bias', default=0.0, type=float, help='bias')
     parser.add_argument('--pretrained_path', default="", help='The path of pretrained weights')
+    parser.add_argument('--batchnorm_enabled', action='store_false', help='Batchnorm Enabled flag')
 
     # Misc arguments
     parser.add_argument('--verbose', action='store_true', help='verbosity in the code')

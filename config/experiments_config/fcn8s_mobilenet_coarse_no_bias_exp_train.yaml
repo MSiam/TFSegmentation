@@ -1,0 +1,36 @@
+# Directories arguments
+data_dir: "full_cityscapes"
+tfrecord_train_file: "cscapes_train.tfrecords"
+tfrecord_val_file: "cscapes_val.tfrecords"
+tfrecord_train_len: 20000
+tfrecord_val_len: 500
+exp_dir:  "fcn8s_mobilenet_exp_coarse_no_bias"
+out_dir:  "fcn8s_mobilenet_exp_coarse_no_bias"
+
+# Data arguments
+img_height:   512
+img_width:    1024
+num_channels: 3
+num_classes:  20
+
+# Train arguments
+num_epochs: 200
+batch_size: 4
+shuffle: True
+data_mode: "experiment"
+save_every: 1
+test_every: 2
+max_to_keep: 2
+weighted_loss: False
+
+# Models arguments
+learning_rate:   1e-4
+weight_decay: 0.00005
+momentum: 0.9
+learning_decay: 0.1
+pretrained_path: "pretrained_weights/mobilenet_v1.pkl"
+learning_decay_every: 70
+
+# Misc arguments
+verbose: False
+

@@ -8,9 +8,12 @@ from models import *
 from train import *
 from test import *
 from utils.misc import timeit
+
 import os
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   # see issue #152
-os.environ["CUDA_VISIBLE_DEVICES"]="1"
+
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 
 class Agent:
     """
@@ -50,11 +53,12 @@ class Agent:
 
         # Create the sess
         # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
-        gpu_options = tf.GPUOptions(allow_growth=True)#, allow_soft_placement=True)
-        self.sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+        gpu_options = tf.GPUOptions(allow_growth=True)
+        self.sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True))
 
         # Create Model class and build it
-        self.build_model()
+        with self.sess.as_default():
+            self.build_model()
         # Create the operator
         self.operator = self.operator(self.args, self.sess, self.model)
 

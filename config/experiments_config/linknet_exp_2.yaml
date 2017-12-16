@@ -1,0 +1,32 @@
+# Directories arguments
+data_dir: "full_cityscapes"
+exp_dir:  "linknet_exp_train_1"
+out_dir:  "linknet_exp_train_1"
+
+# Data arguments
+img_height:   512
+img_width:    1024
+num_channels: 3
+num_classes:  20
+
+# Train arguments
+num_epochs: 200
+batch_size: 4
+shuffle: True
+data_mode: "experiment"
+save_every: 5
+test_every: 5
+max_to_keep: 1
+weighted_loss: True
+
+# Models arguments
+learning_rate:   0.0005
+weight_decay: 0.0002
+momentum: 0.9
+learning_decay: 0.00001
+pretrained_path: "pretrained_weights/resnet18.npy"
+learning_decay_every: 50
+
+# Misc arguments
+verbose: False
+

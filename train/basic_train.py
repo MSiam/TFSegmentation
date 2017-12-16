@@ -36,7 +36,7 @@ class BasicTrain(object):
                                          save_relative_paths=True)
 
         # Load from latest checkpoint if found
-        self.load_model()
+        self.load_model(model)
 
     @timeit
     def init_model(self):
@@ -56,19 +56,42 @@ class BasicTrain(object):
 
     def save_best_model(self):
         """
-        Save Model Checkpoint
+        Save BEST Model Checkpoint
         :return:
         """
         print("saving a checkpoint for the best model")
         self.saver_best.save(self.sess, self.args.checkpoint_best_dir, self.model.global_step_tensor)
         print("Saved a checkpoint for the best model")
 
+    def load_best_model(self):
+        """
+        Load the best model checkpoint
+        :return:
+        """
+        print("loading a checkpoint for BEST ONE")
+        latest_checkpoint = tf.train.latest_checkpoint(self.args.checkpoint_best_dir)
+        if latest_checkpoint:
+            print("Loading model checkpoint {} ...\n".format(latest_checkpoint))
+            self.saver_best.restore(self.sess, latest_checkpoint)
+        else:
+            print("ERROR NO best checkpoint found")
+            exit(-1)
+        print("BEST MODEL LOADED..")
+
     @timeit
-    def load_model(self):
+    def load_model(self, model):
         """
         Load the latest checkpoint
         :return:
         """
+
+        try:
+            # This is for loading the pretrained weights if they can't be loaded during initialization.
+            model.encoder.load_pretrained_weights(self.sess)
+            print("Pretrained weights of the encoder is loaded")
+        except AttributeError:
+            pass
+
         print("Searching for a checkpoint")
         latest_checkpoint = tf.train.latest_checkpoint(self.args.checkpoint_dir)
         if latest_checkpoint:

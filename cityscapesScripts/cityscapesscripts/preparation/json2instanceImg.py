@@ -51,11 +51,11 @@ except:
     print("Failed to import the image processing packages.")
     sys.exit(-1)
 
-# cityscapes imports
-sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'helpers')))
-from annotation import Annotation
-from labels import labels, name2label
 
+# cityscapes imports
+sys.path.append( os.path.normpath( os.path.join( os.path.dirname( __file__ ) , '..' , 'helpers' ) ) )
+from annotation import Annotation
+from labels     import labels, name2label
 
 # Print the information
 def printHelp():
@@ -85,7 +85,6 @@ def printHelp():
     print(' -h                 Print this help')
     print(' -t                 Use the "trainIDs" instead of the regular mapping. See "labels.py" for details.')
 
-
 # Print an error message and quit
 def printError(message):
     print('ERROR: {}'.format(message))
@@ -94,11 +93,10 @@ def printError(message):
     printHelp()
     sys.exit(-1)
 
-
 # Convert the given annotation to a label image
 def createInstanceImage(annotation, encoding):
     # the size of the image
-    size = (annotation.imgWidth, annotation.imgHeight)
+    size = ( annotation.imgWidth , annotation.imgHeight )
 
     # the background
     if encoding == "ids":
@@ -113,7 +111,7 @@ def createInstanceImage(annotation, encoding):
     instanceImg = Image.new("I", size, backgroundId)
 
     # a drawer to draw into the image
-    drawer = ImageDraw.Draw(instanceImg)
+    drawer = ImageDraw.Draw( instanceImg )
 
     # a dict where we keep track of the number of instances that
     # we already saw of each class
@@ -124,19 +122,23 @@ def createInstanceImage(annotation, encoding):
 
     # loop over all objects
     for obj in annotation.objects:
-        label = obj.label
+        label   = obj.label
         polygon = obj.polygon
+
+        # If the object is deleted, skip it
+        if obj.deleted:
+            continue
 
         # if the label is not known, but ends with a 'group' (e.g. cargroup)
         # try to remove the s and see if that works
         # also we know that this polygon describes a group
         isGroup = False
-        if (not label in name2label) and label.endswith('group'):
+        if ( not label in name2label ) and label.endswith('group'):
             label = label[:-len('group')]
             isGroup = True
 
         if not label in name2label:
-            printError("Label '{}' not known.".format(label))
+            printError( "Label '{}' not known.".format(label) )
 
         # the label tuple
         labelTuple = name2label[label]
@@ -158,13 +160,12 @@ def createInstanceImage(annotation, encoding):
             continue
 
         try:
-            drawer.polygon(polygon, fill=id)
+            drawer.polygon( polygon, fill=id )
         except:
-            print("Failed to draw polygon with label {} and id {}: {}".format(label, id, polygon))
+            print("Failed to draw polygon with label {} and id {}: {}".format(label,id,polygon))
             raise
 
     return instanceImg
-
 
 # A method that does all the work
 # inJson is the filename of the json file
@@ -172,21 +173,20 @@ def createInstanceImage(annotation, encoding):
 # encoding can be set to
 #     - "ids"      : classes are encoded using the regular label IDs
 #     - "trainIds" : classes are encoded using the training IDs
-def json2instanceImg(inJson, outImg, encoding="ids"):
+def json2instanceImg(inJson,outImg,encoding="ids"):
     annotation = Annotation()
     annotation.fromJsonFile(inJson)
-    instanceImg = createInstanceImage(annotation, encoding)
-    instanceImg.save(outImg)
-
+    instanceImg = createInstanceImage( annotation , encoding )
+    instanceImg.save( outImg )
 
 # The main method, if you execute this script directly
 # Reads the command line arguments and calls the method 'json2instanceImg'
 def main(argv):
     trainIds = False
     try:
-        opts, args = getopt.getopt(argv, "ht")
+        opts, args = getopt.getopt(argv,"ht")
     except getopt.GetoptError:
-        printError('Invalid arguments')
+        printError( 'Invalid arguments' )
     for opt, arg in opts:
         if opt == '-h':
             printHelp()
@@ -194,23 +194,22 @@ def main(argv):
         elif opt == '-t':
             trainIds = True
         else:
-            printError("Handling of argument '{}' not implementend".format(opt))
+            printError( "Handling of argument '{}' not implementend".format(opt) )
 
     if len(args) == 0:
-        printError("Missing input json file")
+        printError( "Missing input json file" )
     elif len(args) == 1:
-        printError("Missing output image filename")
+        printError( "Missing output image filename" )
     elif len(args) > 2:
-        printError("Too many arguments")
+        printError( "Too many arguments" )
 
     inJson = args[0]
     outImg = args[1]
 
     if trainIds:
-        json2instanceImg(inJson, outImg, 'trainIds')
+        json2instanceImg( inJson , outImg , 'trainIds' )
     else:
-        json2instanceImg(inJson, outImg)
-
+        json2instanceImg( inJson , outImg )
 
 # call the main method
 if __name__ == "__main__":
