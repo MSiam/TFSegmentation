@@ -101,14 +101,6 @@ class BasicTrain(object):
         else:
             print("\n.. No ckpt, SO First time to train :D ..\n")
 
-    @staticmethod
-    def calc_flops():
-        # Print to stdout an analysis of the number of floating point operations in the
-        # model broken down by individual operations.
-        tf.profiler.profile(
-            tf.get_default_graph(),
-            options=tf.profiler.ProfileOptionBuilder.float_operation(), cmd='scope')
-
     def train(self):
         raise NotImplementedError("train function is not implemented in the trainer")
 

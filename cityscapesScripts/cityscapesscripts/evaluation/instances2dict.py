@@ -8,13 +8,11 @@ import os, sys
 
 # Cityscapes imports
 from instance import *
-
-sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'helpers')))
+sys.path.append( os.path.normpath( os.path.join( os.path.dirname( __file__ ) , '..' , 'helpers' ) ) )
 from csHelpers import *
 
-
 def instances2dict(imageFileList, verbose=False):
-    imgCount = 0
+    imgCount     = 0
     instanceDict = {}
 
     if not isinstance(imageFileList, list):
@@ -54,7 +52,6 @@ def instances2dict(imageFileList, verbose=False):
 
     return instanceDict
 
-
 def main(argv):
     fileList = []
     if (len(argv) > 2):
@@ -62,7 +59,6 @@ def main(argv):
             if ("png" in arg):
                 fileList.append(arg)
     instances2dict(fileList, True)
-
 
 if __name__ == "__main__":
     main(sys.argv[1:])
