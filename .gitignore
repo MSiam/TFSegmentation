@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
+# Data
+data/data_for_test_n_overfit/
+data/174_imgs_for_test_n_overfit/
+
 # Distribution / packaging
 .Python
 env/
