@@ -1,6 +1,6 @@
 import tensorflow as tf
 from layers.convolution import shufflenet_unit, conv2d, max_pool_2d
-from utils.misc import load_obj
+from utils.misc import load_obj, _debug
 import os
 
 
@@ -34,9 +34,22 @@ class ShuffleNet:
         self.output_channels = {'1': [144, 288, 576], '2': [200, 400, 800], '3': [240, 480, 960], '4': [272, 544, 1088],
                                 '8': [384, 768, 1536], 'conv1': 24}
 
-    def __stage(self, x, stage=2, repeat=3):
+    def stage(self, x, stage=2, repeat=3, dilation=1):
         if 2 <= stage <= 4:
-            stage_layer = shufflenet_unit('stage' + str(stage) + '_0', x=x, w=None,
+            if dilation >1:
+                stage_layer = shufflenet_unit('stage' + str(stage) + '_0', x=x, w=None,
+                                          num_groups=self.num_groups,
+                                          group_conv_bottleneck=not (stage == 2),
+                                          num_filters=
+                                          self.output_channels[str(self.num_groups)][
+                                              stage - 2],
+                                          stride=(1, 1), dilation=dilation,
+                                          fusion='concat', l2_strength=self.wd,
+                                          bias=self.bias,
+                                          batchnorm_enabled=self.batchnorm_enabled,
+                                          is_training=self.train_flag)
+            else:
+                stage_layer = shufflenet_unit('stage' + str(stage) + '_0', x=x, w=None,
                                           num_groups=self.num_groups,
                                           group_conv_bottleneck=not (stage == 2),
                                           num_filters=
@@ -79,14 +92,19 @@ class ShuffleNet:
                            stride=(2, 2), l2_strength=self.wd, bias=self.bias,
                            batchnorm_enabled=self.batchnorm_enabled, is_training=self.train_flag,
                            activation=tf.nn.relu, padding='VALID')
+            _debug(conv1)
             padded = tf.pad(conv1, [[0, 0], [0, 1], [0, 1], [0, 0]], "CONSTANT")
             max_pool = max_pool_2d(padded, size=(3, 3), stride=(2, 2), name='max_pool')
-            stage2 = self.__stage(max_pool, stage=2, repeat=3)
-            stage3 = self.__stage(stage2, stage=3, repeat=7)
-            stage4 = self.__stage(stage3, stage=4, repeat=3)
+            _debug(max_pool)
+            self.stage2 = self.stage(max_pool, stage=2, repeat=3)
+            _debug(self.stage2)
+            self.stage3 = self.stage(self.stage2, stage=3, repeat=7)
+            _debug(self.stage3)
+            stage4 = self.stage(self.stage3, stage=4, repeat=3)
+            _debug(stage4)
 
-            self.feed1 = stage3
-            self.feed2 = stage2
+            self.feed1 = self.stage3
+            self.feed2 = self.stage2
 
             # First Experiment is to use the regular conv2d
             self.score_fr = conv2d('conv_1c_1x1', stage4, num_filters=self.num_classes, l2_strength=self.wd,
