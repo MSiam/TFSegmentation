@@ -3,7 +3,7 @@ import numpy as np
 
 from layers.utils import variable_summaries, variable_with_weight_decay
 from utils.misc import timeit
-
+from utils.misc import _debug
 
 class RESNET18:
     """
@@ -81,25 +81,35 @@ class RESNET18:
                                     num_filters=64, kernel_size=(7, 7), stride=(2, 2), l2_strength=self.wd)
             self.conv1 = self._bn('bn1', self.conv1)
             self.conv1 = self._relu('relu1', self.conv1)
+            _debug(self.conv1)
             self.conv1 = tf.nn.max_pool(self.conv1, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME',
                                         name='max_pool1')
+            _debug(self.conv1)
             print('conv1-shape: ' + str(self.conv1.shape.as_list()))
 
         with tf.variable_scope('conv2_x'):
             self.conv2 = self._residual_block('conv2_1', self.conv1, 64)
+            _debug(self.conv2)
             self.conv2 = self._residual_block('conv2_2', self.conv2, 64)
+            _debug(self.conv2)
 
         with tf.variable_scope('conv3_x'):
             self.conv3 = self._residual_block('conv3_1', self.conv2, 128, pool_first=True, strides=2)
+            _debug(self.conv3)
             self.conv3 = self._residual_block('conv3_2', self.conv3, 128)
+            _debug(self.conv3)
 
         with tf.variable_scope('conv4_x'):
             self.conv4 = self._residual_block('conv4_1', self.conv3, 256, pool_first=True, strides=2)
+            _debug(self.conv4)
             self.conv4 = self._residual_block('conv4_2', self.conv4, 256)
+            _debug(self.conv4)
 
         with tf.variable_scope('conv5_x'):
             self.conv5 = self._residual_block('conv5_1', self.conv4, 512, pool_first=True, strides=2)
+            _debug(self.conv5)
             self.conv5 = self._residual_block('conv5_2', self.conv5, 512)
+            _debug(self.conv5)
 
         if self.test_classification:
             with tf.variable_scope('logits'):
@@ -129,7 +139,7 @@ class RESNET18:
                 print(v.op.name + " - loaded successfully")
         print("All pretrained weights of resnet18 is loaded")
 
-    def _residual_block(self, name, x, filters, pool_first=False, strides=1):
+    def _residual_block(self, name, x, filters, pool_first=False, strides=1, dilation=1):
         print('Building residual unit: %s' % name)
         with tf.variable_scope(name):
             # get input channels
@@ -147,6 +157,11 @@ class RESNET18:
                 else:
                     shortcut = self._conv('shortcut_conv', x,
                                           num_filters=filters, kernel_size=(1, 1), stride=(strides, strides))
+            else:
+                if dilation != 1:
+                    shortcut = self._conv('shortcut_conv', x,
+                                          num_filters=filters, kernel_size=(1, 1), dilation= dilation)
+
 
             # Residual
             x = self._conv('conv_1', x,
@@ -167,7 +182,7 @@ class RESNET18:
 
     @staticmethod
     def _conv(name, x, num_filters=16, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
-              initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0):
+              initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, dilation=1.0):
 
         with tf.variable_scope(name):
             stride = [1, stride[0], stride[1], 1]
@@ -176,8 +191,10 @@ class RESNET18:
             w = variable_with_weight_decay(kernel_shape, initializer, l2_strength)
 
             variable_summaries(w)
-
-            conv = tf.nn.conv2d(x, w, stride, padding)
+            if dilation > 1:
+                conv = tf.nn.atrous_conv2d(x,w,dilation,padding)
+            else:
+                conv = tf.nn.conv2d(x, w, stride, padding)
 
             return conv
 

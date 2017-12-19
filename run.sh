@@ -9,7 +9,7 @@
 #python3 main.py --load_config=fcn8s_vgg16_test.yaml test Train FCN8s
 
 #3- UNET VGG16 Train
-python3 main.py --load_config=unet_vgg16_train.yaml train Train VGG16UNET
+#python3 main.py --load_config=unet_vgg16_train.yaml train Train VGG16UNET
 
 #4- UNET VGG16 Test
 #python3 main.py --load_config=unet_vgg16_test.yaml test Train VGG16UNET
@@ -47,5 +47,12 @@ python3 main.py --load_config=unet_vgg16_train.yaml train Train VGG16UNET
 
 
 ##################################### ResNet18 ####################################################
-#python3 main.py --load_config=linknet_exp_overfit.yaml overfit Train LinkNET
-#python3 main.py --load_config=linknet_exp_2.yaml train Train LinkNET
+#3- UNet ResNet18 Train
+#python3 main.py --load_config=unet_resnet18_train2.yaml train Train LinkNET
+
+#4- UNet ResNet18 Test
+
+#5- Dilation v1 ResNet18 Train
+python3 main.py --load_config=dilation_resnet18_train.yaml train Train DilationResNet18
+
+#6- Dilation v1 ResNet18 Test
