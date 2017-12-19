@@ -34,6 +34,7 @@
 #python3 main.py --load_config=unet_mobilenet_test.yaml test Train UNetMobileNet
 
 #5- Dilation v1 MobileNet Train
+python3 main.py --load_config=dilation_mobilenet_train.yaml train Train DilationMobileNet
 
 #6- Dilation v1 MobileNet Test
 
@@ -53,6 +54,6 @@
 #4- UNet ResNet18 Test
 
 #5- Dilation v1 ResNet18 Train
-python3 main.py --load_config=dilation_resnet18_train.yaml train Train DilationResNet18
+#python3 main.py --load_config=dilation_resnet18_train.yaml train Train DilationResNet18
 
 #6- Dilation v1 ResNet18 Test
