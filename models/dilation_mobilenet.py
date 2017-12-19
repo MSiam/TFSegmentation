@@ -1,10 +1,10 @@
 from models.basic.basic_model import BasicModel
 from models.encoders.VGG import VGG16
 from models.encoders.mobilenet import MobileNet
-from layers.convolution import conv2d_transpose, conv2d
+from layers.convolution import conv2d_transpose, conv2d, atrous_conv2d, depthwise_separable_conv2d
 
 import tensorflow as tf
-
+from utils.misc import _debug
 
 class DilationMobileNet(BasicModel):
     """
@@ -15,6 +15,8 @@ class DilationMobileNet(BasicModel):
         super().__init__(args)
         # init encoder
         self.encoder = None
+        self.wd= self.args.weight_decay
+
         # init network layers
         self.upscore2 = None
         self.score_feed1 = None
@@ -49,31 +51,66 @@ class DilationMobileNet(BasicModel):
 
         # Build Decoding part
         with tf.name_scope('dilation_2'):
-            self.conv4_3_dil = conv2d('conv4_3_dil', x=self.encoder.conv4_2, num_filters=512,
-                                        kernel_size=(3, 3), activation= tf.nn.relu,
-                                        l2_strength=self.encoder.wd, is_training=self.is_training )
+            self.conv4_2 = atrous_conv2d('conv_ds_7_dil', self.encoder.conv4_1,
+                                                      num_filters=512, kernel_size=(3, 3), padding='SAME',
+                                                      activation=tf.nn.relu, dilation_rate=2,
+                                                      batchnorm_enabled=True, is_training=self.is_training,
+                                                      l2_strength=self.wd)
+            _debug(self.conv4_2)
+            self.conv5_1 = depthwise_separable_conv2d('conv_ds_8_dil', self.conv4_2, width_multiplier=self.encoder.width_multiplier,
+                                                      num_filters=512, kernel_size=(3, 3), padding='SAME',
+                                                      stride=(1, 1), activation=tf.nn.relu,
+                                                      batchnorm_enabled=True, is_training=self.is_training,
+                                                      l2_strength=self.wd)
+            _debug(self.conv5_1)
+            self.conv5_2 = depthwise_separable_conv2d('conv_ds_9_dil', self.conv5_1, width_multiplier=self.encoder.width_multiplier,
+                                                      num_filters=512, kernel_size=(3, 3), padding='SAME',
+                                                      stride=(1, 1), activation=tf.nn.relu,
+                                                      batchnorm_enabled=True, is_training=self.is_training,
+                                                      l2_strength=self.wd)
+            _debug(self.conv5_2)
+            self.conv5_3 = depthwise_separable_conv2d('conv_ds_10_dil', self.conv5_2,
+                                                      width_multiplier=self.encoder.width_multiplier,
+                                                      num_filters=512, kernel_size=(3, 3), padding='SAME',
+                                                      stride=(1, 1), activation=tf.nn.relu,
+                                                      batchnorm_enabled=True, is_training=self.is_training,
+                                                      l2_strength=self.wd)
+            _debug(self.conv5_3)
+            self.conv5_4 = depthwise_separable_conv2d('conv_ds_11_dil', self.conv5_3,
+                                                      width_multiplier=self.encoder.width_multiplier,
+                                                      num_filters=512, kernel_size=(3, 3), padding='SAME',
+                                                      stride=(1, 1), activation=tf.nn.relu,
+                                                      batchnorm_enabled=True, is_training=self.is_training,
+                                                      l2_strength=self.wd)
+            _debug(self.conv5_4)
+            self.conv5_5 = depthwise_separable_conv2d('conv_ds_12_dil', self.conv5_4,
+                                                      width_multiplier=self.encoder.width_multiplier,
+                                                      num_filters=512, kernel_size=(3, 3), padding='SAME',
+                                                      stride=(1, 1), activation=tf.nn.relu,
+                                                      batchnorm_enabled=True, is_training=self.is_training,
+                                                      l2_strength=self.wd)
+            _debug(self.conv5_5)
+            self.conv5_6 = atrous_conv2d('conv_ds_13_dil', self.conv5_5,
+                                                      num_filters=1024, kernel_size=(3, 3), padding='SAME',
+                                                      activation=tf.nn.relu, dilation_rate=4,
+                                                      batchnorm_enabled=True, is_training=self.is_training,
+                                                      l2_strength=self.wd)
+            _debug(self.conv5_6)
+            self.conv6_1 = depthwise_separable_conv2d('conv_ds_14_dil', self.conv5_6,
+                                                      width_multiplier=self.encoder.width_multiplier,
+                                                      num_filters=1024, kernel_size=(3, 3), padding='SAME',
+                                                      stride=(1, 1), activation=tf.nn.relu,
+                                                      batchnorm_enabled=True, is_training=self.is_training,
+                                                      l2_strength=self.wd)
+            _debug(self.conv6_1)
+            # Pooling is removed.
+            self.score_fr = conv2d('conv_1c_1x1_dil', self.conv6_1, num_filters=self.params.num_classes, l2_strength=self.wd,
+                                   kernel_size=(1, 1))
 
-            self.conv5_1_dil = atrous_conv2d('conv5_1_dil', x=self.conv4_3_dil, num_filters=512,
-                                             kernel_size=(3, 3), dilation_rate=2, activation=tf.nn.relu,
-                                             l2_strength=self.encoder.wd, is_training=self.is_training)
+            _debug(self.score_fr)
+            self.upscore8 = conv2d_transpose('upscore8', x=self.score_fr,
+                                             output_shape=self.x_pl.shape.as_list()[0:3] + [self.params.num_classes],
+                                             kernel_size=(16, 16), stride=(8, 8), l2_strength=self.encoder.wd, is_training= self.is_training)
+            _debug(self.upscore8)
+            self.logits= self.upscore8
 
-            self.conv5_2_dil = atrous_conv2d('conv5_2_dil', x=self.conv5_1_dil, num_filters=512,
-                                             kernel_size=(3, 3), dilation_rate=2, activation=tf.nn.relu,
-                                             l2_strength=self.encoder.wd, is_training=self.is_training)
-
-            self.conv5_3_dil = atrous_conv2d('conv5_3_dil', x=self.conv5_2_dil, num_filters=512,
-                                             kernel_size=(3, 3), dilation_rate=2, activation=tf.nn.relu,
-                                             l2_strength=self.encoder.wd, is_training=self.is_training)
-
-            self.fc6_dil = atrous_conv2d('fc6_dil', x=self.conv5_3_dil, num_filters=1024,
-                                         kernel_size=(7, 7), dilation_rate=4, activation=tf.nn.relu,
-                                         l2_strength=self.encoder.wd, dropout_keep_prob=0.5,
-                                         is_training=self.is_training)
-
-            self.fc7_dil = conv2d('fc7_dil', x=self.fc6_dil, num_filters=1024,
-                                        kernel_size=(1, 1), activation= tf.nn.relu, dropout_keep_prob=0.5,
-                                        l2_strength=self.encoder.wd, is_training=self.is_training )
-
-            self.score_fr = conv2d('score_fr_dil', x=self.fc7_dil, num_filters=self.params.num_classes,
-                                        kernel_size=(1, 1), l2_strength=self.encoder.wd,
-                                        is_training=self.is_training )

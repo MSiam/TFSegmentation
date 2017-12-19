@@ -1,27 +1,31 @@
 # Directories arguments
-data_dir: "174_imgs_for_test_n_overfit"
-exp_dir:  "dilation_mobilenet_exp_test"
-out_dir:  "dilation_mobilenet_exp_test"
+data_dir: "full_cityscapes_res"
+exp_dir:  "dilation_mobilenet"
+out_dir:  "dilation_mobilenet"
 
 # Data arguments
-img_height:   256
-img_width:    512
+img_height:   512
+img_width:    1024
 num_channels: 3
 num_classes:  20
 
 # Train arguments
 num_epochs: 200
-batch_size: 3
+batch_size: 4
 shuffle: True
-data_mode: "overfit"
-save_every: 5
+data_mode: "experiment"
+save_every: 10
 test_every: 5
-max_to_keep: 5
+max_to_keep: 2
+weighted_loss: True
 
 # Models arguments
-learning_rate:   0.0001
-weight_decay: 0.0005
-pretrained_path: "pretrained_weights/vgg16.npy"
+learning_rate:   9e-5
+weight_decay: 0.000005
+momentum: 0.9
+learning_decay: 0.7
+pretrained_path: "pretrained_weights/mobilenet_v1.pkl"
+learning_decay_every: 10
 
 # Misc arguments
 verbose: False
