@@ -65,5 +65,6 @@ class DilationResNet18(BasicModel):
                                              output_shape=self.x_pl.shape.as_list()[0:3] + [self.params.num_classes],
                                              kernel_size=(16, 16), stride=(8, 8), l2_strength=self.encoder.wd, is_training= self.is_training)
             _debug(self.upscore8)
-            self.logits= self.upscore8
+
+        self.logits= self.upscore8
 
