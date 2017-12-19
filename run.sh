@@ -1,32 +1,51 @@
 #!/usr/bin/env bash
 
-#python3 main.py --load_config=test.yaml overfit Train FCN8s
+######################################## VGG16 ######################################################
+#1- FCN8s VGG16 Train Coarse+Fine
+#python main.py --load_config=fcn8s_vgg16_traincoarse.yaml train Train FCN8s
+#python3 main.py --load_config=fcn8s_vgg16_train.yaml train Train FCN8s
 
-# FCN8s exp runs
-#python main.py --load_config=fcn8s_exp_test.yaml test Train FCN8s
-#python main.py --load_config=fcn8s_exp_video.yaml test Train FCN8s
+#2- FCN8s VGG16 Test
+#python3 main.py --load_config=fcn8s_vgg16_test.yaml test Train FCN8s
 
-# VGG16UNET exp runs
-#python main.py --load_config=vgg16unet_exp_test.yaml overfit Train VGG16UNET
+#3- UNET VGG16 Train
+python3 main.py --load_config=unet_vgg16_train.yaml train Train VGG16UNET
 
-# FCN8sMobileNet experiment
-#python main.py --load_config=unet_mobilenet_exp_train.yaml train Train UNetMobileNet
-#python main.py --load_config=unet_mobilenet_exp_test.yaml test Train UNetMobileNet
+#4- UNET VGG16 Test
+#python3 main.py --load_config=unet_vgg16_test.yaml test Train VGG16UNET
+
+#5- Dilation v1 VGG16 Train
+
+#6- Dilation v1 VGG16 Test
+
+###################################### MobileNet ##################################################
+#1- FCN8s MobileNet Train Coarse+Fine
+#python3 main.py --load_config=fcn8s_mobilenet_traincoarse.yaml train Train FCN8sMobileNet
+#python3 main.py --load_config=fcn8s_mobilenet_train.yaml train Train FCN8sMobileNet
+
+#2- FCN8s MobileNet Test
+#python3 main.py --load_config=fcn8s_mobilenet_test.yaml test Train FCN8sMobileNet
+
+#3- UNet MobileNet Train Coarse+Fine
+#python3 main.py --load_config=unet_mobilenet_traincoarse.yaml train Train UNetMobileNet
+#python3 main.py --load_config=unet_mobilenet_train.yaml train Train UNetMobileNet
+
+#4- UNet MobileNet Test 
+#python3 main.py --load_config=unet_mobilenet_test.yaml test Train UNetMobileNet
+
+#5- Dilation v1 MobileNet Train
+
+#6- Dilation v1 MobileNet Test
+
+###################################### ShuffleNet #################################################
+#1- FCN8s ShuffleNet Train Coarse+Fine
+#python3 main.py --load_config=fcn8s_shufflenet_traincoarse.yaml train Train FCN8sShuffleNet
+#python3 main.py --load_config=fcn8s_shufflenet_train.yaml train Train FCN8sShuffleNet
+
+#2- FCN8s ShuffleNet Test
+#python3 main.py --load_config=fcn8s_shufflenet_test.yaml test Train FCN8sShuffleNet
 
 
-#python main.py --load_config=fcn8s_mobilenet_exp_train.yaml train Train FCN8sMobileNet
-#python main.py --load_config=fcn8s_mobilenet_exp_test.yaml test Train FCN8sMobileNet
-#python main.py --load_config=fcn8s_mobilenet_tfrecords_exp_train.yaml train Train FCN8sMobileNet
-#python main.py --load_config=fcn8s_mobilenet_tfrecords_exp_train.yaml train NewTrain FCN8sMobileNetTFRecords
-#python main.py --load_config=fcn8s_mobilenet_npy_exp_train.yaml train Train FCN8sMobileNet
-#python main.py --load_config=fcn8s_mobilenet_no_bias_exp_train.yaml train Train FCN8sMobileNet
-#python main.py --load_config=fcn8s_mobilenet_coarse_no_bias_exp_train.yaml train NewTrain FCN8sMobileNetTFRecords
-#python main.py --load_config=fcn8s_mobilenet_h5_exp_train.yaml train Train FCN8sMobileNet
-
-#python3 main.py --load_config=fcn8s_shufflenet_exp_train.yaml train Train FCN8sShuffleNet
-#python3 main.py --load_config=fcn8s_shufflenet_exp_tfdata.yaml train Train FCN8sShuffleNet
-#python3 main.py --load_config=fcn8s_shufflenet_exp_fine.yaml train Train FCN8sShuffleNet
-
-# LinkNET experiment
+##################################### ResNet18 ####################################################
 #python3 main.py --load_config=linknet_exp_overfit.yaml overfit Train LinkNET
 #python3 main.py --load_config=linknet_exp_2.yaml train Train LinkNET

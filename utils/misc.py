@@ -18,6 +18,10 @@ def timeit(f):
 
     return timed
 
+def _debug(operation):
+    print("Layer_name: " + operation.op.name + " -Output_Shape: " + str(operation.shape.as_list()))
+
+
 
 def output_confusion_matrix(confusion_matrix, file_name, num_classes):
     file_output = open(file_name, 'w')
