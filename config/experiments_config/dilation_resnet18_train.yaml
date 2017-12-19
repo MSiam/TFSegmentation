@@ -1,7 +1,7 @@
 # Directories arguments
 data_dir: "full_cityscapes_res"
-exp_dir:  "unet_resnet18"
-out_dir:  "unet_resnet18"
+exp_dir:  "dilation_resnet18"
+out_dir:  "dilation_resnet18"
 
 # Data arguments
 img_height:   512
