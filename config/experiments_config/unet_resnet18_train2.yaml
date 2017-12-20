@@ -11,11 +11,11 @@ num_classes:  20
 
 # Train arguments
 num_epochs: 200
-batch_size: 4
+batch_size: 6
 shuffle: True
 data_mode: "experiment"
-save_every: 5
-test_every: 5
+save_every: 10
+test_every: 10
 max_to_keep: 1
 weighted_loss: True
 
