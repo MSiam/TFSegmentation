@@ -430,8 +430,8 @@ class Train(BasicTrain):
                 else:
                     # run the feed_forward
                     _, loss, acc, summaries_merged, segmented_imgs = self.sess.run(
-                        [self.model.train_op, self.model.loss, self.model.accuracy, self.model.merged_summaries,
-                         self.model.segmented_summary],
+                        [self.model.train_op, self.model.loss, self.model.accuracy, self.model.merged_summaries],
+                         #self.model.segmented_summary],
                         feed_dict=feed_dict)
                     # log loss and acc
                     loss_list += [loss]
