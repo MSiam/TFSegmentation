@@ -10,6 +10,7 @@ from test import *
 from utils.misc import timeit
 
 import os
+import pdb
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -37,8 +38,16 @@ class Agent:
 
     @timeit
     def build_model(self):
-        self.model = self.model(self.args)
-        self.model.build()
+        print('Building Train Network')
+        with tf.variable_scope('network') as scope:
+            self.train_model = self.model(self.args, phase=0)
+            self.train_model.build()
+
+        print('Building Test Network')
+        with tf.variable_scope('network') as scope:
+            scope.reuse_variables()
+            self.test_model= self.model(self.args, phase=1)
+            self.test_model.build()
 
     @timeit
     def run(self):
@@ -60,7 +69,7 @@ class Agent:
         with self.sess.as_default():
             self.build_model()
         # Create the operator
-        self.operator = self.operator(self.args, self.sess, self.model)
+        self.operator = self.operator(self.args, self.sess, self.train_model, self.test_model)
 
         if self.mode == 'train_n_test':
             print("Sorry this mode is not available for NOW")

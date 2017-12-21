@@ -10,7 +10,7 @@ import numpy as np
 import tensorflow as tf
 from utils.augmentation import flip_randomly_left_right_image_with_annotation, \
     scale_randomly_image_with_annotation_with_fixed_size_output
-
+import pdb
 
 class Params:
     """
@@ -31,9 +31,10 @@ class BasicModel:
     Base class for any segmentation model
     """
 
-    def __init__(self, args):
+    def __init__(self, args, phase=0):
         self.args = args
         self.params = Params()
+
         # Init parameters
         self.params.img_width = self.args.img_width
         self.params.img_height = self.args.img_height
@@ -42,6 +43,9 @@ class BasicModel:
         self.params.weighted_loss = self.args.weighted_loss
         if self.params.weighted_loss:
             self.params.class_weights = np.load(self.args.data_dir + 'weights.npy')
+        self.phase= phase #0:Training, 1:Testing
+
+        self.bs= self.args.batch_size
 
         # Input
         self.x_pl = None
@@ -60,6 +64,7 @@ class BasicModel:
         self.loss = None
         self.optimizer = None
         self.train_op = None
+
         # Summaries
         self.accuracy = None
         self.segmented_summary = None
@@ -110,15 +115,60 @@ class BasicModel:
         """
         raise NotImplementedError("build function is not implemented in the model")
 
+    def preprocess_test_crops(self, combined):
+        c1= tf.image.crop_to_bounding_box(combined, 0, self.params.img_height//2, self.params.img_width, self.params.img_height)
+        #c2= tf.image.crop_to_bounding_box(combined, 0, self.params.img_height, self.params.img_width, self.params.img_height)
+        #combined_crops= tf.stack([c1,c2],axis=0)
+        return c1#combined_crops
+
+    def preprocess_random_crops(self, combined):
+        combined= tf.image.random_flip_left_right(combined)
+        combined_crop = tf.random_crop(combined,[self.params.img_width, self.params.img_height,4]) # TODO: Make cropping size a variable
+        return combined_crop
+
+
     def init_input(self):
         with tf.name_scope('input'):
-            self.x_pl = tf.placeholder(tf.float32,
-                                       [self.args.batch_size, self.params.img_height, self.params.img_width, 3])
-            self.y_pl = tf.placeholder(tf.int32, [self.args.batch_size, self.params.img_height, self.params.img_width])
+            if self.args.random_cropping:
+                self.x_pl_before = tf.placeholder(tf.float32,
+                                           [None, self.params.img_height, self.params.img_width*2, 3])
+                self.y_pl_before = tf.placeholder(tf.int32, [None, self.params.img_height, self.params.img_width*2])
+                print('X_batch shape ', self.x_pl_before.get_shape().as_list(), ' ', self.y_pl_before.get_shape().as_list())
+                print('Afterwards: X_batch shape ', self.x_pl_before.get_shape().as_list(), ' ', self.y_pl_before.get_shape().as_list())
 
-            print('X_batch shape ', self.x_pl.get_shape().as_list(), ' ', self.y_pl.get_shape().as_list())
-            #self.x_pl, self.y_pl = flip_randomly_left_right_image_with_annotation(self.x_pl, self.y_pl)
-            print('Afterwards: X_batch shape ', self.x_pl.get_shape().as_list(), ' ', self.y_pl.get_shape().as_list())
+                if self.phase==0:
+                    self.y_pl= tf.expand_dims(self.y_pl_before, axis=3)
+                    label = tf.cast(self.y_pl, dtype=tf.float32)
+                    last_image_dim = tf.shape(self.x_pl_before)[-1]
+                    combined = tf.concat([self.x_pl_before, label], 3)
+                    combined_crop = tf.map_fn(self.preprocess_random_crops, combined)
+                    img, label = (combined_crop[:, :, :,:last_image_dim], combined_crop[:, :, :,last_image_dim:])
+                    label = tf.cast(label, dtype=tf.int32)
+                    img.set_shape((self.args.batch_size , self.params.img_width, self.params.img_height, 3))
+                    label.set_shape((self.args.batch_size , self.params.img_width, self.params.img_height,1))
+                    self.x_pl= img
+                    self.y_pl= tf.squeeze(label, axis=3)
+                else:
+                    self.y_pl= tf.expand_dims(self.y_pl_before, axis=3)
+                    label= tf.cast(self.y_pl, dtype=tf.float32)
+                    last_image_dim = tf.shape(self.x_pl_before)[-1]
+                    combined = tf.concat([self.x_pl_before, label], 3)
+                    combined_crop = tf.map_fn(self.preprocess_test_crops, combined)
+                    img, label = (combined_crop[:, :, :,:last_image_dim], combined_crop[:, :, :,last_image_dim:])
+                    label = tf.cast(label, dtype=tf.int32)
+                    img= tf.reshape(img, (self.args.batch_size, self.params.img_width, self.params.img_height,3))
+                    label= tf.reshape(label, (self.args.batch_size, self.params.img_width, self.params.img_height,1))
+                    self.x_pl= img
+                    self.y_pl= tf.squeeze(label, axis=3)
+
+            else:
+                self.x_pl = tf.placeholder(tf.float32,
+                                           [None, self.params.img_height, self.params.img_width, 3])
+                self.y_pl = tf.placeholder(tf.int32, [None, self.params.img_height, self.params.img_width])
+
+                print('X_batch shape ', self.x_pl.get_shape().as_list(), ' ', self.y_pl.get_shape().as_list())
+                print('Afterwards: X_batch shape ', self.x_pl.get_shape().as_list(), ' ', self.y_pl.get_shape().as_list())
+
 
             self.curr_learning_rate = tf.placeholder(tf.float32)
 
@@ -159,22 +209,23 @@ class BasicModel:
         return bs_ce
 
     def init_train(self):
-        with tf.name_scope('loss'):
-            if self.params.weighted_loss:
-                self.cross_entropy_loss = self.weighted_loss()
-            else:
-                self.cross_entropy_loss = tf.reduce_mean(
-                    tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_pl))
-            #                self.ce = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_pl)
-            #                self.cross_entropy_loss = self.bootstrapped_ce_loss(self.ce, 0.25)
-            self.regularization_loss = tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-            self.loss = self.cross_entropy_loss + self.regularization_loss
+        if self.phase==0:
+            with tf.name_scope('loss'):
+                if self.params.weighted_loss:
+                    self.cross_entropy_loss = self.weighted_loss()
+                else:
+                    self.cross_entropy_loss = tf.reduce_mean(
+                        tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_pl))
+                #                self.ce = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_pl)
+                #                self.cross_entropy_loss = self.bootstrapped_ce_loss(self.ce, 0.25)
+                self.regularization_loss = tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+                self.loss = self.cross_entropy_loss + self.regularization_loss
 
-        with tf.name_scope('train-operation'):
-            extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-            with tf.control_dependencies(extra_update_ops):
-                self.optimizer = tf.train.AdamOptimizer(self.curr_learning_rate)
-                self.train_op = self.optimizer.minimize(self.loss)
+            with tf.name_scope('train-operation'):
+                extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+                with tf.control_dependencies(extra_update_ops):
+                    self.optimizer = tf.train.AdamOptimizer(self.curr_learning_rate)
+                    self.train_op = self.optimizer.minimize(self.loss)
 
     def init_summaries(self):
         with tf.name_scope('pixel_wise_accuracy'):
@@ -188,10 +239,11 @@ class BasicModel:
                                                                preds_summary])  # Concatenate row-wise
 
         # Every step evaluate these summaries
-        with tf.name_scope('train-summary'):
-            tf.summary.scalar('loss', self.loss)
-            tf.summary.scalar('pixel_wise_accuracy', self.accuracy)
-            tf.summary.scalar('learning_rate', self.curr_learning_rate)
+        if self.phase==0:
+            with tf.name_scope('train-summary'):
+                tf.summary.scalar('loss', self.loss)
+                tf.summary.scalar('pixel_wise_accuracy', self.accuracy)
+                tf.summary.scalar('learning_rate', self.curr_learning_rate)
 
         self.merged_summaries = tf.summary.merge_all()
 

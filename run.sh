@@ -54,7 +54,7 @@
 #python3 main.py --load_config=fcn8s_shufflenet_test.yaml test Train FCN8sShuffleNet
 
 #5- Dilation v1 ShuffleNet Train
-python3 main.py --load_config=dilation_shufflenet_train.yaml train Train DilationShuffleNet
+#python3 main.py --load_config=dilation_shufflenet_train.yaml train Train DilationShuffleNet
 
 ##################################### ResNet18 ####################################################
 #3- UNet ResNet18 Train

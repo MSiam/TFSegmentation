@@ -22,14 +22,14 @@ from utils.misc import calculate_flops
 
 from utils.seg_dataloader import SegDataLoader
 from tensorflow.contrib.data import Iterator
-
+import pdb
 
 class Train(BasicTrain):
     """
     Trainer class
     """
 
-    def __init__(self, args, sess, model):
+    def __init__(self, args, sess, train_model, test_model):
         """
         Call the constructor of the base class
         init summaries
@@ -39,7 +39,7 @@ class Train(BasicTrain):
         :param model:
         :return:
         """
-        super().__init__(args, sess, model)
+        super().__init__(args, sess, train_model, test_model)
         ##################################################################################
         # Init summaries
 
@@ -102,13 +102,6 @@ class Train(BasicTrain):
             self.num_iterations_testing_per_epoch = None
             self.load_vid_data()
             self.generator = self.test_generator
-        elif self.args.data_mode == "overfit":
-            self.train_data = None
-            self.train_data_len = None
-            self.num_iterations_training_per_epoch = None
-            self.num_iterations_validation_per_epoch = None
-            self.load_overfit_data()
-            self.generator = self.overfit_generator
         else:
             print("ERROR Please select a proper data_mode BYE")
             exit(-1)
@@ -387,8 +380,9 @@ class Train(BasicTrain):
 
     def train(self):
         print("Training mode will begin NOW ..")
-        curr_lr = self.model.args.learning_rate
-        for cur_epoch in range(self.model.global_epoch_tensor.eval(self.sess) + 1, self.args.num_epochs + 1, 1):
+
+        curr_lr = self.train_model.args.learning_rate
+        for cur_epoch in range(self.train_model.global_epoch_tensor.eval(self.sess) + 1, self.args.num_epochs + 1, 1):
 
             # init tqdm and get the epoch value
             tt = tqdm(self.generator(), total=self.num_iterations_training_per_epoch,
@@ -405,21 +399,29 @@ class Train(BasicTrain):
             for x_batch, y_batch in tt:
 
                 # get the cur_it for the summary
-                cur_it = self.model.global_step_tensor.eval(self.sess)
+                cur_it = self.train_model.global_step_tensor.eval(self.sess)
 
                 # Feed this variables to the network
-                feed_dict = {self.model.x_pl: x_batch,
-                             self.model.y_pl: y_batch,
-                             self.model.is_training: True,
-                             self.model.curr_learning_rate: curr_lr
+                if self.args.random_cropping:
+                    feed_dict = {self.train_model.x_pl_before: x_batch,
+                             self.train_model.y_pl_before: y_batch,
+                             self.train_model.is_training: True,
+                             self.train_model.curr_learning_rate: curr_lr,
                              }
+                else:
+                    feed_dict = {self.train_model.x_pl: x_batch,
+                             self.train_model.y_pl: y_batch,
+                             self.train_model.is_training: True,
+                             self.train_model.curr_learning_rate: curr_lr
+                             }
+
 
                 # Run the feed forward but the last iteration finalize what you want to do
                 if cur_iteration < self.num_iterations_training_per_epoch - 1:
 
                     # run the feed_forward
                     _, loss, acc, summaries_merged = self.sess.run(
-                        [self.model.train_op, self.model.loss, self.model.accuracy, self.model.merged_summaries],
+                        [self.train_model.train_op, self.train_model.loss, self.train_model.accuracy, self.train_model.merged_summaries],
                         feed_dict=feed_dict)
                     # log loss and acc
                     loss_list += [loss]
@@ -429,9 +431,10 @@ class Train(BasicTrain):
 
                 else:
                     # run the feed_forward
-                    _, loss, acc, summaries_merged, segmented_imgs = self.sess.run(
-                        [self.model.train_op, self.model.loss, self.model.accuracy, self.model.merged_summaries],
-                         #self.model.segmented_summary],
+                    _, loss, acc, summaries_merged = self.sess.run(
+                    #, segmented_imgs = self.sess.run(
+                        [self.train_model.train_op, self.train_model.loss, self.train_model.accuracy, self.train_model.merged_summaries],
+                         #self.train_model.segmented_summary],
                         feed_dict=feed_dict)
                     # log loss and acc
                     loss_list += [loss]
@@ -442,7 +445,7 @@ class Train(BasicTrain):
                     summaries_dict = dict()
                     summaries_dict['train-loss-per-epoch'] = total_loss
                     summaries_dict['train-acc-per-epoch'] = total_acc
-                    summaries_dict['train_prediction_sample'] = segmented_imgs
+#                    summaries_dict['train_prediction_sample'] = segmented_imgs
                     self.add_summary(cur_it, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
 
                     # report
@@ -451,21 +454,21 @@ class Train(BasicTrain):
                     self.reporter.finalize()
 
                     # Update the Global step
-                    self.model.global_step_assign_op.eval(session=self.sess,
-                                                          feed_dict={self.model.global_step_input: cur_it + 1})
+                    self.train_model.global_step_assign_op.eval(session=self.sess,
+                                                          feed_dict={self.train_model.global_step_input: cur_it + 1})
 
                     # Update the Cur Epoch tensor
                     # it is the last thing because if it is interrupted it repeat this
-                    self.model.global_epoch_assign_op.eval(session=self.sess,
-                                                           feed_dict={self.model.global_epoch_input: cur_epoch + 1})
+                    self.train_model.global_epoch_assign_op.eval(session=self.sess,
+                                                           feed_dict={self.train_model.global_epoch_input: cur_epoch + 1})
 
                     # print in console
                     tt.close()
                     print("epoch-" + str(cur_epoch) + "-loss:" + str(total_loss) + "-acc:" + str(total_acc)[:6])
 
                 # Update the Global step
-                self.model.global_step_assign_op.eval(session=self.sess,
-                                                      feed_dict={self.model.global_step_input: cur_it + 1})
+                self.train_model.global_step_assign_op.eval(session=self.sess,
+                                                      feed_dict={self.train_model.global_step_input: cur_it + 1})
 
                 # update the cur_iteration
                 cur_iteration += 1
@@ -476,7 +479,7 @@ class Train(BasicTrain):
 
             # Test the model on validation
             if cur_epoch % self.args.test_every == 0:
-                self.test_per_epoch(step=self.model.global_step_tensor.eval(self.sess),
+                self.test_per_epoch(step=self.train_model.global_step_tensor.eval(self.sess),
                                     epoch=cur_epoch)
 
 #            if cur_epoch % self.args.learning_decay_every == 0:
@@ -493,7 +496,6 @@ class Train(BasicTrain):
               desc="Val-epoch-" + str(epoch) + "-")
 
         # init acc and loss lists
-        loss_list = []
         acc_list = []
         inf_list = []
 
@@ -504,7 +506,7 @@ class Train(BasicTrain):
         self.metrics.reset()
 
         # get the maximum iou to compare with and save the best model
-        max_iou = self.model.best_iou_tensor.eval(self.sess)
+        max_iou = self.test_model.best_iou_tensor.eval(self.sess)
 
         # loop by the number of iterations
         for cur_iteration in tt:
@@ -516,9 +518,15 @@ class Train(BasicTrain):
             idx += self.args.batch_size
 
             # Feed this variables to the network
-            feed_dict = {self.model.x_pl: x_batch,
-                         self.model.y_pl: y_batch,
-                         self.model.is_training: False
+            if self.args.random_cropping:
+                feed_dict = {self.test_model.x_pl_before: x_batch,
+                         self.test_model.y_pl_before: y_batch,
+                         self.test_model.is_training: False,
+                         }
+            else:
+                feed_dict = {self.test_model.x_pl: x_batch,
+                         self.test_model.y_pl: y_batch,
+                         self.test_model.is_training: False
                          }
 
             # Run the feed forward but the last iteration finalize what you want to do
@@ -526,32 +534,34 @@ class Train(BasicTrain):
 
                 start = time.time()
                 # run the feed_forward
-                out_argmax, loss, acc = self.sess.run(
-                    [self.model.out_argmax, self.model.loss, self.model.accuracy],
+                out_argmax, acc = self.sess.run([self.test_model.out_argmax, self.test_model.accuracy],
                     feed_dict=feed_dict)
                 end = time.time()
                 # log loss and acc
-                loss_list += [loss]
                 acc_list += [acc]
                 inf_list += [end - start]
                 # log metrics
+                if self.args.random_cropping:
+                   y_batch= y_batch[:,:,256:256+512]
                 self.metrics.update_metrics_batch(out_argmax, y_batch)
 
             else:
                 start = time.time()
                 # run the feed_forward
-                out_argmax, loss, acc, segmented_imgs = self.sess.run(
-                    [self.model.out_argmax, self.model.loss, self.model.accuracy, self.model.segmented_summary],
+                out_argmax, acc, segmented_imgs = self.sess.run(
+                    [self.test_model.out_argmax,self.test_model.accuracy, self.test_model.segmented_summary],
                     feed_dict=feed_dict)
                 end = time.time()
                 # log loss and acc
-                loss_list += [loss]
                 acc_list += [acc]
                 inf_list += [end - start]
                 # log metrics
+                if self.args.random_cropping:
+                   y_batch= y_batch[:,:,256:256+512]
+
                 self.metrics.update_metrics_batch(out_argmax, y_batch)
                 # mean over batches
-                total_loss = np.mean(loss_list)
+                total_loss = 0
                 total_acc = np.mean(acc_list)
                 mean_iou = self.metrics.compute_final_metrics(self.num_iterations_validation_per_epoch)
                 mean_iou_arr = self.metrics.iou
@@ -583,8 +593,8 @@ class Train(BasicTrain):
                     # save the best model
                     self.save_best_model()
                     # Set the new maximum
-                    self.model.best_iou_assign_op.eval(session=self.sess,
-                                                       feed_dict={self.model.best_iou_input: mean_iou})
+                    self.test_model.best_iou_assign_op.eval(session=self.sess,
+                                                       feed_dict={self.test_model.best_iou_input: mean_iou})
                 else:
                     print("hmm not the best validation epoch :/..")
 
@@ -602,7 +612,6 @@ class Train(BasicTrain):
         naming = np.load(self.args.data_dir + 'names_train.npy')
 
         # init acc and loss lists
-        loss_list = []
         acc_list = []
         img_list = []
 
@@ -622,15 +631,21 @@ class Train(BasicTrain):
             idx += 1
 
             # Feed this variables to the network
-            feed_dict = {self.model.x_pl: x_batch,
-                         self.model.y_pl: y_batch,
-                         self.model.is_training: False
+            if self.args.random_cropping:
+                feed_dict = {self.test_model.x_pl_before: x_batch,
+                         self.test_model.y_pl_before: y_batch,
+                         self.test_model.is_training: False,
+                         }
+            else:
+                feed_dict = {self.test_model.x_pl: x_batch,
+                         self.test_model.y_pl: y_batch,
+                         self.test_model.is_training: False
                          }
 
             # run the feed_forward
             out_argmax, loss, acc, summaries_merged, segmented_imgs = self.sess.run(
-                [self.model.out_argmax, self.model.loss, self.model.accuracy,
-                 self.model.merged_summaries, self.model.segmented_summary],
+                [self.test_model.out_argmax, self.test_model.loss, self.test_model.accuracy,
+                 self.test_model.merged_summaries, self.test_model.segmented_summary],
                 feed_dict=feed_dict)
 
             np.save(self.args.out_dir + 'npy/' + str(cur_iteration) + '.npy', out_argmax[0])
@@ -658,116 +673,6 @@ class Train(BasicTrain):
         print("Plotting imgs")
         for i in range(len(img_list)):
             plt.imsave(self.args.imgs_dir + 'test_' + str(i) + '.png', img_list[i])
-
-    def overfit(self):
-        print("Overfitting mode will begin NOW..")
-        curr_lr = self.model.args.learning_rate
-
-        for cur_epoch in range(self.model.global_epoch_tensor.eval(self.sess) + 1, self.args.num_epochs + 1, 1):
-
-            # init tqdm and get the epoch value
-            tt = tqdm(self.generator(), total=self.num_iterations_training_per_epoch,
-                      desc="epoch-" + str(cur_epoch) + "-")
-
-            # init the current iterations
-            cur_iteration = 0
-
-            # init acc and loss lists
-            loss_list = []
-            acc_list = []
-
-            # reset metrics
-            self.metrics.reset()
-
-            # loop by the number of iterations
-            for x_batch, y_batch in tt:
-
-                # get the cur_it for the summary
-                cur_it = self.model.global_step_tensor.eval(self.sess)
-
-                # Feed this variables to the network
-                feed_dict = {self.model.x_pl: x_batch,
-                             self.model.y_pl: y_batch,
-                             self.model.is_training: True,
-                             self.model.curr_learning_rate: curr_lr
-                             }
-
-                # Run the feed forward but the last iteration finalize what you want to do
-                if cur_iteration < self.num_iterations_training_per_epoch - 1:
-
-                    # run the feed_forward
-                    out_argmax, _, loss, acc, summaries_merged = self.sess.run(
-                        [self.model.out_argmax, self.model.train_op, self.model.loss, self.model.accuracy,
-                         self.model.merged_summaries],
-                        feed_dict=feed_dict)
-
-                    # summarize
-                    self.add_summary(cur_it, summaries_merged=summaries_merged)
-
-                    # log metrics
-                    self.metrics.update_metrics_batch(out_argmax, y_batch)
-                    # log loss and acc
-                    loss_list += [loss]
-                    acc_list += [acc]
-
-                else:
-
-                    # run the feed_forward
-                    out_argmax, _, loss, acc, summaries_merged, segmented_imgs = self.sess.run(
-                        [self.model.out_argmax, self.model.train_op, self.model.loss, self.model.accuracy,
-                         self.model.merged_summaries, self.model.segmented_summary],
-                        feed_dict=feed_dict)
-                    # summarize
-                    summaries_dict = dict()
-                    summaries_dict['train_prediction_sample'] = segmented_imgs
-                    self.add_summary(cur_it, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
-
-                    # log metrics
-                    self.metrics.update_metrics_batch(out_argmax, y_batch)
-                    # log loss and acc
-                    loss_list += [loss]
-                    acc_list += [acc]
-
-                    # Update the Global step
-                    self.model.global_step_assign_op.eval(session=self.sess,
-                                                          feed_dict={self.model.global_step_input: cur_it + 1})
-
-                    # Update the Cur Epoch tensor
-                    # it is the last thing because if it is interrupted it repeat this
-                    self.model.global_epoch_assign_op.eval(session=self.sess,
-                                                           feed_dict={self.model.global_epoch_input: cur_epoch + 1})
-
-                    mean_iou = self.metrics.compute_final_metrics(self.num_iterations_training_per_epoch)
-                    # mean over batches
-                    total_loss = np.mean(loss_list)
-                    total_acc = np.mean(acc_list)
-                    # report
-                    self.reporter.report_experiment_statistics('train-acc', 'epoch-' + str(cur_epoch), str(total_acc))
-                    self.reporter.report_experiment_statistics('train-loss', 'epoch-' + str(cur_epoch), str(total_loss))
-                    self.reporter.finalize()
-                    # print in console
-                    tt.close()
-                    print("epoch-" + str(cur_epoch) + "-" + "loss:" + str(total_loss) + "-" +
-                          "acc-" + str(total_acc)[:6] + "  mean-iou: " + str(mean_iou))
-
-                    # Break the loop to finalize this epoch
-                    break
-
-                # Update the Global step
-                self.model.global_step_assign_op.eval(session=self.sess,
-                                                      feed_dict={self.model.global_step_input: cur_it + 1})
-
-                # update the cur_iteration
-                cur_iteration += 1
-
-            # Save the current checkpoint
-            if cur_epoch != 0 and cur_epoch % self.args.save_every == 0:
-                self.save_model()
-            if cur_epoch % self.args.learning_decay_every == 0:
-                curr_lr = curr_lr * self.args.learning_decay
-                print('Current learning rate is ', curr_lr)
-
-        print("Overfitting Finished")
 
     def finalize(self):
         self.reporter.finalize()

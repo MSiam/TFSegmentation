@@ -8,7 +8,6 @@ from agent import Agent
 from utils.params import get_params
 from utils.dirs import create_exp_dirs
 
-
 def main():
     args = get_params()
     args = create_exp_dirs(args)
