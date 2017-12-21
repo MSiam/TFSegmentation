@@ -13,15 +13,16 @@ class BasicTrain(object):
     Contain all necessary functions for training
     """
 
-    def __init__(self, args, sess, model):
+    def __init__(self, args, sess, train_model, test_model):
         print("\nTraining is initializing itself\n")
 
         self.args = args
         self.sess = sess
-        self.model = model
+        self.train_model = train_model
+        self.test_model = test_model
 
         # shortcut for model params
-        self.params = self.model.params
+        self.params = self.train_model.params
 
         # To initialize all variables
         self.init = None
@@ -36,7 +37,7 @@ class BasicTrain(object):
                                          save_relative_paths=True)
 
         # Load from latest checkpoint if found
-        self.load_model(model)
+        self.load_model(train_model)
 
     @timeit
     def init_model(self):
@@ -51,7 +52,7 @@ class BasicTrain(object):
         :return:
         """
         print("saving a checkpoint")
-        self.saver.save(self.sess, self.args.checkpoint_dir, self.model.global_step_tensor)
+        self.saver.save(self.sess, self.args.checkpoint_dir, self.train_model.global_step_tensor)
         print("Saved a checkpoint")
 
     def save_best_model(self):
@@ -60,7 +61,7 @@ class BasicTrain(object):
         :return:
         """
         print("saving a checkpoint for the best model")
-        self.saver_best.save(self.sess, self.args.checkpoint_best_dir, self.model.global_step_tensor)
+        self.saver_best.save(self.sess, self.args.checkpoint_best_dir, self.train_model.global_step_tensor)
         print("Saved a checkpoint for the best model")
 
     def load_best_model(self):
