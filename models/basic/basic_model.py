@@ -117,9 +117,13 @@ class BasicModel:
 
     def preprocess_test_crops(self, combined):
         c1= tf.image.crop_to_bounding_box(combined, 0, self.params.img_height//2, self.params.img_width, self.params.img_height)
-        #c2= tf.image.crop_to_bounding_box(combined, 0, self.params.img_height, self.params.img_width, self.params.img_height)
-        #combined_crops= tf.stack([c1,c2],axis=0)
-        return c1#combined_crops
+        c2= tf.image.crop_to_bounding_box(combined, 0, self.params.img_height, self.params.img_width, self.params.img_height)
+        combined_crops= tf.stack([c1,c2],axis=0)
+        return combined_crops
+
+    def preprocess_val_crops(self, combined):
+        c1= tf.image.crop_to_bounding_box(combined, 0, self.params.img_height//2, self.params.img_width, self.params.img_height)
+        return c1
 
     def preprocess_random_crops(self, combined):
         combined= tf.image.random_flip_left_right(combined)
@@ -148,18 +152,31 @@ class BasicModel:
                     label.set_shape((self.args.batch_size , self.params.img_width, self.params.img_height,1))
                     self.x_pl= img
                     self.y_pl= tf.squeeze(label, axis=3)
-                else:
+                elif self.phase==1:
                     self.y_pl= tf.expand_dims(self.y_pl_before, axis=3)
                     label= tf.cast(self.y_pl, dtype=tf.float32)
                     last_image_dim = tf.shape(self.x_pl_before)[-1]
                     combined = tf.concat([self.x_pl_before, label], 3)
-                    combined_crop = tf.map_fn(self.preprocess_test_crops, combined)
+                    combined_crop = tf.map_fn(self.preprocess_val_crops, combined)
                     img, label = (combined_crop[:, :, :,:last_image_dim], combined_crop[:, :, :,last_image_dim:])
                     label = tf.cast(label, dtype=tf.int32)
                     img= tf.reshape(img, (self.args.batch_size, self.params.img_width, self.params.img_height,3))
                     label= tf.reshape(label, (self.args.batch_size, self.params.img_width, self.params.img_height,1))
                     self.x_pl= img
                     self.y_pl= tf.squeeze(label, axis=3)
+                else:
+                    self.y_pl= tf.expand_dims(self.y_pl_before, axis=3)
+                    label= tf.cast(self.y_pl, dtype=tf.float32)
+                    last_image_dim = tf.shape(self.x_pl_before)[-1]
+                    combined = tf.concat([self.x_pl_before, label], 3)
+                    combined_crop = tf.map_fn(self.preprocess_test_crops, combined)
+                    img, label = (combined_crop[:,:, :, :,:last_image_dim], combined_crop[:,:, :, :,last_image_dim:])
+                    label = tf.cast(label, dtype=tf.int32)
+                    img= tf.reshape(img, (2*self.args.batch_size, self.params.img_width, self.params.img_height,3))
+                    label= tf.reshape(label, (2*self.args.batch_size, self.params.img_width, self.params.img_height,1))
+                    self.x_pl= img
+                    self.y_pl= tf.squeeze(label, axis=3)
+                    self.bs= self.args.batch_size*2
 
             else:
                 self.x_pl = tf.placeholder(tf.float32,

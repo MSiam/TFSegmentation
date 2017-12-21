@@ -7,8 +7,8 @@ import pdb
 from utils.misc import _debug
 
 class VGG16UNET(BasicModel):
-    def __init__(self, args):
-        super().__init__(args)
+    def __init__(self, args, phase=0):
+        super().__init__(args, phase=phase)
         # init encoder
         self.encoder = None
         # all layers
