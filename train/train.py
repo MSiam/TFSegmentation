@@ -643,23 +643,29 @@ class Train(BasicTrain):
                          }
 
             # run the feed_forward
-            out_argmax, loss, acc, summaries_merged, segmented_imgs = self.sess.run(
-                [self.test_model.out_argmax, self.test_model.loss, self.test_model.accuracy,
-                 self.test_model.merged_summaries, self.test_model.segmented_summary],
+            out_argmax, acc, segmented_imgs = self.sess.run(
+                [self.test_model.out_argmax, self.test_model.accuracy,
+                 #self.test_model.merged_summaries, self.test_model.segmented_summary],
+                 self.test_model.segmented_summary],
                 feed_dict=feed_dict)
 
             np.save(self.args.out_dir + 'npy/' + str(cur_iteration) + '.npy', out_argmax[0])
             plt.imsave(self.args.out_dir + 'imgs/' + 'test_' + str(cur_iteration) + '.png', segmented_imgs[0])
 
             # log loss and acc
-            loss_list += [loss]
             acc_list += [acc]
 
             # log metrics
-            self.metrics.update_metrics(out_argmax[0], y_batch[0], 0, 0)
+            if self.args.random_cropping:
+                y1= np.expand_dims(y_batch[0,:,:512], axis=0)
+                y2= np.expand_dims(y_batch[0,:,512:], axis=0)
+                y_batch= np.concatenate((y1,y2), axis=0)
+                self.metrics.update_metrics(out_argmax, y_batch, 0, 0)
+            else:
+                self.metrics.update_metrics(out_argmax[0], y_batch[0], 0, 0)
 
         # mean over batches
-        total_loss = np.mean(loss_list)
+        total_loss = 0
         total_acc = np.mean(acc_list)
         mean_iou = self.metrics.compute_final_metrics(self.test_data_len)
 

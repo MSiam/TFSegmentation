@@ -11,8 +11,8 @@ class FCN8sMobileNet(BasicModel):
     FCN8s with MobileNet as an encoder Model Architecture
     """
 
-    def __init__(self, args):
-        super().__init__(args)
+    def __init__(self, args, phase=0):
+        super().__init__(args, phase=phase)
         # init encoder
         self.encoder = None
         # init network layers

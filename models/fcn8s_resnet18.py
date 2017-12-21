@@ -10,8 +10,8 @@ class FCN8s(BasicModel):
     FCN8s Model Architecture
     """
 
-    def __init__(self, args):
-        super().__init__(args)
+    def __init__(self, args, phase=0):
+        super().__init__(args, phase=phase)
         # init encoder
         self.encoder = None
         # init network layers
