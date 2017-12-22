@@ -18,9 +18,9 @@ def timeit(f):
 
     return timed
 
+
 def _debug(operation):
     print("Layer_name: " + operation.op.name + " -Output_Shape: " + str(operation.shape.as_list()))
-
 
 
 def output_confusion_matrix(confusion_matrix, file_name, num_classes):
@@ -79,6 +79,7 @@ def get_class_weights(nclasses, npy_file):
     class_weights[-1] = 0
     return class_weights
 
+
 def calculate_flops():
     # Print to stdout an analysis of the number of floating point operations in the
     # model broken down by individual operations.
@@ -91,4 +92,3 @@ def show_parameters():
     tf.profiler.profile(
         tf.get_default_graph(),
         options=tf.profiler.ProfileOptionBuilder.trainable_variables_parameter(), cmd='scope')
-
