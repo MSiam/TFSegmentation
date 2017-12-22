@@ -64,19 +64,19 @@ class SegDataLoader(object):
         img = tf.image.resize_images(img, self.resize_shape, method=tf.image.ResizeMethod.BICUBIC)
         label = tf.image.resize_images(label, self.resize_shape, method= tf.image.ResizeMethod.NEAREST_NEIGHBOR)
 
-        # combine input and label
-        label = tf.cast(label, dtype=tf.float32)
-        combined = tf.concat([img, label], 2)
-
-        # flipping
-        combined= tf.image.random_flip_left_right(combined)
-
-        # cropping
-        combined_crop = tf.random_crop(combined,[self.crop_shape[0],self.crop_shape[1],4]) # TODO: Make cropping size a variable
-        img, label = (combined_crop[:, :, :last_image_dim], combined_crop[:, :, last_image_dim:])
-        label = tf.cast(label, dtype=tf.uint8)
-        img.set_shape((self.crop_shape[0], self.crop_shape[1], 3))
-        label.set_shape((self.crop_shape[0], self.crop_shape[1], 1))
+#        # combine input and label
+#        label = tf.cast(label, dtype=tf.float32)
+#        combined = tf.concat([img, label], 2)
+#
+#        # flipping
+#        combined= tf.image.random_flip_left_right(combined)
+#
+#        # cropping
+#        combined_crop = tf.random_crop(combined,[self.crop_shape[0],self.crop_shape[1],4]) # TODO: Make cropping size a variable
+#        img, label = (combined_crop[:, :, :last_image_dim], combined_crop[:, :, last_image_dim:])
+#        label = tf.cast(label, dtype=tf.uint8)
+#        img.set_shape((self.crop_shape[0], self.crop_shape[1], 3))
+#        label.set_shape((self.crop_shape[0], self.crop_shape[1], 1))
         return img, label
 
     def parse_val(self, im_path, label_path):
