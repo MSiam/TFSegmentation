@@ -137,7 +137,7 @@ class Train(BasicTrain):
         self.data_session = tf.Session()
         print("Creating the iterator for training data")
         with tf.device('/cpu:0'):
-            segdl = SegDataLoader(main_dir, batch_size, (resize_shape[0], resize_shape[1] * 2), resize_shape,
+            segdl = SegDataLoader(main_dir, batch_size, (resize_shape[0], resize_shape[1]), resize_shape,  # * 2), resize_shape,
                                   'data/cityscapes_tfdata/train.txt')
             iterator = Iterator.from_structure(segdl.data_tr.output_types, segdl.data_tr.output_shapes)
             next_batch = iterator.get_next()
@@ -148,7 +148,7 @@ class Train(BasicTrain):
         print("Loading Validation data in memoryfor faster training..")
         self.val_data = {'X': np.load(self.args.data_dir + "X_val.npy"),
                          'Y': np.load(self.args.data_dir + "Y_val.npy")}
-        self.crop()
+        #self.crop()
         # import cv2
         # cv2.imshow('crop1', self.val_data['X'][0,:,:,:])
         # cv2.imshow('crop2', self.val_data['X'][1,:,:,:])
@@ -403,7 +403,6 @@ class Train(BasicTrain):
 
             # loop by the number of iterations
             for x_batch, y_batch in tt:
-
                 # get the cur_it for the summary
                 cur_it = self.train_model.global_step_tensor.eval(self.sess)
 
@@ -520,8 +519,8 @@ class Train(BasicTrain):
         # loop by the number of iterations
         for cur_iteration in tt:
             # load minibatches
-            x_batch = self.val_data['X'][idx:idx + self.args.batch_size]
-            y_batch = self.val_data['Y'][idx:idx + self.args.batch_size]
+            x_batch = self.val_data['X'][idx:idx+self.args.batch_size]
+            y_batch = self.val_data['Y'][idx:idx+self.args.batch_size]
 
             # update idx of minibatch
             idx += self.args.batch_size
@@ -537,7 +536,6 @@ class Train(BasicTrain):
                              self.test_model.y_pl: y_batch,
                              self.test_model.is_training: False
                              }
-
             # Run the feed forward but the last iteration finalize what you want to do
             if cur_iteration < self.num_iterations_validation_per_epoch - 1:
 
