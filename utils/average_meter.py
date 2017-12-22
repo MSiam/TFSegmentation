@@ -61,7 +61,9 @@ class FPSMeter(AverageMeter):
 Statistics of the FPSMeter
 Frame per second: {:.2f} fps
 Milliseconds per frame: {:.2f} ms in one frame
-        """.format(self.frame_per_second, self.f_in_milliseconds))
+These statistics are calculated based on
+{:d} Frames and the whole taken time is {:.4f} Seconds
+        """.format(self.frame_per_second, self.f_in_milliseconds, self.frame_count, self.milliseconds / 1000.0))
 
 
 def main_test_fps():
