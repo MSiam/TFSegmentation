@@ -143,12 +143,16 @@ class BasicModel:
                 if self.phase==0:
                     print('PHASE ', self.phase)
                     self.y_pl= tf.expand_dims(self.y_pl_before, axis=3)
-                    label = tf.cast(self.y_pl, dtype=tf.float32)
-                    last_image_dim = tf.shape(self.x_pl_before)[-1]
-                    combined = tf.concat([self.x_pl_before, label], 3)
-                    combined_crop = tf.map_fn(self.preprocess_random_crops, combined)
-                    img, label = (combined_crop[:, :, :,:last_image_dim], combined_crop[:, :, :,last_image_dim:])
-                    label = tf.cast(label, dtype=tf.int32)
+                    self.x_pl= self.x_pl_before
+                    img = tf.image.resize_images(self.x_pl, (self.args.img_height, self.args.img_width), method=tf.image.ResizeMethod.BICUBIC)
+                    label = tf.image.resize_images(self.y_pl, (self.args.img_height, self.args.img_width), method= tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+#                    self.y_pl= tf.expand_dims(self.y_pl_before, axis=3)
+#                    label = tf.cast(self.y_pl, dtype=tf.float32)
+#                    last_image_dim = tf.shape(self.x_pl_before)[-1]
+#                    combined = tf.concat([self.x_pl_before, label], 3)
+#                    combined_crop = tf.map_fn(self.preprocess_random_crops, combined)
+#                    img, label = (combined_crop[:, :, :,:last_image_dim], combined_crop[:, :, :,last_image_dim:])
+#                    label = tf.cast(label, dtype=tf.int32)
                     img.set_shape((self.args.batch_size , self.params.img_width, self.params.img_height, 3))
                     label.set_shape((self.args.batch_size , self.params.img_width, self.params.img_height,1))
                     self.x_pl= img
@@ -156,12 +160,15 @@ class BasicModel:
                 elif self.phase==1:
                     print('PHASE ', self.phase)
                     self.y_pl= tf.expand_dims(self.y_pl_before, axis=3)
-                    label= tf.cast(self.y_pl, dtype=tf.float32)
-                    last_image_dim = tf.shape(self.x_pl_before)[-1]
-                    combined = tf.concat([self.x_pl_before, label], 3)
-                    combined_crop = tf.map_fn(self.preprocess_val_crops, combined)
-                    img, label = (combined_crop[:, :, :,:last_image_dim], combined_crop[:, :, :,last_image_dim:])
-                    label = tf.cast(label, dtype=tf.int32)
+                    self.x_pl= self.x_pl_before
+                    img = tf.image.resize_images(self.x_pl, (self.args.img_height, self.args.img_width), method=tf.image.ResizeMethod.BICUBIC)
+                    label = tf.image.resize_images(self.y_pl, (self.args.img_height, self.args.img_width), method= tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+#                    label= tf.cast(self.y_pl, dtype=tf.float32)
+#                    last_image_dim = tf.shape(self.x_pl_before)[-1]
+#                    combined = tf.concat([self.x_pl_before, label], 3)
+#                    combined_crop = tf.map_fn(self.preprocess_val_crops, combined)
+#                    img, label = (combined_crop[:, :, :,:last_image_dim], combined_crop[:, :, :,last_image_dim:])
+#                    label = tf.cast(label, dtype=tf.int32)
                     img= tf.reshape(img, (self.args.batch_size, self.params.img_width, self.params.img_height,3))
                     label= tf.reshape(label, (self.args.batch_size, self.params.img_width, self.params.img_height,1))
                     self.x_pl= img
@@ -185,7 +192,6 @@ class BasicModel:
                 self.x_pl = tf.placeholder(tf.float32,
                                            [self.args.batch_size, self.params.img_height, self.params.img_width, 3])
                 self.y_pl = tf.placeholder(tf.int32, [self.args.batch_size, self.params.img_height, self.params.img_width])
-
                 print('X_batch shape ', self.x_pl.get_shape().as_list(), ' ', self.y_pl.get_shape().as_list())
                 print('Afterwards: X_batch shape ', self.x_pl.get_shape().as_list(), ' ', self.y_pl.get_shape().as_list())
 
