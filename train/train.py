@@ -157,8 +157,10 @@ class Train(BasicTrain):
         # cv2.waitKey()
 
         self.val_data_len = self.val_data['X'].shape[0] - self.val_data['X'].shape[0] % self.args.batch_size
-        self.num_iterations_validation_per_epoch = (
-                                                       self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
+#        self.num_iterations_validation_per_epoch = (
+#                                                       self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
+        self.num_iterations_validation_per_epoch = self.val_data_len // self.args.batch_size
+
         print("Val-shape-x -- " + str(self.val_data['X'].shape) + " " + str(self.val_data_len))
         print("Val-shape-y -- " + str(self.val_data['Y'].shape))
         print("Num of iterations on validation data in one epoch -- " + str(self.num_iterations_validation_per_epoch))
