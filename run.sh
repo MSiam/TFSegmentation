@@ -45,7 +45,7 @@
 
 #2- FCN8s ShuffleNet Test
 #python3 main.py --load_config=fcn8s_shufflenet_test.yaml test Train FCN8sShuffleNet
-python3 main.py --load_config=fcn8s_shufflenet_test.yaml inference Train FCN8sShuffleNet
+#python3 main.py --load_config=fcn8s_shufflenet_test.yaml inference Train FCN8sShuffleNet
 
 #3- UNet ShuffleNet Train Coarse+Fine
 #python3 main.py --load_config=fcn8s_shufflenet_traincoarse.yaml train Train FCN8sShuffleNet
@@ -59,7 +59,7 @@ python3 main.py --load_config=fcn8s_shufflenet_test.yaml inference Train FCN8sSh
 
 ##################################### ResNet18 ####################################################
 #3- UNet ResNet18 Train
-#python3 main.py --load_config=unet_resnet18_traincoarse.yaml train Train LinkNET
+python3 main.py --load_config=unet_resnet18_traincoarse.yaml train Train LinkNET
 #python3 main.py --load_config=unet_resnet18_train.yaml train Train LinkNET
 
 # - UNet ResNet18 Inference .. FPS Test
@@ -67,6 +67,7 @@ python3 main.py --load_config=fcn8s_shufflenet_test.yaml inference Train FCN8sSh
 
 #4- UNet ResNet18 Test
 #python3 main.py --load_config=unet_resnet18_test.yaml test Train LinkNET
+#python3 main.py --load_config=unet_resnet18_test.yaml inference Train LinkNET
 
 #5- Dilation v1 ResNet18 Train
 #python3 main.py --load_config=dilation_resnet18_train.yaml train Train DilationResNet18
