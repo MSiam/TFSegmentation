@@ -42,19 +42,18 @@ class Agent:
             self.train_model = self.model(self.args, phase=0)
             self.train_model.build()
 
-        if self.mode == 'train': #validation phase
+        if self.mode == 'train':  # validation phase
             print('Building Test Network')
             with tf.variable_scope('network') as scope:
                 scope.reuse_variables()
-                self.test_model= self.model(self.args, phase=1)
+                self.test_model = self.model(self.args, phase=1)
                 self.test_model.build()
-        else: #inference phase
+        else:  # inference phase
             print('Building Test Network')
             with tf.variable_scope('network') as scope:
                 scope.reuse_variables()
-                self.test_model= self.model(self.args, phase=2)
+                self.test_model = self.model(self.args, phase=2)
                 self.test_model.build()
-
 
     @timeit
     def run(self):
@@ -87,6 +86,8 @@ class Agent:
             self.train()
         elif self.mode == 'overfit':
             self.overfit()
+        elif self.mode == 'inference':
+            self.inference()
         else:
             self.test()
 
@@ -112,3 +113,9 @@ class Agent:
             self.operator.finalize()
         except KeyboardInterrupt:
             self.operator.finalize()
+
+    def inference(self):
+        try:
+            self.operator.test_inference()
+        except KeyboardInterrupt:
+            pass

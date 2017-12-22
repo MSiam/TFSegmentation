@@ -93,15 +93,15 @@ class SegDataLoader(object):
         img = tf.image.resize_images(img, self.resize_shape, method=tf.image.ResizeMethod.BICUBIC)
         label = tf.image.resize_images(label, self.resize_shape, method= tf.image.ResizeMethod.NEAREST_NEIGHBOR)
 
-        label = tf.cast(label, dtype=tf.float32)
-        combined = tf.concat([img, label], 2)
-        c1= tf.image.crop_to_bounding_box(combined, 0, 0, self.crop_shape[0], self.crop_shape[1])
-        c2= tf.image.crop_to_bounding_box(combined, 0, self.crop_shape[1], self.crop_shape[0], self.crop_shape[1])
-        imgs= tf.stack([c1,c2],axis=0)
-        img, label = (imgs[:,:, :, :3], imgs[:,:, :, 3:])
-        label = tf.cast(label, dtype=tf.uint8)
-        img.set_shape((2,self.crop_shape[0], self.crop_shape[1], 3))
-        label.set_shape((2,self.crop_shape[0], self.crop_shape[1], 1))
+#        label = tf.cast(label, dtype=tf.float32)
+#        combined = tf.concat([img, label], 2)
+#        c1= tf.image.crop_to_bounding_box(combined, 0, 0, self.crop_shape[0], self.crop_shape[1])
+#        c2= tf.image.crop_to_bounding_box(combined, 0, self.crop_shape[1], self.crop_shape[0], self.crop_shape[1])
+#        imgs= tf.stack([c1,c2],axis=0)
+#        img, label = (imgs[:,:, :, :3], imgs[:,:, :, 3:])
+#        label = tf.cast(label, dtype=tf.uint8)
+#        img.set_shape((2,self.crop_shape[0], self.crop_shape[1], 3))
+#        label.set_shape((2,self.crop_shape[0], self.crop_shape[1], 1))
         return img, label
 
     def parse_file(self, path):
