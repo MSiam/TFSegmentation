@@ -183,8 +183,8 @@ class BasicModel:
 
             else:
                 self.x_pl = tf.placeholder(tf.float32,
-                                           [None, self.params.img_height, self.params.img_width, 3])
-                self.y_pl = tf.placeholder(tf.int32, [None, self.params.img_height, self.params.img_width])
+                                           [self.args.batch_size, self.params.img_height, self.params.img_width, 3])
+                self.y_pl = tf.placeholder(tf.int32, [self.args.batch_size, self.params.img_height, self.params.img_width])
 
                 print('X_batch shape ', self.x_pl.get_shape().as_list(), ' ', self.y_pl.get_shape().as_list())
                 print('Afterwards: X_batch shape ', self.x_pl.get_shape().as_list(), ' ', self.y_pl.get_shape().as_list())
