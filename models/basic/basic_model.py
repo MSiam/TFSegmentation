@@ -141,6 +141,7 @@ class BasicModel:
                 print('Afterwards: X_batch shape ', self.x_pl_before.get_shape().as_list(), ' ', self.y_pl_before.get_shape().as_list())
 
                 if self.phase==0:
+                    print('PHASE ', self.phase)
                     self.y_pl= tf.expand_dims(self.y_pl_before, axis=3)
                     label = tf.cast(self.y_pl, dtype=tf.float32)
                     last_image_dim = tf.shape(self.x_pl_before)[-1]
@@ -153,6 +154,7 @@ class BasicModel:
                     self.x_pl= img
                     self.y_pl= tf.squeeze(label, axis=3)
                 elif self.phase==1:
+                    print('PHASE ', self.phase)
                     self.y_pl= tf.expand_dims(self.y_pl_before, axis=3)
                     label= tf.cast(self.y_pl, dtype=tf.float32)
                     last_image_dim = tf.shape(self.x_pl_before)[-1]
@@ -165,6 +167,7 @@ class BasicModel:
                     self.x_pl= img
                     self.y_pl= tf.squeeze(label, axis=3)
                 else:
+                    print('PHASE ', self.phase)
                     self.y_pl= tf.expand_dims(self.y_pl_before, axis=3)
                     label= tf.cast(self.y_pl, dtype=tf.float32)
                     last_image_dim = tf.shape(self.x_pl_before)[-1]
