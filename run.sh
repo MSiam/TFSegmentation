@@ -2,7 +2,7 @@
 
 ######################################## VGG16 ######################################################
 #1- FCN8s VGG16 Train Coarse+Fine
-#python main.py --load_config=fcn8s_vgg16_traincoarse.yaml train Train FCN8s
+python3 main.py --load_config=fcn8s_vgg16_traincoarse.yaml train Train FCN8s
 #python3 main.py --load_config=fcn8s_vgg16_train.yaml train Train FCN8s
 
 #2- FCN8s VGG16 Test
@@ -60,7 +60,7 @@
 ##################################### ResNet18 ####################################################
 #3- UNet ResNet18 Train
 #python3 main.py --load_config=unet_resnet18_traincoarse.yaml train Train LinkNET
-python3 main.py --load_config=unet_resnet18_train.yaml train Train LinkNET
+#python3 main.py --load_config=unet_resnet18_train.yaml train Train LinkNET
 
 # - UNet ResNet18 Inference .. FPS Test
 #python3 main.py --load_config=unet_resnet18_test.yaml inference Train LinkNET
