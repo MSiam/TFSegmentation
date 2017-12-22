@@ -6,6 +6,7 @@ from train.basic_train import BasicTrain
 from metrics.metrics import Metrics
 from utils.reporter import Reporter
 from utils.misc import timeit
+from utils.average_meter import FPSMeter
 
 from tqdm import tqdm
 import numpy as np
@@ -23,6 +24,7 @@ from utils.misc import calculate_flops
 from utils.seg_dataloader import SegDataLoader
 from tensorflow.contrib.data import Iterator
 import pdb
+
 
 class Train(BasicTrain):
     """
@@ -61,9 +63,12 @@ class Train(BasicTrain):
         # Init load data and generator
         self.generator = None
         if self.args.data_mode == "experiment_tfdata":
-            self.data_session= None
-            self.train_next_batch, self.train_data_len= self.init_tfdata(self.args.batch_size, self.args.abs_data_dir, (self.args.img_height, self.args.img_width), mode='train')
-            self.num_iterations_training_per_epoch = (self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+            self.data_session = None
+            self.train_next_batch, self.train_data_len = self.init_tfdata(self.args.batch_size, self.args.abs_data_dir,
+                                                                          (self.args.img_height, self.args.img_width),
+                                                                          mode='train')
+            self.num_iterations_training_per_epoch = (
+                                                     self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
             self.generator = self.train_tfdata_generator
         elif self.args.data_mode == "experiment_h5":
             self.train_data = None
@@ -117,24 +122,25 @@ class Train(BasicTrain):
             ##################################################################################
 
     def crop(self):
-        sh= self.val_data['X'].shape
-        temp_val_data={'X':np.zeros((sh[0]*2, sh[1], sh[2]//2, sh[3]), self.val_data['X'].dtype),
-                            'Y': np.zeros((sh[0]*2, sh[1], sh[2]//2), self.val_data['Y'].dtype)}
+        sh = self.val_data['X'].shape
+        temp_val_data = {'X': np.zeros((sh[0] * 2, sh[1], sh[2] // 2, sh[3]), self.val_data['X'].dtype),
+                         'Y': np.zeros((sh[0] * 2, sh[1], sh[2] // 2), self.val_data['Y'].dtype)}
         for i in range(sh[0]):
-            temp_val_data['X'][i*2,:,:,:]= self.val_data['X'][i,:,:sh[2]//2,:]
-            temp_val_data['X'][i*2+1,:,:,:]= self.val_data['X'][i,:,sh[2]//2:,:]
-            temp_val_data['Y'][i*2,:,:]= self.val_data['Y'][i,:,:sh[2]//2]
-            temp_val_data['Y'][i*2+1,:,:]= self.val_data['Y'][i,:,sh[2]//2:]
+            temp_val_data['X'][i * 2, :, :, :] = self.val_data['X'][i, :, :sh[2] // 2, :]
+            temp_val_data['X'][i * 2 + 1, :, :, :] = self.val_data['X'][i, :, sh[2] // 2:, :]
+            temp_val_data['Y'][i * 2, :, :] = self.val_data['Y'][i, :, :sh[2] // 2]
+            temp_val_data['Y'][i * 2 + 1, :, :] = self.val_data['Y'][i, :, sh[2] // 2:]
 
-        self.val_data= temp_val_data
+        self.val_data = temp_val_data
 
     def init_tfdata(self, batch_size, main_dir, resize_shape, mode='train'):
-        self.data_session= tf.Session()
+        self.data_session = tf.Session()
         print("Creating the iterator for training data")
         with tf.device('/cpu:0'):
-            segdl= SegDataLoader(main_dir, batch_size, (resize_shape[0], resize_shape[1]*2), resize_shape, 'data/cityscapes_tfdata/train.txt')
+            segdl = SegDataLoader(main_dir, batch_size, (resize_shape[0], resize_shape[1] * 2), resize_shape,
+                                  'data/cityscapes_tfdata/train.txt')
             iterator = Iterator.from_structure(segdl.data_tr.output_types, segdl.data_tr.output_shapes)
-            next_batch= iterator.get_next()
+            next_batch = iterator.get_next()
 
             init_op = iterator.make_initializer(segdl.data_tr)
             self.data_session.run(init_op)
@@ -143,12 +149,12 @@ class Train(BasicTrain):
         self.val_data = {'X': np.load(self.args.data_dir + "X_val.npy"),
                          'Y': np.load(self.args.data_dir + "Y_val.npy")}
         self.crop()
-        #import cv2
-        #cv2.imshow('crop1', self.val_data['X'][0,:,:,:])
-        #cv2.imshow('crop2', self.val_data['X'][1,:,:,:])
-        #cv2.imshow('seg1', self.val_data['Y'][0,:,:])
-        #cv2.imshow('seg2', self.val_data['Y'][1,:,:])
-        #cv2.waitKey()
+        # import cv2
+        # cv2.imshow('crop1', self.val_data['X'][0,:,:,:])
+        # cv2.imshow('crop2', self.val_data['X'][1,:,:,:])
+        # cv2.imshow('seg1', self.val_data['Y'][0,:,:])
+        # cv2.imshow('seg2', self.val_data['Y'][1,:,:])
+        # cv2.waitKey()
 
         self.val_data_len = self.val_data['X'].shape[0] - self.val_data['X'].shape[0] % self.args.batch_size
         self.num_iterations_validation_per_epoch = (
@@ -358,7 +364,7 @@ class Train(BasicTrain):
         with tf.device('/cpu:0'):
             while True:
                 x_batch, y_batch = self.data_session.run(self.train_next_batch)
-                yield x_batch, y_batch[:,:,:,0]
+                yield x_batch, y_batch[:, :, :, 0]
 
     def train_h5_generator(self):
         start = 0
@@ -404,24 +410,24 @@ class Train(BasicTrain):
                 # Feed this variables to the network
                 if self.args.random_cropping:
                     feed_dict = {self.train_model.x_pl_before: x_batch,
-                             self.train_model.y_pl_before: y_batch,
-                             self.train_model.is_training: True,
-                             self.train_model.curr_learning_rate: curr_lr,
-                             }
+                                 self.train_model.y_pl_before: y_batch,
+                                 self.train_model.is_training: True,
+                                 self.train_model.curr_learning_rate: curr_lr,
+                                 }
                 else:
                     feed_dict = {self.train_model.x_pl: x_batch,
-                             self.train_model.y_pl: y_batch,
-                             self.train_model.is_training: True,
-                             self.train_model.curr_learning_rate: curr_lr
-                             }
-
+                                 self.train_model.y_pl: y_batch,
+                                 self.train_model.is_training: True,
+                                 self.train_model.curr_learning_rate: curr_lr
+                                 }
 
                 # Run the feed forward but the last iteration finalize what you want to do
                 if cur_iteration < self.num_iterations_training_per_epoch - 1:
 
                     # run the feed_forward
                     _, loss, acc, summaries_merged = self.sess.run(
-                        [self.train_model.train_op, self.train_model.loss, self.train_model.accuracy, self.train_model.merged_summaries],
+                        [self.train_model.train_op, self.train_model.loss, self.train_model.accuracy,
+                         self.train_model.merged_summaries],
                         feed_dict=feed_dict)
                     # log loss and acc
                     loss_list += [loss]
@@ -432,9 +438,10 @@ class Train(BasicTrain):
                 else:
                     # run the feed_forward
                     _, loss, acc, summaries_merged = self.sess.run(
-                    #, segmented_imgs = self.sess.run(
-                        [self.train_model.train_op, self.train_model.loss, self.train_model.accuracy, self.train_model.merged_summaries],
-                         #self.train_model.segmented_summary],
+                        # , segmented_imgs = self.sess.run(
+                        [self.train_model.train_op, self.train_model.loss, self.train_model.accuracy,
+                         self.train_model.merged_summaries],
+                        # self.train_model.segmented_summary],
                         feed_dict=feed_dict)
                     # log loss and acc
                     loss_list += [loss]
@@ -445,7 +452,7 @@ class Train(BasicTrain):
                     summaries_dict = dict()
                     summaries_dict['train-loss-per-epoch'] = total_loss
                     summaries_dict['train-acc-per-epoch'] = total_acc
-#                    summaries_dict['train_prediction_sample'] = segmented_imgs
+                    #                    summaries_dict['train_prediction_sample'] = segmented_imgs
                     self.add_summary(cur_it, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
 
                     # report
@@ -455,12 +462,14 @@ class Train(BasicTrain):
 
                     # Update the Global step
                     self.train_model.global_step_assign_op.eval(session=self.sess,
-                                                          feed_dict={self.train_model.global_step_input: cur_it + 1})
+                                                                feed_dict={
+                                                                    self.train_model.global_step_input: cur_it + 1})
 
                     # Update the Cur Epoch tensor
                     # it is the last thing because if it is interrupted it repeat this
                     self.train_model.global_epoch_assign_op.eval(session=self.sess,
-                                                           feed_dict={self.train_model.global_epoch_input: cur_epoch + 1})
+                                                                 feed_dict={
+                                                                     self.train_model.global_epoch_input: cur_epoch + 1})
 
                     # print in console
                     tt.close()
@@ -468,7 +477,7 @@ class Train(BasicTrain):
 
                 # Update the Global step
                 self.train_model.global_step_assign_op.eval(session=self.sess,
-                                                      feed_dict={self.train_model.global_step_input: cur_it + 1})
+                                                            feed_dict={self.train_model.global_step_input: cur_it + 1})
 
                 # update the cur_iteration
                 cur_iteration += 1
@@ -482,8 +491,8 @@ class Train(BasicTrain):
                 self.test_per_epoch(step=self.train_model.global_step_tensor.eval(self.sess),
                                     epoch=cur_epoch)
 
-#            if cur_epoch % self.args.learning_decay_every == 0:
-#                curr_lr = curr_lr * self.args.learning_decay
+            #            if cur_epoch % self.args.learning_decay_every == 0:
+            #                curr_lr = curr_lr * self.args.learning_decay
             print('Current learning rate is ', curr_lr)
 
         print("Training Finished")
@@ -493,7 +502,7 @@ class Train(BasicTrain):
 
         # init tqdm and get the epoch value
         tt = tqdm(range(self.num_iterations_validation_per_epoch), total=self.num_iterations_validation_per_epoch,
-              desc="Val-epoch-" + str(epoch) + "-")
+                  desc="Val-epoch-" + str(epoch) + "-")
 
         # init acc and loss lists
         acc_list = []
@@ -520,14 +529,14 @@ class Train(BasicTrain):
             # Feed this variables to the network
             if self.args.random_cropping:
                 feed_dict = {self.test_model.x_pl_before: x_batch,
-                         self.test_model.y_pl_before: y_batch,
-                         self.test_model.is_training: False,
-                         }
+                             self.test_model.y_pl_before: y_batch,
+                             self.test_model.is_training: False,
+                             }
             else:
                 feed_dict = {self.test_model.x_pl: x_batch,
-                         self.test_model.y_pl: y_batch,
-                         self.test_model.is_training: False
-                         }
+                             self.test_model.y_pl: y_batch,
+                             self.test_model.is_training: False
+                             }
 
             # Run the feed forward but the last iteration finalize what you want to do
             if cur_iteration < self.num_iterations_validation_per_epoch - 1:
@@ -535,21 +544,21 @@ class Train(BasicTrain):
                 start = time.time()
                 # run the feed_forward
                 out_argmax, acc = self.sess.run([self.test_model.out_argmax, self.test_model.accuracy],
-                    feed_dict=feed_dict)
+                                                feed_dict=feed_dict)
                 end = time.time()
                 # log loss and acc
                 acc_list += [acc]
                 inf_list += [end - start]
                 # log metrics
                 if self.args.random_cropping:
-                   y_batch= y_batch[:,:,256:256+512]
+                    y_batch = y_batch[:, :, 256:256 + 512]
                 self.metrics.update_metrics_batch(out_argmax, y_batch)
 
             else:
                 start = time.time()
                 # run the feed_forward
                 out_argmax, acc, segmented_imgs = self.sess.run(
-                    [self.test_model.out_argmax,self.test_model.accuracy, self.test_model.segmented_summary],
+                    [self.test_model.out_argmax, self.test_model.accuracy, self.test_model.segmented_summary],
                     feed_dict=feed_dict)
                 end = time.time()
                 # log loss and acc
@@ -557,7 +566,7 @@ class Train(BasicTrain):
                 inf_list += [end - start]
                 # log metrics
                 if self.args.random_cropping:
-                   y_batch= y_batch[:,:,256:256+512]
+                    y_batch = y_batch[:, :, 256:256 + 512]
 
                 self.metrics.update_metrics_batch(out_argmax, y_batch)
                 # mean over batches
@@ -594,7 +603,7 @@ class Train(BasicTrain):
                     self.save_best_model()
                     # Set the new maximum
                     self.test_model.best_iou_assign_op.eval(session=self.sess,
-                                                       feed_dict={self.test_model.best_iou_input: mean_iou})
+                                                            feed_dict={self.test_model.best_iou_input: mean_iou})
                 else:
                     print("hmm not the best validation epoch :/..")
 
@@ -633,19 +642,19 @@ class Train(BasicTrain):
             # Feed this variables to the network
             if self.args.random_cropping:
                 feed_dict = {self.test_model.x_pl_before: x_batch,
-                         self.test_model.y_pl_before: y_batch,
-                         self.test_model.is_training: False,
-                         }
+                             self.test_model.y_pl_before: y_batch,
+                             self.test_model.is_training: False,
+                             }
             else:
                 feed_dict = {self.test_model.x_pl: x_batch,
-                         self.test_model.y_pl: y_batch,
-                         self.test_model.is_training: False
-                         }
+                             self.test_model.y_pl: y_batch,
+                             self.test_model.is_training: False
+                             }
 
             # run the feed_forward
             out_argmax, acc, segmented_imgs = self.sess.run(
                 [self.test_model.out_argmax, self.test_model.accuracy,
-                 #self.test_model.merged_summaries, self.test_model.segmented_summary],
+                 # self.test_model.merged_summaries, self.test_model.segmented_summary],
                  self.test_model.segmented_summary],
                 feed_dict=feed_dict)
 
@@ -657,9 +666,9 @@ class Train(BasicTrain):
 
             # log metrics
             if self.args.random_cropping:
-                y1= np.expand_dims(y_batch[0,:,:512], axis=0)
-                y2= np.expand_dims(y_batch[0,:,512:], axis=0)
-                y_batch= np.concatenate((y1,y2), axis=0)
+                y1 = np.expand_dims(y_batch[0, :, :512], axis=0)
+                y2 = np.expand_dims(y_batch[0, :, 512:], axis=0)
+                y_batch = np.concatenate((y1, y2), axis=0)
                 self.metrics.update_metrics(out_argmax, y_batch, 0, 0)
             else:
                 self.metrics.update_metrics(out_argmax[0], y_batch[0], 0, 0)
@@ -679,6 +688,59 @@ class Train(BasicTrain):
         print("Plotting imgs")
         for i in range(len(img_list)):
             plt.imsave(self.args.imgs_dir + 'test_' + str(i) + '.png', img_list[i])
+
+    def test_inference(self):
+        """
+        Like the testing function but this one is for calculate the inference time
+        and measure the frame per second
+        """
+        print("INFERENCE mode will begin NOW..")
+
+        # load the best model checkpoint to test on it
+        self.load_best_model()
+
+        # init tqdm and get the epoch value
+        tt = tqdm(range(self.test_data_len))
+
+        # idx of image
+        idx = 0
+
+        # create the FPS Meter
+        fps_meter = FPSMeter()
+
+        # loop by the number of iterations
+        for cur_iteration in tt:
+            # load mini_batches
+            x_batch = self.test_data['X'][idx:idx + 1]
+            y_batch = self.test_data['Y'][idx:idx + 1]
+
+            # update idx of mini_batch
+            idx += 1
+
+            # Feed this variables to the network
+            if self.args.random_cropping:
+                feed_dict = {self.test_model.x_pl_before: x_batch,
+                             self.test_model.y_pl_before: y_batch,
+                             self.test_model.is_training: False,
+                             }
+            else:
+                feed_dict = {self.test_model.x_pl: x_batch,
+                             self.test_model.y_pl: y_batch,
+                             self.test_model.is_training: False
+                             }
+
+            # calculate the time of one inference
+            start = time.time()
+
+            # run the feed_forward
+            _ = self.sess.run(
+                [self.test_model.out_argmax],
+                feed_dict=feed_dict)
+
+            # update the FPS meter
+            fps_meter.update(time.time() - start)
+
+        fps_meter.print_statistics()
 
     def finalize(self):
         self.reporter.finalize()
