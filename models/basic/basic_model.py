@@ -247,6 +247,8 @@ class BasicModel:
                     self.optimizer = tf.train.AdamOptimizer(self.curr_learning_rate)
                     self.train_op = self.optimizer.minimize(self.loss)
 
+
+
     def init_summaries(self):
         with tf.name_scope('pixel_wise_accuracy'):
             self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.y_pl, self.out_argmax), tf.float32))

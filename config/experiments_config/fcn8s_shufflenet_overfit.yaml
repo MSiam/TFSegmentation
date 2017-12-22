@@ -13,7 +13,7 @@ num_classes:  20
 num_epochs: 200
 batch_size: 8
 shuffle: True
-data_mode: "overfit"
+data_mode: "experiment"
 save_every: 10
 test_every: 10
 max_to_keep: 1
