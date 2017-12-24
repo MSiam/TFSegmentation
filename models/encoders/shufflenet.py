@@ -24,6 +24,11 @@ class ShuffleNet:
         self.batchnorm_enabled = batchnorm_enabled
         self.pretrained_path = os.path.realpath(os.getcwd()) + "/" + pretrained_path
         self.score_fr = None
+        self.stage2 = None
+        self.stage3 = None
+        self.stage4 = None
+        self.max_pool = None
+        self.conv1 = None
 
         # These feed layers are for the decoder
         self.feed1 = None
@@ -36,30 +41,30 @@ class ShuffleNet:
 
     def stage(self, x, stage=2, repeat=3, dilation=1):
         if 2 <= stage <= 4:
-            if dilation >1:
+            if dilation > 1:
                 stage_layer = shufflenet_unit('stage' + str(stage) + '_0', x=x, w=None,
-                                          num_groups=self.num_groups,
-                                          group_conv_bottleneck=not (stage == 2),
-                                          num_filters=
-                                          self.output_channels[str(self.num_groups)][
-                                              stage - 2],
-                                          stride=(1, 1), dilation=dilation,
-                                          fusion='concat', l2_strength=self.wd,
-                                          bias=self.bias,
-                                          batchnorm_enabled=self.batchnorm_enabled,
-                                          is_training=self.train_flag)
+                                              num_groups=self.num_groups,
+                                              group_conv_bottleneck=not (stage == 2),
+                                              num_filters=
+                                              self.output_channels[str(self.num_groups)][
+                                                  stage - 2],
+                                              stride=(1, 1), dilation=dilation,
+                                              fusion='concat', l2_strength=self.wd,
+                                              bias=self.bias,
+                                              batchnorm_enabled=self.batchnorm_enabled,
+                                              is_training=self.train_flag)
             else:
                 stage_layer = shufflenet_unit('stage' + str(stage) + '_0', x=x, w=None,
-                                          num_groups=self.num_groups,
-                                          group_conv_bottleneck=not (stage == 2),
-                                          num_filters=
-                                          self.output_channels[str(self.num_groups)][
-                                              stage - 2],
-                                          stride=(2, 2),
-                                          fusion='concat', l2_strength=self.wd,
-                                          bias=self.bias,
-                                          batchnorm_enabled=self.batchnorm_enabled,
-                                          is_training=self.train_flag)
+                                              num_groups=self.num_groups,
+                                              group_conv_bottleneck=not (stage == 2),
+                                              num_filters=
+                                              self.output_channels[str(self.num_groups)][
+                                                  stage - 2],
+                                              stride=(2, 2),
+                                              fusion='concat', l2_strength=self.wd,
+                                              bias=self.bias,
+                                              batchnorm_enabled=self.batchnorm_enabled,
+                                              is_training=self.train_flag)
             for i in range(1, repeat + 1):
                 stage_layer = shufflenet_unit('stage' + str(stage) + '_' + str(i),
                                               x=stage_layer, w=None,
@@ -87,27 +92,27 @@ class ShuffleNet:
                     tf.subtract(green, ShuffleNet.MEAN[1]) / tf.constant(255.0),
                     tf.subtract(red, ShuffleNet.MEAN[2]) / tf.constant(255.0),
                 ], 3)
-            conv1 = conv2d('conv1', x=preprocessed_input, w=None, num_filters=self.output_channels['conv1'],
-                           kernel_size=(3, 3),
-                           stride=(2, 2), l2_strength=self.wd, bias=self.bias,
-                           batchnorm_enabled=self.batchnorm_enabled, is_training=self.train_flag,
-                           activation=tf.nn.relu, padding='VALID')
-            _debug(conv1)
-            padded = tf.pad(conv1, [[0, 0], [0, 1], [0, 1], [0, 0]], "CONSTANT")
-            max_pool = max_pool_2d(padded, size=(3, 3), stride=(2, 2), name='max_pool')
-            _debug(max_pool)
-            self.stage2 = self.stage(max_pool, stage=2, repeat=3)
+            self.conv1 = conv2d('conv1', x=preprocessed_input, w=None, num_filters=self.output_channels['conv1'],
+                                kernel_size=(3, 3),
+                                stride=(2, 2), l2_strength=self.wd, bias=self.bias,
+                                batchnorm_enabled=self.batchnorm_enabled, is_training=self.train_flag,
+                                activation=tf.nn.relu, padding='VALID')
+            _debug(self.conv1)
+            padded = tf.pad(self.conv1, [[0, 0], [0, 1], [0, 1], [0, 0]], "CONSTANT")
+            self.max_pool = max_pool_2d(padded, size=(3, 3), stride=(2, 2), name='max_pool')
+            _debug(self.max_pool)
+            self.stage2 = self.stage(self.max_pool, stage=2, repeat=3)
             _debug(self.stage2)
             self.stage3 = self.stage(self.stage2, stage=3, repeat=7)
             _debug(self.stage3)
-            stage4 = self.stage(self.stage3, stage=4, repeat=3)
-            _debug(stage4)
+            self.stage4 = self.stage(self.stage3, stage=4, repeat=3)
+            _debug(self.stage4)
 
             self.feed1 = self.stage3
             self.feed2 = self.stage2
 
             # First Experiment is to use the regular conv2d
-            self.score_fr = conv2d('conv_1c_1x1', stage4, num_filters=self.num_classes, l2_strength=self.wd,
+            self.score_fr = conv2d('conv_1c_1x1', self.stage4, num_filters=self.num_classes, l2_strength=self.wd,
                                    kernel_size=(1, 1))
 
             print("\nEncoder ShuffleNet is built successfully\n\n")
