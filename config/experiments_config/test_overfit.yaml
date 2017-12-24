@@ -1,17 +1,17 @@
 # Directories arguments
 data_dir: "data_for_test_n_overfit"
-exp_dir:  "fcn8s_shufflenet_overfit"
-out_dir:  "fcn8s_shufflenet_overfit"
+exp_dir:  "test_overfit"
+out_dir:  "test_overfit"
 
 # Data arguments
-img_height:   512
-img_width:    1024
+img_height:   256
+img_width:    512
 num_channels: 3
 num_classes:  20
 
 # Train arguments
 num_epochs: 200
-batch_size: 8
+batch_size: 1
 shuffle: True
 data_mode: "experiment"
 save_every: 10

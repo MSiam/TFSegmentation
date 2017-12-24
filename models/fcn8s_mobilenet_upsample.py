@@ -1,13 +1,14 @@
 from models.basic.basic_model import BasicModel
-from models.encoders.shufflenet import ShuffleNet
+from models.encoders.VGG import VGG16
+from models.encoders.mobilenet import MobileNet
 from layers.convolution import conv2d_transpose, conv2d, atrous_conv2d
 
 import tensorflow as tf
 
 
-class FCN8sShuffleNetUpsample(BasicModel):
+class FCN8sMobileNetUpsample(BasicModel):
     """
-    FCN8s with ShuffleNet Upsampling 2x2 as an encoder Model Architecture
+    FCN8s with MobileNet Upsampling 2x2 as an encoder Model Architecture
     """
 
     def __init__(self, args, phase=0):
@@ -31,11 +32,10 @@ class FCN8sShuffleNetUpsample(BasicModel):
         :return:
         """
 
-        # Init ShuffleNet as an encoder
-        self.encoder = ShuffleNet(x_input=self.x_pl, num_classes=self.params.num_classes,
-                                  pretrained_path=self.args.pretrained_path, train_flag=self.is_training,
-                                  batchnorm_enabled=self.args.batchnorm_enabled, num_groups=self.args.num_groups,
-                                  weight_decay=self.args.weight_decay, bias=self.args.bias)
+        # Init MobileNet as an encoder
+        self.encoder = MobileNet(x_input=self.x_pl, num_classes=self.params.num_classes,
+                                 pretrained_path=self.args.pretrained_path,
+                                 train_flag=self.is_training, width_multipler=1.0, weight_decay=self.args.weight_decay)
 
         # Build Encoding part
         self.encoder.build()
