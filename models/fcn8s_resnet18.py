@@ -5,9 +5,9 @@ from layers.convolution import conv2d_transpose, conv2d
 import tensorflow as tf
 
 
-class FCN8s(BasicModel):
+class FCN8sResNet(BasicModel):
     """
-    FCN8s Model Architecture
+    FCN8sResNet Model Architecture
     """
 
     def __init__(self, args, phase=0):
