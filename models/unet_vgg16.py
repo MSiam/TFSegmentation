@@ -6,7 +6,7 @@ import tensorflow as tf
 import pdb
 from utils.misc import _debug
 
-class VGG16UNET(BasicModel):
+class UNetVGG16(BasicModel):
     def __init__(self, args, phase=0):
         super().__init__(args, phase=phase)
         # init encoder
