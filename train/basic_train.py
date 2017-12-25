@@ -28,6 +28,10 @@ class BasicTrain(object):
         self.init = None
         self.init_model()
 
+        # Get the description of the graph
+        # self.get_all_variables_in_graph()
+        # exit(0)
+
         # Create a saver object
         self.saver = tf.train.Saver(max_to_keep=self.args.max_to_keep,
                                     keep_checkpoint_every_n_hours=10,
@@ -107,3 +111,19 @@ class BasicTrain(object):
 
     def finalize(self):
         raise NotImplementedError("finalize function is not implemented in the trainer")
+
+    def get_all_variables_in_graph(self):
+        print('################### Variables of the graph')
+
+        var_dict = {}
+        for var in tf.all_variables():
+            # if var.shape == ():
+            #     continue
+            # if "Adam" in var.name:
+            #     continue
+            print(str(var) + "  " + str(var.shape))
+            key = var.name
+            x = var.eval(self.sess)
+            # var_dict[key] = x
+        # np.save('scala_unet_student_weights', var_dict)
+        print('Finished dumping of pretrained weights of Student')

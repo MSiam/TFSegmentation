@@ -127,6 +127,8 @@ data/full_cityscapes/
 pretrained_weights/*.npy
 pretrained_weights/*.npz
 pretrained_weights/*.t7
+pretrained_weights/*.net
+pretrained_weights/linknet/
 
 # imgs
 *.png
@@ -142,3 +144,5 @@ pretrained_weights/*.t7
 !data/data_for_test_n_overfit/Y.npy
 cityscapesScripts/cityscapesscripts/annotation/icons/
 cityscapesScripts/cityscapesscripts/viewer/icons/
+data/cityscapes_tfdata/images/
+data/cityscapes_tfdata/labels/
