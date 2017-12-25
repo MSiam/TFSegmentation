@@ -19,7 +19,6 @@ from utils.augmentation import flip_randomly_left_right_image_with_annotation, \
 
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from utils.misc import calculate_flops
 
 from utils.seg_dataloader import SegDataLoader
 from tensorflow.contrib.data import Iterator
@@ -67,8 +66,7 @@ class Train(BasicTrain):
             self.train_next_batch, self.train_data_len = self.init_tfdata(self.args.batch_size, self.args.abs_data_dir,
                                                                           (self.args.img_height, self.args.img_width),
                                                                           mode='train')
-            self.num_iterations_training_per_epoch = (
-                                                     self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+            self.num_iterations_training_per_epoch = self.train_data_len // self.args.batch_size
             self.generator = self.train_tfdata_generator
         elif self.args.data_mode == "experiment_h5":
             self.train_data = None
@@ -113,7 +111,6 @@ class Train(BasicTrain):
         ##################################################################################
         # Init metrics class
         self.metrics = Metrics(self.args.num_classes)
-        calculate_flops()
         # Init reporter class
         if self.args.mode == 'train' or 'overfit':
             self.reporter = Reporter(self.args.out_dir + 'report_train.json', self.args)
@@ -137,18 +134,18 @@ class Train(BasicTrain):
         self.data_session = tf.Session()
         print("Creating the iterator for training data")
         with tf.device('/cpu:0'):
-            segdl = SegDataLoader(main_dir, batch_size, (resize_shape[0], resize_shape[1] * 2), resize_shape,
+            segdl = SegDataLoader(main_dir, batch_size, (resize_shape[0], resize_shape[1]), resize_shape,  # * 2), resize_shape,
                                   'data/cityscapes_tfdata/train.txt')
             iterator = Iterator.from_structure(segdl.data_tr.output_types, segdl.data_tr.output_shapes)
             next_batch = iterator.get_next()
 
-            init_op = iterator.make_initializer(segdl.data_tr)
-            self.data_session.run(init_op)
+            self.init_op = iterator.make_initializer(segdl.data_tr)
+            self.data_session.run(self.init_op)
 
         print("Loading Validation data in memoryfor faster training..")
         self.val_data = {'X': np.load(self.args.data_dir + "X_val.npy"),
                          'Y': np.load(self.args.data_dir + "Y_val.npy")}
-        self.crop()
+        #self.crop()
         # import cv2
         # cv2.imshow('crop1', self.val_data['X'][0,:,:,:])
         # cv2.imshow('crop2', self.val_data['X'][1,:,:,:])
@@ -157,8 +154,10 @@ class Train(BasicTrain):
         # cv2.waitKey()
 
         self.val_data_len = self.val_data['X'].shape[0] - self.val_data['X'].shape[0] % self.args.batch_size
-        self.num_iterations_validation_per_epoch = (
-                                                       self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
+#        self.num_iterations_validation_per_epoch = (
+#                                                       self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
+        self.num_iterations_validation_per_epoch = self.val_data_len // self.args.batch_size
+
         print("Val-shape-x -- " + str(self.val_data['X'].shape) + " " + str(self.val_data_len))
         print("Val-shape-y -- " + str(self.val_data['Y'].shape))
         print("Num of iterations on validation data in one epoch -- " + str(self.num_iterations_validation_per_epoch))
@@ -403,7 +402,6 @@ class Train(BasicTrain):
 
             # loop by the number of iterations
             for x_batch, y_batch in tt:
-
                 # get the cur_it for the summary
                 cur_it = self.train_model.global_step_tensor.eval(self.sess)
 
@@ -475,6 +473,11 @@ class Train(BasicTrain):
                     tt.close()
                     print("epoch-" + str(cur_epoch) + "-loss:" + str(total_loss) + "-acc:" + str(total_acc)[:6])
 
+                    if self.args.data_mode == "experiment_tfdata":
+                        with tf.device('/cpu:0'):
+                            self.data_session.run(self.init_op)
+                        break
+
                 # Update the Global step
                 self.train_model.global_step_assign_op.eval(session=self.sess,
                                                             feed_dict={self.train_model.global_step_input: cur_it + 1})
@@ -520,8 +523,8 @@ class Train(BasicTrain):
         # loop by the number of iterations
         for cur_iteration in tt:
             # load minibatches
-            x_batch = self.val_data['X'][idx:idx + self.args.batch_size]
-            y_batch = self.val_data['Y'][idx:idx + self.args.batch_size]
+            x_batch = self.val_data['X'][idx:idx+self.args.batch_size]
+            y_batch = self.val_data['Y'][idx:idx+self.args.batch_size]
 
             # update idx of minibatch
             idx += self.args.batch_size
@@ -537,7 +540,6 @@ class Train(BasicTrain):
                              self.test_model.y_pl: y_batch,
                              self.test_model.is_training: False
                              }
-
             # Run the feed forward but the last iteration finalize what you want to do
             if cur_iteration < self.num_iterations_validation_per_epoch - 1:
 
