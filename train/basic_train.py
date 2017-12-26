@@ -114,16 +114,12 @@ class BasicTrain(object):
 
     def get_all_variables_in_graph(self):
         print('################### Variables of the graph')
-
-        var_dict = {}
+        from collections import OrderedDict
+        var_dict = OrderedDict()
         for var in tf.all_variables():
-            # if var.shape == ():
-            #     continue
-            # if "Adam" in var.name:
-            #     continue
-            print(str(var) + "  " + str(var.shape))
-            key = var.name
-            x = var.eval(self.sess)
-            # var_dict[key] = x
-        # np.save('scala_unet_student_weights', var_dict)
-        print('Finished dumping of pretrained weights of Student')
+            if var.op.name not in var_dict.keys() and var.shape != () and "Adam" not in var.op.name:
+                print("'" + str(var.op.name) + "': " + str(var.op.name).replace('/', '_') + "# " + str(var.shape))
+                key = var.op.name
+                # x = var.eval(self.sess)
+                var_dict[key] = var.shape
+        print('Finished Display all variables')
