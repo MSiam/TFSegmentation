@@ -38,12 +38,12 @@ class Agent:
 
     @timeit
     def build_model(self):
-        print('Building Train Network')
-        with tf.variable_scope('network') as scope:
-            self.train_model = self.model(self.args, phase=0)
-            self.train_model.build()
+        if self.mode == 'train' or self.mode == 'overfit':  # validation phase
+            print('Building Train Network')
+            with tf.variable_scope('network') as scope:
+                self.train_model = self.model(self.args, phase=0)
+                self.train_model.build()
 
-        if self.mode == 'train':  # validation phase
             print('Building Test Network')
             with tf.variable_scope('network') as scope:
                 scope.reuse_variables()
@@ -52,7 +52,7 @@ class Agent:
         else:  # inference phase
             print('Building Test Network')
             with tf.variable_scope('network') as scope:
-                scope.reuse_variables()
+                self.train_model= None
                 self.test_model = self.model(self.args, phase=2)
                 self.test_model.build()
 
@@ -75,6 +75,7 @@ class Agent:
         # Create Model class and build it
         with self.sess.as_default():
             self.build_model()
+
         # Create the operator
         self.operator = self.operator(self.args, self.sess, self.train_model, self.test_model)
 
@@ -89,11 +90,28 @@ class Agent:
             self.overfit()
         elif self.mode == 'inference':
             self.inference()
+        elif self.mode == 'inference_pkl':
+            self.load_weights(self.sess, self.args.pretrained_path)
+            self.inference()
         else:
             self.test()
 
         self.sess.close()
         print("\nAgent is exited...\n")
+
+    def load_pretrained_weights(self, sess, pretrained_path):
+        pretrained_weights= pickl.load(pretrained_path)
+        pdb.set_trace()
+
+        print("Loading pretrained weights of resnet18")
+        all_vars = tf.trainable_variables()
+        all_vars += tf.get_collection('mu_sigma_bn')
+        for v in all_vars:
+            if v.op.name in pretrained_weights.keys():
+                assign_op = v.assign(self.pretrained_weights[v.op.name])
+                sess.run(assign_op)
+                print(v.op.name + " - loaded successfully")
+        print("All pretrained weights of resnet18 is loaded")
 
     def train(self):
         try:
