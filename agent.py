@@ -12,6 +12,7 @@ from utils.misc import timeit
 import os
 import pdb
 import pickle
+from utils.misc import calculate_flops
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -39,13 +40,13 @@ class Agent:
 
     @timeit
     def build_model(self):
-        print('Building Train Network')
-        with tf.variable_scope('network') as scope:
-            self.train_model = self.model(self.args, phase=0)
-            self.train_model.build()
-
 
         if self.mode == 'train' or self.mode == 'overfit':  # validation phase
+            print('Building Train Network')
+            with tf.variable_scope('network') as scope:
+                self.train_model = self.model(self.args, phase=0)
+                self.train_model.build()
+
             print('Building Test Network')
             with tf.variable_scope('network') as scope:
                 scope.reuse_variables()
@@ -54,7 +55,7 @@ class Agent:
         else:  # inference phase
             print('Building Test Network')
             with tf.variable_scope('network') as scope:
-                scope.reuse_variables()
+                self.train_model= None
                 self.test_model = self.model(self.args, phase=2)
                 self.test_model.build()
 
