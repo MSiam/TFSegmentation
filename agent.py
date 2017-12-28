@@ -11,6 +11,7 @@ from utils.misc import timeit
 
 import os
 import pdb
+import pickle
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -38,12 +39,13 @@ class Agent:
 
     @timeit
     def build_model(self):
-        if self.mode == 'train' or self.mode == 'overfit':  # validation phase
-            print('Building Train Network')
-            with tf.variable_scope('network') as scope:
-                self.train_model = self.model(self.args, phase=0)
-                self.train_model.build()
+        print('Building Train Network')
+        with tf.variable_scope('network') as scope:
+            self.train_model = self.model(self.args, phase=0)
+            self.train_model.build()
 
+
+        if self.mode == 'train' or self.mode == 'overfit':  # validation phase
             print('Building Test Network')
             with tf.variable_scope('network') as scope:
                 scope.reuse_variables()
@@ -52,7 +54,7 @@ class Agent:
         else:  # inference phase
             print('Building Test Network')
             with tf.variable_scope('network') as scope:
-                self.train_model= None
+                scope.reuse_variables()
                 self.test_model = self.model(self.args, phase=2)
                 self.test_model.build()
 
@@ -91,8 +93,8 @@ class Agent:
         elif self.mode == 'inference':
             self.inference()
         elif self.mode == 'inference_pkl':
-            self.load_weights(self.sess, self.args.pretrained_path)
-            self.inference()
+            self.load_pretrained_weights(self.sess, 'pretrained_weights/linknet_weights.pkl')
+            self.test()
         else:
             self.test()
 
@@ -100,18 +102,20 @@ class Agent:
         print("\nAgent is exited...\n")
 
     def load_pretrained_weights(self, sess, pretrained_path):
-        pretrained_weights= pickl.load(pretrained_path)
-        pdb.set_trace()
+        print('############### START Loading from PKL ##################')
+        with open(pretrained_path, 'rb') as ff:
+            pretrained_weights= pickle.load(ff, encoding='latin1')
 
-        print("Loading pretrained weights of resnet18")
-        all_vars = tf.trainable_variables()
-        all_vars += tf.get_collection('mu_sigma_bn')
-        for v in all_vars:
-            if v.op.name in pretrained_weights.keys():
-                assign_op = v.assign(self.pretrained_weights[v.op.name])
-                sess.run(assign_op)
-                print(v.op.name + " - loaded successfully")
-        print("All pretrained weights of resnet18 is loaded")
+            print("Loading pretrained weights of resnet18")
+            all_vars = tf.trainable_variables()
+            all_vars += tf.get_collection('mu_sigma_bn')
+            for v in all_vars:
+                if v.op.name in pretrained_weights.keys():
+                    print("Trying to load "+v.op.name)
+                    assign_op = v.assign(pretrained_weights[v.op.name])
+                    sess.run(assign_op)
+                    print(v.op.name + " - loaded successfully")
+            print("All pretrained weights of resnet18 is loaded")
 
     def train(self):
         try:
