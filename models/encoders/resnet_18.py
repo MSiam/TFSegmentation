@@ -72,10 +72,11 @@ class RESNET18:
 
         # Convert RGB to BGR
         with tf.name_scope('Pre_Processing'):
-            self.resnet_mean = tf.constant([0.485, 0.456, 0.406], dtype=tf.float32)
-            self.resnet_std = tf.constant([0.229, 0.224, 0.225], dtype=tf.float32)
+            self.resnet_mean = tf.constant([0.2869, 0.3251, 0.2839], dtype=tf.float32)
+            #self.resnet_mean = tf.constant([0.485, 0.456, 0.406], dtype=tf.float32)
+            #self.resnet_std = tf.constant([0.229, 0.224, 0.225], dtype=tf.float32)
             self.x_preprocessed = self.x_input * (1.0 / 255)
-            self.x_preprocessed = (self.x_preprocessed - self.resnet_mean) / self.resnet_std
+            self.x_preprocessed = (self.x_preprocessed - self.resnet_mean) #/ self.resnet_std
 
         # These variables to keep track of what i do
         # filters = [64, 64, 128, 256, 512]
@@ -85,7 +86,7 @@ class RESNET18:
         with tf.variable_scope('conv1_x'):
             print('Building unit: conv1')
             self.conv1 = self._conv('conv1', self.x_preprocessed,
-                                    num_filters=64, kernel_size=(7, 7), stride=(2, 2), l2_strength=self.wd)
+                                    num_filters=64, kernel_size=(7, 7), stride=(2, 2), l2_strength=self.wd, bias= self.bias)
             self.conv1 = self._bn('bn1', self.conv1)
             self.conv1 = self._relu('relu1', self.conv1)
             _debug(self.conv1)
