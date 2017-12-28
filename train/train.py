@@ -612,11 +612,12 @@ class Train(BasicTrain):
                 # Break the loop to finalize this epoch
                 break
 
-    def test(self):
+    def test(self, pkl=False):
         print("Testing mode will begin NOW..")
 
         # load the best model checkpoint to test on it
-        self.load_best_model()
+        if not pkl:
+            self.load_best_model()
 
         # init tqdm and get the epoch value
         tt = tqdm(range(self.test_data_len))
