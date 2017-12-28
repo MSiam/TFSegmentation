@@ -5,7 +5,7 @@ out_dir:  "unet_resnet18"
 
 # Data arguments
 img_height:   512
-img_width:    512
+img_width:    1024
 num_channels: 3
 num_classes:  20
 
@@ -18,12 +18,12 @@ save_every: 10
 test_every: 10
 max_to_keep: 1
 weighted_loss: True
-random_cropping: True
+random_cropping: False
 
 # Models arguments
 learning_rate: 0.0001
 weight_decay: 0.00005
-pretrained_path: "pretrained_weights/resnet18.npy"
+pretrained_path: "pretrained_weights/linknet_weights.pkl"
 
 # Misc arguments
 verbose: False
