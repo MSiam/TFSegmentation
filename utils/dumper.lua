@@ -108,10 +108,10 @@ function main()
         network_conv5_x_conv5_1_shortcut_conv_biases = model.modules[5].modules[1].modules[1].modules[2].modules[1].modules[1].modules[2].modules[1].modules[1].modules[2].modules[1].modules[1].modules[1].modules[1].modules[1].modules[2]['bias']  -- (512)
         network_conv5_x_conv5_1_conv_1_weights = model.modules[5].modules[1].modules[1].modules[2].modules[1].modules[1].modules[2].modules[1].modules[1].modules[2].modules[1].modules[1].modules[1].modules[1].modules[1].modules[1].modules[1]['weight']  -- (3, 3, 256, 512)
         network_conv5_x_conv5_1_conv_1_biases = model.modules[5].modules[1].modules[1].modules[2].modules[1].modules[1].modules[2].modules[1].modules[1].modules[2].modules[1].modules[1].modules[1].modules[1].modules[1].modules[1].modules[1]['bias']  -- (512)
-        network_conv5_x_conv5_1_bn_1_mu = model.modules[5].modules[1].modules[1].modules[2].modules[1].modules[1].modules[2].modules[1].modules[1].       modules[2].modules[1].modules[1].modules[1].modules[1].modules[1].modules[2]['running_mean']  -- (512,)
-        network_conv5_x_conv5_1_bn_1_sigma = model.modules[5].modules[1].modules[1].modules[2].modules[1].modules[1].modules[2].modules[1].modules[1].       modules[2].modules[1].modules[1].modules[1].modules[1].modules[1].modules[2]['running_var'] -- (512,)
-        network_conv5_x_conv5_1_bn_1_beta = model.modules[5].modules[1].modules[1].modules[2].modules[1].modules[1].modules[2].modules[1].modules[1].       modules[2].modules[1].modules[1].modules[1].modules[1].modules[1].modules[2]['bias']  -- (512,)
-        network_conv5_x_conv5_1_bn_1_gamma = model.modules[5].modules[1].modules[1].modules[2].modules[1].modules[1].modules[2].modules[1].modules[1].       modules[2].modules[1].modules[1].modules[1].modules[1].modules[1].modules[2]['weight']  -- (512,)
+        network_conv5_x_conv5_1_bn_1_mu = model.modules[5].modules[1].modules[1].modules[2].modules[1].modules[1].modules[2].modules[1].modules[1].       modules[2].modules[1].modules[1].modules[1].modules[1].modules[1].modules[1].modules[2]['running_mean']  -- (512,)
+        network_conv5_x_conv5_1_bn_1_sigma = model.modules[5].modules[1].modules[1].modules[2].modules[1].modules[1].modules[2].modules[1].modules[1].       modules[2].modules[1].modules[1].modules[1].modules[1].modules[1].modules[1].modules[2]['running_var'] -- (512,)
+        network_conv5_x_conv5_1_bn_1_beta = model.modules[5].modules[1].modules[1].modules[2].modules[1].modules[1].modules[2].modules[1].modules[1].       modules[2].modules[1].modules[1].modules[1].modules[1].modules[1].modules[1].modules[2]['bias']  -- (512,)
+        network_conv5_x_conv5_1_bn_1_gamma = model.modules[5].modules[1].modules[1].modules[2].modules[1].modules[1].modules[2].modules[1].modules[1].       modules[2].modules[1].modules[1].modules[1].modules[1].modules[1].modules[1].modules[2]['weight']  -- (512,)
         
         network_conv5_x_conv5_1_conv_2_weights = model.modules[5].modules[1].modules[1].modules[2].modules[1].modules[1].modules[2].modules[1].modules[1].modules[2].modules[1].modules[1].modules[1].modules[1].modules[1].modules[1].modules[4]['weight']  -- (3, 3, 512, 512)
         network_conv5_x_conv5_1_conv_2_biases = model.modules[5].modules[1].modules[1].modules[2].modules[1].modules[1].modules[2].modules[1].modules[1].modules[2].modules[1].modules[1].modules[1].modules[1].modules[1].modules[1].modules[4]['bias']  -- (512)
@@ -435,7 +435,7 @@ function main()
             ['network/output_block/deconv_out_2/weights']= network_output_block_deconv_out_2_weights,  -- (2, 2, 20, 32)
             ['network/output_block/deconv_out_2/biases']= network_output_block_deconv_out_2_biases,  -- (32)
             }
-        
+        dbg()
         torch.save('dict_net.t7',network)
 --	weights, biases, mean, var = grab_weights({},{},{},{},model)
 --	x = {weights,biases,mean,var}
