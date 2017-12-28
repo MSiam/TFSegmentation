@@ -21,6 +21,10 @@ class LinkNET(BasicModel):
         self.out_decoder_block_1 = None
         self.out_full_conv1 = None
         self.out_conv1 = None
+        # Adding bias in linknet
+        self.args.use_bias = True
+        if args.bias == -1:
+            self.args.use_bias = False
 
     def build(self):
         print("\nBuilding the MODEL...")
@@ -42,6 +46,7 @@ class LinkNET(BasicModel):
                                 num_classes=self.params.num_classes,
                                 pretrained_path=self.args.pretrained_path,
                                 train_flag=self.is_training,
+                                bias=self.args.bias,
                                 weight_decay=self.args.weight_decay)
 
         # Build Encoding part
@@ -62,7 +67,7 @@ class LinkNET(BasicModel):
                 tf.layers.batch_normalization(self.out_full_conv1, training=self.is_training, fused=True))
             print("output_block_full_conv1: %s" % (str(self.out_full_conv1.shape.as_list())))
             self.out_conv1 = tf.layers.conv2d(self.out_full_conv1, filters=32, kernel_size=(3, 3), padding="same",
-                                              use_bias=False,
+                                              use_bias=self.args.use_bias,
                                               kernel_initializer=tf.contrib.layers.xavier_initializer(),
                                               kernel_regularizer=tf.contrib.layers.l2_regularizer(
                                                   self.args.weight_decay))
@@ -86,7 +91,7 @@ class LinkNET(BasicModel):
 
     def _conv_1x1_block(self, name, x, filters):
         with tf.variable_scope(name):
-            out = tf.layers.conv2d(x, filters=filters, kernel_size=(1, 1), padding="same", use_bias=False,
+            out = tf.layers.conv2d(x, filters=filters, kernel_size=(1, 1), padding="same", use_bias=self.args.use_bias,
                                    kernel_initializer=tf.contrib.layers.xavier_initializer(),
                                    kernel_regularizer=tf.contrib.layers.l2_regularizer(self.args.weight_decay))
             out = tf.layers.batch_normalization(out, training=self.is_training, fused=True)
@@ -110,4 +115,9 @@ class LinkNET(BasicModel):
             w = get_deconv_filter(kernel_shape, self.args.weight_decay)
             variable_summaries(w)
             out = tf.nn.conv2d_transpose(x, w, tf.stack(output_shape), strides=stride, padding="SAME")
+            if self.args.use_bias:
+                bias = tf.get_variable('biases', [output_shape[-1]],
+                                       initializer=tf.constant_initializer(self.args.bias))
+                variable_summaries(bias)
+                out = tf.nn.bias_add(out, bias)
         return out
