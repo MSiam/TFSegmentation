@@ -616,47 +616,9 @@ class Train(BasicTrain):
 
 
     def linknet_preprocess_gt(self, gt):
-        labelID_2_trainID = {
-                     -1: 1,
-                     0: 1,  # 'unlabeled'
-                     1: 1,  # 'ego vehicle'
-                     2: 1,  # 'rectification border'
-                     3: 1,  # 'out of roi'
-                     4: 1,  # 'static'
-                     5: 1,  # 'dynamic'
-                     6: 1,  # 'ground'
-                     7: 2,  # 'road'
-                     8: 3,  # 'sidewalk'
-                     9: 1,  # 'parking'
-                     10: 1,  # 'rail track'
-                     11: 4,  # 'building'
-                     12: 5,  # 'wall'
-                     13: 6,  # 'fence'
-                     14: 1,  # 'guard rail'
-                     15: 1,  # 'bridge'
-                     16: 1,  # 'tunnel'
-                     17: 7,  # 'pole'
-                     18: 1,  # 'polegroup'
-                     19: 8,  # 'traffic light'
-                     20: 9,  # 'traffic sign'
-                     21: 10,  # 'vegetation'
-                     22: 11,  # 'terrain'
-                     23: 12,  # 'sky'
-                     24: 13,  # 'person'
-                     25: 14,  # 'rider'
-                     26: 15,  # 'car'
-                     27: 16,  # 'truck'
-                     28: 17,  # 'bus'
-                     29: 1,  # 'caravan'
-                     30: 1,  # 'trailer'
-                     31: 18,  # 'train'
-                     32: 19,  # 'motorcycle'
-                     33: 20,  # 'bicycle'
-                     }
-
         gt2= np.zeros_like(gt)
-        for k, v in labelID_2_trainID.items():
-            gt2[gt==k]= v
+        gt2= gt+2
+        gt2[gt==19]= 1
         return gt2
 
     def test(self, pkl=False):
