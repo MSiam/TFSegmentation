@@ -94,7 +94,7 @@ class Agent:
             self.inference()
         elif self.mode == 'inference_pkl':
             self.load_pretrained_weights(self.sess, 'pretrained_weights/linknet_weights.pkl')
-            self.test()
+            self.test(pkl=True)
         else:
             self.test()
 
@@ -124,9 +124,9 @@ class Agent:
         except KeyboardInterrupt:
             self.operator.finalize()
 
-    def test(self):
+    def test(self, pkl=False):
         try:
-            self.operator.test()
+            self.operator.test(pkl)
         except KeyboardInterrupt:
             pass
 
