@@ -5,6 +5,7 @@ from layers.utils import variable_summaries, variable_with_weight_decay
 from utils.misc import timeit
 from utils.misc import _debug
 
+
 class RESNET18:
     """
     RESNET 18 Encoder class
@@ -14,6 +15,7 @@ class RESNET18:
                  num_classes,
                  pretrained_path,
                  train_flag,
+                 bias=-1,
                  weight_decay=5e-4,
                  test_classification=False):
         """
@@ -35,6 +37,11 @@ class RESNET18:
         self.num_classes = num_classes
         self.train_flag = train_flag
         self.wd = weight_decay
+        self.bias = bias
+        self.use_bias = True
+        if self.bias == -1:
+            self.use_bias = False
+
         self.test_classification = test_classification
 
         # All layers
@@ -156,20 +163,20 @@ class RESNET18:
                         shortcut = tf.nn.max_pool(x, [1, strides, strides, 1], [1, strides, strides, 1], 'VALID')
                 else:
                     shortcut = self._conv('shortcut_conv', x,
-                                          num_filters=filters, kernel_size=(1, 1), stride=(strides, strides))
+                                          num_filters=filters, kernel_size=(1, 1), stride=(strides, strides),
+                                          bias=self.bias)
             else:
                 if dilation != 1:
                     shortcut = self._conv('shortcut_conv', x,
-                                          num_filters=filters, kernel_size=(1, 1), dilation= dilation)
-
+                                          num_filters=filters, kernel_size=(1, 1), dilation=dilation, bias=self.bias)
 
             # Residual
             x = self._conv('conv_1', x,
-                           num_filters=filters, kernel_size=(3, 3), stride=(strides, strides))
+                           num_filters=filters, kernel_size=(3, 3), stride=(strides, strides), bias=self.bias)
             x = self._bn('bn_1', x)
             x = self._relu('relu_1', x)
             x = self._conv('conv_2', x,
-                           num_filters=filters, kernel_size=(3, 3))
+                           num_filters=filters, kernel_size=(3, 3), bias=self.bias)
             x = self._bn('bn_2', x)
 
             # Merge
@@ -182,7 +189,7 @@ class RESNET18:
 
     @staticmethod
     def _conv(name, x, num_filters=16, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
-              initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, dilation=1.0):
+              initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, dilation=1.0, bias=-1):
 
         with tf.variable_scope(name):
             stride = [1, stride[0], stride[1], 1]
@@ -192,9 +199,15 @@ class RESNET18:
 
             variable_summaries(w)
             if dilation > 1:
-                conv = tf.nn.atrous_conv2d(x,w,dilation,padding)
+                conv = tf.nn.atrous_conv2d(x, w, dilation, padding)
             else:
                 conv = tf.nn.conv2d(x, w, stride, padding)
+
+            if bias != -1:
+                bias = tf.get_variable('biases', [num_filters], initializer=tf.constant_initializer(bias))
+
+                variable_summaries(bias)
+                conv = tf.nn.bias_add(conv, bias)
 
             return conv
 
