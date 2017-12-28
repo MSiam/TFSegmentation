@@ -230,7 +230,7 @@ function main()
         network_output_block_batch_normalization_moving_variance = model.modules[7]['running_var']  -- (32,)
 
         network_output_block_conv2d_kernel = model.modules[9]['weight']  -- (3, 3, 32, 32)
-        network_output_block_conv2d_bias = model.modules[9]['vias']  -- (32)
+        network_output_block_conv2d_bias = model.modules[9]['bias']  -- (32)
 
         network_output_block_batch_normalization_1_gamma = model.modules[10]['weight']  -- (32,)
         network_output_block_batch_normalization_1_beta = model.modules[10]['bias']  -- (32,)

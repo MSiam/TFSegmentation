@@ -77,6 +77,8 @@ class RESNET18:
             #self.resnet_std = tf.constant([0.229, 0.224, 0.225], dtype=tf.float32)
             self.x_preprocessed = self.x_input * (1.0 / 255)
             self.x_preprocessed = (self.x_preprocessed - self.resnet_mean) #/ self.resnet_std
+            red, green, blue = tf.split(self.x_preprocessed, num_or_size_splits=3, axis=3)
+            self.x_preprocessed = tf.concat([blue,green,red], 3)
 
         # These variables to keep track of what i do
         # filters = [64, 64, 128, 256, 512]
