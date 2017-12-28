@@ -107,10 +107,17 @@ class Agent:
         with open(pretrained_path, 'rb') as ff:
             pretrained_weights= pickle.load(ff, encoding='latin1')
 
-            all_vars = tf.trainable_variables()
-            all_vars += tf.get_collection('mu_sigma_bn')
+            print("Loading pretrained weights of resnet18")
+            # all_vars = tf.trainable_variables()
+            # all_vars += tf.get_collection('mu_sigma_bn')
+            all_vars = tf.all_variables()
             for v in all_vars:
                 if v.op.name in pretrained_weights.keys():
+                    if str(v.shape) != str(pretrained_weights[v.op.name].shape):
+                        print(v.shape)
+                        print(pretrained_weights[v.op.name].shape)
+                        print("Oh goooddd!!!")
+                        exit(0)
                     assign_op = v.assign(pretrained_weights[v.op.name])
                     sess.run(assign_op)
                     print(v.op.name + " - loaded successfully, size ", pretrained_weights[v.op.name].shape)

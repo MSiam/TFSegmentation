@@ -128,6 +128,7 @@ pretrained_weights/*.npy
 pretrained_weights/*.npz
 pretrained_weights/*.t7
 pretrained_weights/*.net
+pretrained_weights/*.pkl
 pretrained_weights/linknet/
 
 # imgs
