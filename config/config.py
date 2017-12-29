@@ -37,7 +37,9 @@ def parse_config():
     config_path = args.config_path
 
     # Modules arguments
-    parser.add_argument('mode', choices=('train_n_test', 'train', 'test', 'overfit', 'inference'), default=None, help='Mode of operation')
+    parser.add_argument('mode',
+                        choices=('train_n_test', 'train', 'test', 'overfit', 'inference', 'inference_pkl', 'debug'),
+                        default=None, help='Mode of operation')
     parser.add_argument('operator', default=None, help='Operator class (trainer of tester)')
     parser.add_argument('model', default=None, help='Model class to operate on')
 
