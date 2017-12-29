@@ -14,12 +14,12 @@ import tensorflow as tf
 import matplotlib
 import time
 import h5py
+import pickle
 from utils.augmentation import flip_randomly_left_right_image_with_annotation, \
     scale_randomly_image_with_annotation_with_fixed_size_output
 
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from utils.misc import calculate_flops
 
 from utils.seg_dataloader import SegDataLoader
 from tensorflow.contrib.data import Iterator
@@ -106,13 +106,17 @@ class Train(BasicTrain):
             self.num_iterations_testing_per_epoch = None
             self.load_vid_data()
             self.generator = self.test_generator
+        elif self.args.data_mode == "debug":
+            print("Debugging photo loading..")
+            self.debug_x = np.load('data/debug/debug_frankfurt_000001_x.npy')
+            self.debug_y = np.load('data/debug/debug_frankfurt_000001_y.npy')
+            print("Debugging photo loaded")
         else:
             print("ERROR Please select a proper data_mode BYE")
             exit(-1)
         ##################################################################################
         # Init metrics class
         self.metrics = Metrics(self.args.num_classes)
-        calculate_flops()
         # Init reporter class
         if self.args.mode == 'train' or 'overfit':
             self.reporter = Reporter(self.args.out_dir + 'report_train.json', self.args)
@@ -136,7 +140,8 @@ class Train(BasicTrain):
         self.data_session = tf.Session()
         print("Creating the iterator for training data")
         with tf.device('/cpu:0'):
-            segdl = SegDataLoader(main_dir, batch_size, (resize_shape[0], resize_shape[1]), resize_shape,  # * 2), resize_shape,
+            segdl = SegDataLoader(main_dir, batch_size, (resize_shape[0], resize_shape[1]), resize_shape,
+                                  # * 2), resize_shape,
                                   'data/cityscapes_tfdata/train.txt')
             iterator = Iterator.from_structure(segdl.data_tr.output_types, segdl.data_tr.output_shapes)
             next_batch = iterator.get_next()
@@ -147,7 +152,7 @@ class Train(BasicTrain):
         print("Loading Validation data in memoryfor faster training..")
         self.val_data = {'X': np.load(self.args.data_dir + "X_val.npy"),
                          'Y': np.load(self.args.data_dir + "Y_val.npy")}
-        #self.crop()
+        # self.crop()
         # import cv2
         # cv2.imshow('crop1', self.val_data['X'][0,:,:,:])
         # cv2.imshow('crop2', self.val_data['X'][1,:,:,:])
@@ -156,8 +161,8 @@ class Train(BasicTrain):
         # cv2.waitKey()
 
         self.val_data_len = self.val_data['X'].shape[0] - self.val_data['X'].shape[0] % self.args.batch_size
-#        self.num_iterations_validation_per_epoch = (
-#                                                       self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
+        #        self.num_iterations_validation_per_epoch = (
+        #                                                       self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
         self.num_iterations_validation_per_epoch = self.val_data_len // self.args.batch_size
 
         print("Val-shape-x -- " + str(self.val_data['X'].shape) + " " + str(self.val_data_len))
@@ -496,7 +501,7 @@ class Train(BasicTrain):
                 self.test_per_epoch(step=self.train_model.global_step_tensor.eval(self.sess),
                                     epoch=cur_epoch)
 
-            #            if cur_epoch % self.args.learning_decay_every == 0:
+            # if cur_epoch % self.args.learning_decay_every == 0:
             #                curr_lr = curr_lr * self.args.learning_decay
             print('Current learning rate is ', curr_lr)
 
@@ -525,8 +530,8 @@ class Train(BasicTrain):
         # loop by the number of iterations
         for cur_iteration in tt:
             # load minibatches
-            x_batch = self.val_data['X'][idx:idx+self.args.batch_size]
-            y_batch = self.val_data['Y'][idx:idx+self.args.batch_size]
+            x_batch = self.val_data['X'][idx:idx + self.args.batch_size]
+            y_batch = self.val_data['Y'][idx:idx + self.args.batch_size]
 
             # update idx of minibatch
             idx += self.args.batch_size
@@ -614,11 +619,17 @@ class Train(BasicTrain):
                 # Break the loop to finalize this epoch
                 break
 
-    def test(self):
+    def linknet_preprocess_gt(self, gt):
+        gt2 = gt + 2
+        gt2[gt == 19] = 1
+        return gt2
+
+    def test(self, pkl=False):
         print("Testing mode will begin NOW..")
 
         # load the best model checkpoint to test on it
-        self.load_best_model()
+        if not pkl:
+            self.load_best_model()
 
         # init tqdm and get the epoch value
         tt = tqdm(range(self.test_data_len))
@@ -639,6 +650,11 @@ class Train(BasicTrain):
             # load mini_batches
             x_batch = self.test_data['X'][idx:idx + 1]
             y_batch = self.test_data['Y'][idx:idx + 1]
+
+            print('mean images ', x_batch.mean())
+            print('mean gt ', y_batch.mean())
+
+            y_batch = self.linknet_preprocess_gt(y_batch)
 
             # update idx of mini_batch
             idx += 1
@@ -662,7 +678,8 @@ class Train(BasicTrain):
                  self.test_model.segmented_summary],
                 feed_dict=feed_dict)
 
-            np.save(self.args.out_dir + 'npy/' + str(cur_iteration) + '.npy', out_argmax[0])
+            print('mean preds ', out_argmax.mean())
+            # np.save(self.args.out_dir + 'npy/' + str(cur_iteration) + '.npy', out_argmax[0])
             plt.imsave(self.args.out_dir + 'imgs/' + 'test_' + str(cur_iteration) + '.png', segmented_imgs[0])
 
             # log loss and acc
@@ -750,3 +767,68 @@ class Train(BasicTrain):
         self.reporter.finalize()
         self.summary_writer.close()
         self.save_model()
+
+    def debug_layers(self):
+        """
+        This function will be responsible for output all outputs of all layers and dump them in a pickle
+
+        :return:
+        """
+        print("Debugging mode will begin NOW..")
+
+        # graph = tf.get_default_graph()
+        # print(graph.get_operations())
+        # print(tf.get_collection('debug_layers'))
+
+        layers = tf.get_collection('debug_layers')
+
+        print("ALL Layers in the collection that i wanna to run {} layer".format(len(layers)))
+        for layer in layers:
+            print(layer)
+
+        # exit(0)
+
+        # reset metrics
+        self.metrics.reset()
+
+        print('mean image ', self.debug_x.mean())
+        print('mean gt ', self.debug_y.mean())
+
+        self.debug_y = self.linknet_preprocess_gt(self.debug_y)
+
+        feed_dict = {self.test_model.x_pl: self.debug_x,
+                     self.test_model.y_pl: self.debug_y,
+                     self.test_model.is_training: False
+                     }
+
+        # # Layers of linknet .. All of it With order
+        # layers = [
+        #
+        # ]
+
+        # run the feed_forward
+        out_layers = self.sess.run(layers, feed_dict=feed_dict)
+        for layer in out_layers:
+            print(layer.shape)
+        # print(out_layers)
+        # exit(0)
+
+        # dump them in a pickle
+        with open("out_networks_layers/out_linknet_layers.pkl", "wb") as f:
+            pickle.dump(out_layers, f)
+
+        # run the feed_forward again to see argmax and segmented
+        out_argmax, segmented_imgs = self.sess.run(
+            [self.test_model.out_argmax,
+             self.test_model.segmented_summary],
+            feed_dict=feed_dict)
+
+        print('mean preds ', out_argmax[0].mean())
+
+        plt.imsave(self.args.out_dir + 'imgs/' + 'debug.png', segmented_imgs[0])
+
+        self.metrics.update_metrics(out_argmax[0], self.debug_y, 0, 0)
+
+        mean_iou = self.metrics.compute_final_metrics(1)
+
+        print("mean_iou_of_debug: " + str(mean_iou))

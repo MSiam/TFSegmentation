@@ -22,11 +22,16 @@ class BasicTrain(object):
         self.test_model = test_model
 
         # shortcut for model params
-        self.params = self.train_model.params
+        self.params = self.test_model.params
+
 
         # To initialize all variables
         self.init = None
         self.init_model()
+
+        # Get the description of the graph
+        # self.get_all_variables_in_graph()
+        # exit(0)
 
         # Create a saver object
         self.saver = tf.train.Saver(max_to_keep=self.args.max_to_keep,
@@ -37,7 +42,8 @@ class BasicTrain(object):
                                          save_relative_paths=True)
 
         # Load from latest checkpoint if found
-        self.load_model(train_model)
+        if train_model is not None:
+            self.load_model(train_model)
 
     @timeit
     def init_model(self):
@@ -107,3 +113,15 @@ class BasicTrain(object):
 
     def finalize(self):
         raise NotImplementedError("finalize function is not implemented in the trainer")
+
+    def get_all_variables_in_graph(self):
+        print('################### Variables of the graph')
+        from collections import OrderedDict
+        var_dict = OrderedDict()
+        for var in tf.all_variables():
+            if var.op.name not in var_dict.keys() and var.shape != () and "Adam" not in var.op.name:
+                print("'" + str(var.op.name) + "': " + str(var.op.name).replace('/', '_') + "# " + str(var.shape))
+                key = var.op.name
+                # x = var.eval(self.sess)
+                var_dict[key] = var.shape
+        print('Finished Display all variables')

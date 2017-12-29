@@ -5,9 +5,9 @@ from layers.convolution import conv2d_transpose, conv2d
 import tensorflow as tf
 
 
-class FCN8sResNet18(BasicModel):
+class FCN8sResNetUpsample(BasicModel):
     """
-    FCN8sResNet Model Architecture
+    FCN8sResNet Upsampling 2x2 Model Architecture
     """
 
     def __init__(self, args, phase=0):
@@ -54,29 +54,32 @@ class FCN8sResNet18(BasicModel):
             self.score_fr = conv2d(scope, x=self.encoder.conv5,
                                    num_filters=self.params.num_classes, kernel_size=(1, 1),
                                    l2_strength=self.args.weight_decay, is_training=self.is_training)
+
         with tf.name_scope('upscore_2s'):
-            self.upscore2 = conv2d_transpose('upscore2', x=self.score_fr,
-                                             output_shape=self.encoder.feed1.shape.as_list()[0:3] + [
-                                                 self.params.num_classes],
-                                             kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
+            shape = self.score_fr.shape.as_list()[1:3]
+            upscore2_upsample = tf.image.resize_images(self.score_fr,(2 * shape[0], 2 * shape[1]))
+            self.upscore2 = conv2d('upscore2', x=upscore2_upsample, num_filters=self.params.num_classes,
+                                   l2_strength=self.encoder.wd)
             self.score_feed1 = conv2d('score_feed1', x=self.encoder.feed1,
                                       num_filters=self.params.num_classes, kernel_size=(1, 1),
                                       l2_strength=self.encoder.wd)
             self.fuse_feed1 = tf.add(self.score_feed1, self.upscore2)
 
         with tf.name_scope('upscore_4s'):
-            self.upscore4 = conv2d_transpose('upscore4', x=self.fuse_feed1,
-                                             output_shape=self.encoder.feed2.shape.as_list()[0:3] + [
-                                                 self.params.num_classes],
-                                             kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd)
+            shape = self.fuse_feed1.shape.as_list()[1:3]
+            upscore4_upsample = tf.image.resize_images(self.fuse_feed1,(2 * shape[0], 2 * shape[1]))
+            self.upscore4 = conv2d('upscore4', x=upscore4_upsample, num_filters=self.params.num_classes,
+                                   l2_strength=self.encoder.wd)
+
             self.score_feed2 = conv2d('score_feed2', x=self.encoder.feed2,
                                       num_filters=self.params.num_classes, kernel_size=(1, 1),
                                       l2_strength=self.encoder.wd)
             self.fuse_feed2 = tf.add(self.score_feed2, self.upscore4)
 
         with tf.name_scope('upscore_8s'):
-            self.upscore8 = conv2d_transpose('upscore8', x=self.fuse_feed2,
-                                             output_shape=self.x_pl.shape.as_list()[0:3] + [self.params.num_classes],
-                                             kernel_size=(16, 16), stride=(8, 8), l2_strength=self.encoder.wd)
+            shape = self.fuse_feed2.shape.as_list()[1:3]
+            upscore8_upsample = tf.image.resize_images(self.fuse_feed2,(8 * shape[0], 8 * shape[1]))
+            self.upscore8 = conv2d('upscore8', x=upscore8_upsample, num_filters=self.params.num_classes,
+                                   l2_strength=self.encoder.wd)
 
         self.logits = self.upscore8
