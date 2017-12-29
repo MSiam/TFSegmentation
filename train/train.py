@@ -67,8 +67,7 @@ class Train(BasicTrain):
             self.train_next_batch, self.train_data_len = self.init_tfdata(self.args.batch_size, self.args.abs_data_dir,
                                                                           (self.args.img_height, self.args.img_width),
                                                                           mode='train')
-            self.num_iterations_training_per_epoch = (
-                                                     self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+            self.num_iterations_training_per_epoch = self.train_data_len // self.args.batch_size
             self.generator = self.train_tfdata_generator
         elif self.args.data_mode == "experiment_h5":
             self.train_data = None
@@ -142,8 +141,8 @@ class Train(BasicTrain):
             iterator = Iterator.from_structure(segdl.data_tr.output_types, segdl.data_tr.output_shapes)
             next_batch = iterator.get_next()
 
-            init_op = iterator.make_initializer(segdl.data_tr)
-            self.data_session.run(init_op)
+            self.init_op = iterator.make_initializer(segdl.data_tr)
+            self.data_session.run(self.init_op)
 
         print("Loading Validation data in memoryfor faster training..")
         self.val_data = {'X': np.load(self.args.data_dir + "X_val.npy"),
@@ -475,6 +474,11 @@ class Train(BasicTrain):
                     # print in console
                     tt.close()
                     print("epoch-" + str(cur_epoch) + "-loss:" + str(total_loss) + "-acc:" + str(total_acc)[:6])
+
+                    if self.args.data_mode == "experiment_tfdata":
+                        with tf.device('/cpu:0'):
+                            self.data_session.run(self.init_op)
+                        break
 
                 # Update the Global step
                 self.train_model.global_step_assign_op.eval(session=self.sess,

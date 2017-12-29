@@ -16,7 +16,7 @@ shuffle: True
 data_mode: "experiment_tfdata"
 save_every: 1
 test_every: 2
-max_to_keep: 2
+max_to_keep: 1
 weighted_loss: False
 random_cropping: False
 

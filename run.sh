@@ -2,11 +2,11 @@
 
 ######################################## VGG16 ######################################################
 #1- FCN8s VGG16 Train Coarse+Fine
-python3 main.py --load_config=fcn8s_vgg16_traincoarse.yaml train Train FCN8s
+#python3 main.py --load_config=fcn8s_vgg16_traincoarse.yaml train Train FCN8s
 #python3 main.py --load_config=fcn8s_vgg16_train.yaml train Train FCN8s
 
 #2- FCN8s VGG16 Test
-#python3 main.py --load_config=fcn8s_vgg16_test.yaml test Train FCN8s
+python3 main.py --load_config=fcn8s_vgg16_test.yaml test Train FCN8s
 
 #3- UNET VGG16 Train
 #python3 main.py --load_config=unet_vgg16_train.yaml train Train VGG16UNET
