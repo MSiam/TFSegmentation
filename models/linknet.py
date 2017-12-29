@@ -63,16 +63,23 @@ class LinkNET(BasicModel):
 
         with tf.variable_scope('output_block'):
             self.out_full_conv1 = self._deconv('deconv_out_1', self.out_decoder_block_1, 32, (3, 3), stride=2)
-            self.out_full_conv1 = tf.nn.relu(
-                tf.layers.batch_normalization(self.out_full_conv1, training=self.is_training, fused=True))
+            self.out_full_conv1 = tf.layers.batch_normalization(self.out_full_conv1, training=self.is_training,
+                                                                fused=True)
+
+            tf.add_to_collection('debug_layers', self.out_full_conv1)
+
+            self.out_full_conv1 = tf.nn.relu(self.out_full_conv1)
+
             print("output_block_full_conv1: %s" % (str(self.out_full_conv1.shape.as_list())))
             self.out_conv1 = tf.layers.conv2d(self.out_full_conv1, filters=32, kernel_size=(3, 3), padding="same",
                                               use_bias=self.args.use_bias,
                                               kernel_initializer=tf.contrib.layers.xavier_initializer(),
                                               kernel_regularizer=tf.contrib.layers.l2_regularizer(
                                                   self.args.weight_decay))
-            self.out_conv1 = tf.nn.relu(
-                tf.layers.batch_normalization(self.out_conv1, training=self.is_training, fused=True))
+            tf.add_to_collection('debug_layers', self.out_conv1)
+            self.out_conv1 = tf.layers.batch_normalization(self.out_conv1, training=self.is_training, fused=True)
+            tf.add_to_collection('debug_layers', self.out_conv1)
+            self.out_conv1 = tf.nn.relu(self.out_conv1)
             print("output_block_conv1: %s" % (str(self.out_conv1.shape.as_list())))
             self.fscore = self._deconv('deconv_out_2', self.out_conv1, self.params.num_classes, (2, 2), stride=2)
             print("logits: %s" % (str(self.fscore.shape.as_list())))
@@ -94,7 +101,9 @@ class LinkNET(BasicModel):
             out = tf.layers.conv2d(x, filters=filters, kernel_size=(1, 1), padding="same", use_bias=self.args.use_bias,
                                    kernel_initializer=tf.contrib.layers.xavier_initializer(),
                                    kernel_regularizer=tf.contrib.layers.l2_regularizer(self.args.weight_decay))
+            tf.add_to_collection('debug_layers', out)
             out = tf.layers.batch_normalization(out, training=self.is_training, fused=True)
+            tf.add_to_collection('debug_layers', out)
             out = tf.nn.relu(out)
         return out
 
@@ -102,6 +111,7 @@ class LinkNET(BasicModel):
         with tf.variable_scope(name):
             out = self._deconv('deconv', x, out_channels, kernel_size=(3, 3), stride=stride)
             out = tf.layers.batch_normalization(out, training=self.is_training, fused=True)
+            tf.add_to_collection('debug_layers', out)
             out = tf.nn.relu(out)
         return out
 
@@ -120,4 +130,5 @@ class LinkNET(BasicModel):
                                        initializer=tf.constant_initializer(self.args.bias))
                 variable_summaries(bias)
                 out = tf.nn.bias_add(out, bias)
+            tf.add_to_collection('debug_layers', out)
         return out
