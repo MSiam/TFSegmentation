@@ -55,7 +55,7 @@ class Agent:
         else:  # inference phase
             print('Building Test Network')
             with tf.variable_scope('network') as scope:
-                self.train_model= None
+                self.train_model = None
                 self.test_model = self.model(self.args, phase=2)
                 self.test_model.build()
 
@@ -96,8 +96,13 @@ class Agent:
         elif self.mode == 'inference_pkl':
             self.load_pretrained_weights(self.sess, 'pretrained_weights/linknet_weights.pkl')
             self.test(pkl=True)
-        else:
+        elif self.mode == 'debug':
+            self.debug()
+        elif self.mode == 'test':
             self.test()
+        else:
+            print("This mode {{{}}}  is not found in our framework".format(self.mode))
+            exit(-1)
 
         self.sess.close()
         print("\nAgent is exited...\n")
@@ -105,7 +110,7 @@ class Agent:
     def load_pretrained_weights(self, sess, pretrained_path):
         print('############### START Loading from PKL ##################')
         with open(pretrained_path, 'rb') as ff:
-            pretrained_weights= pickle.load(ff, encoding='latin1')
+            pretrained_weights = pickle.load(ff, encoding='latin1')
 
             print("Loading pretrained weights of resnet18")
             # all_vars = tf.trainable_variables()
@@ -146,5 +151,12 @@ class Agent:
     def inference(self):
         try:
             self.operator.test_inference()
+        except KeyboardInterrupt:
+            pass
+
+    def debug(self):
+        self.load_pretrained_weights(self.sess, 'pretrained_weights/linknet_weights.pkl')
+        try:
+            self.operator.debug_layers()
         except KeyboardInterrupt:
             pass

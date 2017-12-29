@@ -89,7 +89,9 @@ class RESNET18:
             print('Building unit: conv1')
             self.conv1 = self._conv('conv1', self.x_preprocessed,
                                     num_filters=64, kernel_size=(7, 7), stride=(2, 2), l2_strength=self.wd, bias= self.bias)
+
             self.conv1 = self._bn('bn1', self.conv1)
+
             self.conv1 = self._relu('relu1', self.conv1)
             _debug(self.conv1)
             self.conv1 = tf.nn.max_pool(self.conv1, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME',
@@ -212,6 +214,8 @@ class RESNET18:
                 variable_summaries(bias)
                 conv = tf.nn.bias_add(conv, bias)
 
+            tf.add_to_collection('debug_layers', conv)
+
             return conv
 
     @staticmethod
@@ -268,5 +272,7 @@ class RESNET18:
 
             mean, var = tf.cond(self.train_flag, lambda: (batch_mean, batch_var), lambda: (mu, sigma))
             bn = tf.nn.batch_normalization(x, mean, var, beta, gamma, 1e-5)
+
+            tf.add_to_collection('debug_layers', bn)
 
             return bn

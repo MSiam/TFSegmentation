@@ -63,7 +63,8 @@
 #python3 main.py --load_config=unet_resnet18_train.yaml train Train LinkNET
 
 # - UNet ResNet18 Inference .. FPS Test
-python main.py --load_config=unet_resnet18_test.yaml inference_pkl Train LinkNET
+#python main.py --load_config=unet_resnet18_test.yaml inference_pkl Train LinkNET
+python main.py --load_config=unet_resnet18_test.yaml debug Train LinkNET
 
 #4- UNet ResNet18 Test
 #python3 main.py --load_config=unet_resnet18_test.yaml test Train LinkNET
