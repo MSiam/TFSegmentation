@@ -12,7 +12,7 @@ num_classes:  20
 
 # Train arguments
 num_epochs: 200
-batch_size: 5
+batch_size: 8
 shuffle: True
 data_mode: "experiment_tfdata"
 save_every: 5
