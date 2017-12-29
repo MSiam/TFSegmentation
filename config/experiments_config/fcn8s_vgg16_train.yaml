@@ -16,7 +16,7 @@ shuffle: True
 data_mode: "experiment"
 save_every: 5
 test_every: 5
-max_to_keep: 5
+max_to_keep: 1
 
 # Models arguments
 learning_rate:   0.0001

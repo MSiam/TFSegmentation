@@ -1,7 +1,7 @@
 # Directories arguments
-data_dir: "full_cityscapes"
-exp_dir:  "fcn8s_exp_test_check"
-out_dir:  "fcn8s_exp_test_check"
+data_dir: "full_cityscapes_res"
+exp_dir:  "fcn8s_vgg16"
+out_dir:  "fcn8s_vgg16"
 
 # Data arguments
 img_height:   512
@@ -13,10 +13,11 @@ num_classes:  20
 num_epochs: 200
 batch_size: 1
 shuffle: False
-data_mode: "experiment"
+data_mode: "test"
 save_every: 5
 test_every: 5
 max_to_keep: 5
+random_cropping: False
 
 # Models arguments
 learning_rate:   0.0001
