@@ -5,7 +5,7 @@ from layers.convolution import conv2d_transpose, conv2d
 import tensorflow as tf
 
 
-class FCN8sResNet(BasicModel):
+class FCN8sResNet18(BasicModel):
     """
     FCN8sResNet Model Architecture
     """

@@ -1,12 +1,12 @@
 # Directories arguments
-data_dir: "full_cityscapes"
+data_dir: "full_cityscapes_res"
 abs_data_dir: "/home/nray1/ms/cityscapes/"
-exp_dir:  "fcn8s_shufflenet_tfdata_exp"
-out_dir:  "fcn8s_shufflenet_tfdata_exp"
+exp_dir:  "fcn8s_shufflenet"
+out_dir:  "fcn8s_shufflenet"
 
 # Data arguments
 img_height:   512
-img_width:    512
+img_width:    1024
 num_channels: 3
 num_classes:  20
 
@@ -17,8 +17,9 @@ shuffle: True
 data_mode: "experiment_tfdata"
 save_every: 5
 test_every: 5
-max_to_keep: 2
+max_to_keep: 1
 weighted_loss: False
+random_cropping: False
 
 # Models arguments
 batchnorm_enabled: True
