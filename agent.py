@@ -58,6 +58,7 @@ class Agent:
                 self.train_model = None
                 self.test_model = self.model(self.args, phase=2)
                 self.test_model.build()
+                calculate_flops()
 
     @timeit
     def run(self):
