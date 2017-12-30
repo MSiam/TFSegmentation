@@ -1,9 +1,10 @@
 from models.basic.basic_model import BasicModel
 from models.encoders.resnet_18 import RESNET18
 from layers.utils import get_deconv_filter, variable_summaries
+from layers.utils import variable_with_weight_decay2
 
 import tensorflow as tf
-
+import pdb
 
 class LinkNET(BasicModel):
     def __init__(self, args, phase=0):
@@ -71,7 +72,9 @@ class LinkNET(BasicModel):
             self.out_full_conv1 = tf.nn.relu(self.out_full_conv1)
 
             print("output_block_full_conv1: %s" % (str(self.out_full_conv1.shape.as_list())))
-            self.out_conv1 = tf.layers.conv2d(self.out_full_conv1, filters=32, kernel_size=(3, 3), padding="same",
+
+            self.out_conv1 = tf.pad(self.out_full_conv1, [[0,0],[1,1],[1,1],[0,0]], "CONSTANT")
+            self.out_conv1 = tf.layers.conv2d(self.out_conv1, filters=32, kernel_size=(3, 3), padding="valid",
                                               use_bias=self.args.use_bias,
                                               kernel_initializer=tf.contrib.layers.xavier_initializer(),
                                               kernel_regularizer=tf.contrib.layers.l2_regularizer(
@@ -98,10 +101,19 @@ class LinkNET(BasicModel):
 
     def _conv_1x1_block(self, name, x, filters):
         with tf.variable_scope(name):
-            out = tf.layers.conv2d(x, filters=filters, kernel_size=(1, 1), padding="same", use_bias=self.args.use_bias,
-                                   kernel_initializer=tf.contrib.layers.xavier_initializer(),
-                                   kernel_regularizer=tf.contrib.layers.l2_regularizer(self.args.weight_decay))
-            tf.add_to_collection('debug_layers', out)
+#            out = tf.layers.conv2d(x, filters=filters, kernel_size=(1, 1), padding="valid", use_bias=self.args.use_bias,
+#                                   kernel_initializer=tf.contrib.layers.xavier_initializer(),
+#                                   kernel_regularizer=tf.contrib.layers.l2_regularizer(self.args.weight_decay))
+            with tf.variable_scope('conv2d'):
+                initializer=tf.contrib.layers.xavier_initializer()
+                kernel_shape = [1,1, x.shape[-1], filters]
+                w = variable_with_weight_decay2(kernel_shape, initializer, self.args.weight_decay)
+                out = tf.nn.conv2d(x, w, [1,1,1,1], padding='VALID')
+                if self.args.use_bias:
+                    bias = tf.get_variable('bias', filters, initializer=tf.constant_initializer(0.0))
+                    out = tf.nn.bias_add(out, bias)
+                tf.add_to_collection('debug_layers', out)
+
             out = tf.layers.batch_normalization(out, training=self.is_training, fused=True)
             tf.add_to_collection('debug_layers', out)
             out = tf.nn.relu(out)
@@ -124,7 +136,10 @@ class LinkNET(BasicModel):
             kernel_shape = [kernel_size[0], kernel_size[1], out_channels, x.shape.as_list()[-1]]
             w = get_deconv_filter(kernel_shape, self.args.weight_decay)
             variable_summaries(w)
+            #if kernel_size==(3,3):
+            #    x = tf.pad(x, [[0,0],[1,1],[1,1],[0,0]], "CONSTANT")
             out = tf.nn.conv2d_transpose(x, w, tf.stack(output_shape), strides=stride, padding="SAME")
+
             if self.args.use_bias:
                 bias = tf.get_variable('biases', [output_shape[-1]],
                                        initializer=tf.constant_initializer(self.args.bias))
