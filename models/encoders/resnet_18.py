@@ -4,7 +4,8 @@ import numpy as np
 from layers.utils import variable_summaries, variable_with_weight_decay
 from utils.misc import timeit
 from utils.misc import _debug
-
+import torchfile
+import pdb
 
 class RESNET18:
     """
@@ -72,13 +73,16 @@ class RESNET18:
 
         # Convert RGB to BGR
         with tf.name_scope('Pre_Processing'):
-            self.resnet_mean = tf.constant([0.2869, 0.3251, 0.2839], dtype=tf.float32)
+            stat= torchfile.load('/home/eren/Data/Cityscapes/512_1024/stat.t7')
+            self.resnet_mean = tf.constant([stat[0,0,0], stat[1,0,0], stat[2,0,0]], dtype=tf.float32)
+            #self.resnet_mean = tf.constant([0.2869, 0.3251, 0.2839], dtype=tf.float32)
             # self.resnet_mean = tf.constant([0.485, 0.456, 0.406], dtype=tf.float32)
             # self.resnet_std = tf.constant([0.229, 0.224, 0.225], dtype=tf.float32)
-            self.x_preprocessed = self.x_input * (1.0 / 255)
-            self.x_preprocessed = (self.x_preprocessed - self.resnet_mean)  # / self.resnet_std
-            red, green, blue = tf.split(self.x_preprocessed, num_or_size_splits=3, axis=3)
-            self.x_preprocessed = tf.concat([blue, green, red], 3)
+#            self.x_preprocessed = self.x_input * (1.0 / 255)
+            self.x_preprocessed= self.x_input
+            self.x_preprocessed = (self.x_preprocessed - self.resnet_mean) #/ self.resnet_std
+#            red, green, blue = tf.split(self.x_preprocessed, num_or_size_splits=3, axis=3)
+#            self.x_preprocessed = tf.concat([blue,green,red], 3)
 
         # These variables to keep track of what i do
         # filters = [64, 64, 128, 256, 512]
@@ -88,7 +92,7 @@ class RESNET18:
 
         with tf.variable_scope('conv1_x'):
             print('Building unit: conv1')
-            self.conv1 = self._conv('conv1', self.x_preprocessed,
+            self.conv1 = self._conv('conv1', self.x_preprocessed, padding= [[0,0],[3,3],[3,3],[0,0]],
                                     num_filters=64, kernel_size=(7, 7), stride=(2, 2), l2_strength=self.wd,
                                     bias=self.bias)
 
@@ -96,7 +100,8 @@ class RESNET18:
 
             self.conv1 = self._relu('relu1', self.conv1)
             _debug(self.conv1)
-            self.conv1 = tf.nn.max_pool(self.conv1, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME',
+            self.conv1= tf.pad(self.conv1, tf.constant([[0,0],[1,1],[1,1],[0,0]]), "CONSTANT")
+            self.conv1 = tf.nn.max_pool(self.conv1, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='VALID',
                                         name='max_pool1')
             _debug(self.conv1)
             print('conv1-shape: ' + str(self.conv1.shape.as_list()))
@@ -167,22 +172,23 @@ class RESNET18:
                     if strides == 1:
                         shortcut = tf.identity(x)
                     else:
-                        shortcut = tf.nn.max_pool(x, [1, strides, strides, 1], [1, strides, strides, 1], 'VALID')
+                        shortcut= tf.pad(x, tf.constant([[0,0],[1,1],[1,1],[0,0]]), "CONSTANT")
+                        shortcut = tf.nn.max_pool(shortcut, [1, strides, strides, 1], [1, strides, strides, 1], 'VALID')
                 else:
-                    shortcut = self._conv('shortcut_conv', x,
+                    shortcut = self._conv('shortcut_conv', x, padding='VALID',
                                           num_filters=filters, kernel_size=(1, 1), stride=(strides, strides),
                                           bias=self.bias)
             else:
                 if dilation != 1:
-                    shortcut = self._conv('shortcut_conv', x,
+                    shortcut = self._conv('shortcut_conv', x, padding='VALID',
                                           num_filters=filters, kernel_size=(1, 1), dilation=dilation, bias=self.bias)
 
             # Residual
-            x = self._conv('conv_1', x,
+            x = self._conv('conv_1', x, padding=[[0,0],[1,1],[1,1],[0,0]],
                            num_filters=filters, kernel_size=(3, 3), stride=(strides, strides), bias=self.bias)
             x = self._bn('bn_1', x)
             x = self._relu('relu_1', x)
-            x = self._conv('conv_2', x,
+            x = self._conv('conv_2', x, padding=[[0,0],[1,1],[1,1],[0,0]],
                            num_filters=filters, kernel_size=(3, 3), bias=self.bias)
             x = self._bn('bn_2', x)
 
@@ -208,7 +214,11 @@ class RESNET18:
             if dilation > 1:
                 conv = tf.nn.atrous_conv2d(x, w, dilation, padding)
             else:
-                conv = tf.nn.conv2d(x, w, stride, padding)
+                if type(padding)==type(''):
+                    conv = tf.nn.conv2d(x, w, stride, padding)
+                else:
+                    conv = tf.pad(x, padding, "CONSTANT")
+                    conv = tf.nn.conv2d(conv, w, stride, padding='VALID')
 
             if bias != -1:
                 bias = tf.get_variable('biases', [num_filters], initializer=tf.constant_initializer(bias))

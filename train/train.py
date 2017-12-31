@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 from utils.seg_dataloader import SegDataLoader
 from tensorflow.contrib.data import Iterator
 import pdb
-
+import torchfile
 
 class Train(BasicTrain):
     """
@@ -108,8 +108,11 @@ class Train(BasicTrain):
             self.generator = self.test_generator
         elif self.args.data_mode == "debug":
             print("Debugging photo loading..")
-            self.debug_x = np.load('data/debug/debug_frankfurt_000001_x.npy')
-            self.debug_y = np.load('data/debug/debug_frankfurt_000001_y.npy')
+            torch_data= torchfile.load('/home/eren/Data/Cityscapes/512_1024/data.t7')
+            self.debug_x= np.expand_dims(torch_data[b'testData'][b'data'][0,:,:,:].transpose(1,2,0), axis=0)
+            self.debug_y= np.expand_dims(torch_data[b'testData'][b'labels'][0,:,:], axis=0)
+#            self.debug_x = np.load('data/debug/debug_frankfurt_000001_x.npy')
+#            self.debug_y = np.load('data/debug/debug_frankfurt_000001_y.npy')
             print("Debugging photo loaded")
         else:
             print("ERROR Please select a proper data_mode BYE")
@@ -781,6 +784,11 @@ class Train(BasicTrain):
         # print(tf.get_collection('debug_layers'))
 
         layers = tf.get_collection('debug_layers')
+        var = [v for v in tf.all_variables() if v.op.name == "network/decoder_block_4/deconv/deconv/weights"]
+        conv_w= self.sess.run(var[0])
+        var = [v for v in tf.all_variables() if v.op.name == "network/decoder_block_4/deconv/deconv/biases"]
+        bias= self.sess.run(var[0])
+
 
         print("ALL Layers in the collection that i wanna to run {} layer".format(len(layers)))
         for layer in layers:
@@ -810,12 +818,24 @@ class Train(BasicTrain):
         out_layers = self.sess.run(layers, feed_dict=feed_dict)
         for layer in out_layers:
             print(layer.shape)
+
+#        pdb.set_trace()
+#        pp=tf.image.resize_images(layers[39], [33,65], method= tf.image.ResizeMethod.BICUBIC)
+##        pp= tf.pad(pp, tf.constant([[0,0],[1,1],[1,1],[0,0]]), "CONSTANT")
+#        pp = tf.nn.conv2d(pp, conv_w, (1,1,1,1), padding='VALID')
+#        pp = tf.nn.bias_add(pp, bias)
+#        out= self.sess.run(pp, feed_dict={self.test_model.x_pl: self.debug_x,
+#                     self.test_model.y_pl: self.debug_y,
+#                     self.test_model.is_training: False
+#                     })
+#        pdb.set_trace()
+
         # print(out_layers)
         # exit(0)
 
         # dump them in a pickle
         with open("out_networks_layers/out_linknet_layers.pkl", "wb") as f:
-            pickle.dump(out_layers, f)
+            pickle.dump(out_layers, f, protocol=2)
 
         # run the feed_forward again to see argmax and segmented
         out_argmax, segmented_imgs = self.sess.run(
