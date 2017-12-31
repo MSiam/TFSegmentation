@@ -657,7 +657,7 @@ class Train(BasicTrain):
             #print('mean images ', x_batch.mean())
             #print('mean gt ', y_batch.mean())
 
-            y_batch = self.linknet_preprocess_gt(y_batch)
+#            y_batch = self.linknet_preprocess_gt(y_batch)
 
             # update idx of mini_batch
             idx += 1
