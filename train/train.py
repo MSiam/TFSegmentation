@@ -651,8 +651,8 @@ class Train(BasicTrain):
             x_batch = self.test_data['X'][idx:idx + 1]
             y_batch = self.test_data['Y'][idx:idx + 1]
 
-            print('mean images ', x_batch.mean())
-            print('mean gt ', y_batch.mean())
+            #print('mean images ', x_batch.mean())
+            #print('mean gt ', y_batch.mean())
 
             y_batch = self.linknet_preprocess_gt(y_batch)
 
@@ -678,7 +678,7 @@ class Train(BasicTrain):
                  self.test_model.segmented_summary],
                 feed_dict=feed_dict)
 
-            print('mean preds ', out_argmax.mean())
+            #print('mean preds ', out_argmax.mean())
             # np.save(self.args.out_dir + 'npy/' + str(cur_iteration) + '.npy', out_argmax[0])
             plt.imsave(self.args.out_dir + 'imgs/' + 'test_' + str(cur_iteration) + '.png', segmented_imgs[0])
 

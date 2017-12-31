@@ -18,6 +18,7 @@ save_every: 10
 test_every: 10
 max_to_keep: 1
 weighted_loss: True
+random_cropping: False
 
 # Models arguments
 batchnorm_enabled: True
