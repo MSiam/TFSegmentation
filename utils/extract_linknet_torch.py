@@ -5,7 +5,7 @@ import torchfile
 from collections import OrderedDict
 import pdb
 
-model_weights= torchfile.load('/home/eren/Work/TFSegmentation/pretrained_weights/dict_net.t7')
+model_weights= torchfile.load('/usr/data/menna/LinkNet-1.0/dict_net.t7')
 pdb.set_trace()
 # Transpose conv and fc weights
 model_weights2= {}
