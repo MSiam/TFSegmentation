@@ -73,8 +73,9 @@ class RESNET18:
 
         # Convert RGB to BGR
         with tf.name_scope('Pre_Processing'):
-            stat= torchfile.load('/home/eren/Data/Cityscapes/512_1024/stat.t7')
-            self.resnet_mean = tf.constant([stat[0,0,0], stat[1,0,0], stat[2,0,0]], dtype=tf.float32)
+            #stat= torchfile.load('/home/eren/Data/Cityscapes/512_1024/stat.t7')
+            #self.resnet_mean = tf.constant([stat[0,0,0], stat[1,0,0], stat[2,0,0]], dtype=tf.float32)
+            self.resnet_mean = tf.constant([0.2869, 0.3251, 0.2839], dtype=tf.float32)
             #self.resnet_mean = tf.constant([0.2869, 0.3251, 0.2839], dtype=tf.float32)
             # self.resnet_mean = tf.constant([0.485, 0.456, 0.406], dtype=tf.float32)
             # self.resnet_std = tf.constant([0.229, 0.224, 0.225], dtype=tf.float32)
