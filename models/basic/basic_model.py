@@ -251,14 +251,12 @@ class BasicModel:
                 extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
                 with tf.control_dependencies(extra_update_ops):
                     self.optimizer = tf.train.AdamOptimizer(self.curr_learning_rate)
-
-                    decoding_layers = tf.get_collection('decoding_layers')
-                    for layer in decoding_layers:
-                        print(layer)
-                    pdb.set_trace()
-                    self.train_op = self.optimizer.minimize(self.loss, )
-
-
+                    if self.args.freeze_encoder:
+                        train_vars = tf.get_collection('decoding_trainable_vars')
+                        pdb.set_trace()
+                        self.train_op = self.optimizer.minimize(self.loss, var_list= train_vars)
+                    else:
+                        self.train_op = self.optimizer.minimize(self.loss)
 
     def init_summaries(self):
         with tf.name_scope('pixel_wise_accuracy'):
