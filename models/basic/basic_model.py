@@ -251,7 +251,12 @@ class BasicModel:
                 extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
                 with tf.control_dependencies(extra_update_ops):
                     self.optimizer = tf.train.AdamOptimizer(self.curr_learning_rate)
-                    self.train_op = self.optimizer.minimize(self.loss)
+
+                    decoding_layers = tf.get_collection('decoding_layers')
+                    for layer in decoding_layers:
+                        print(layer)
+                    pdb.set_trace()
+                    self.train_op = self.optimizer.minimize(self.loss, )
 
 
 
