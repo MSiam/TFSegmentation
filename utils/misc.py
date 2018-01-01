@@ -3,6 +3,12 @@ import pickle
 import numpy as np
 import tensorflow as tf
 
+def get_vars_underscope(scope, name):
+    returned_vars= []
+    for v in tf.global_variables():
+        if scope+'/'+name in v.op.name:
+            returned_vars+= [v]
+    return returned_vars
 
 def timeit(f):
     """ Decorator to time Any Function """

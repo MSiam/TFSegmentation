@@ -2,7 +2,7 @@ from models.basic.basic_model import BasicModel
 from models.encoders.resnet_18 import RESNET18
 from layers.utils import get_deconv_filter, variable_summaries
 from layers.utils import variable_with_weight_decay2
-
+from utils.misc import get_vars_underscope
 import tensorflow as tf
 import pdb
 
@@ -66,8 +66,10 @@ class LinkNET(BasicModel):
             self.out_full_conv1 = self._deconv('deconv_out_1', self.out_decoder_block_1, 32, (3, 3), stride=2)
             self.out_full_conv1 = tf.layers.batch_normalization(self.out_full_conv1, training=self.is_training,
                                                                 fused=True)
-
             tf.add_to_collection('debug_layers', self.out_full_conv1)
+            bnvars= get_vars_underscope(tf.get_variable_scope().name, 'batch_normalization')
+            for v in bnvars:
+                tf.add_to_collection('decoding_trainable_vars', v)
 
             self.out_full_conv1 = tf.nn.relu(self.out_full_conv1)
 
@@ -80,8 +82,17 @@ class LinkNET(BasicModel):
                                               kernel_regularizer=tf.contrib.layers.l2_regularizer(
                                                   self.args.weight_decay))
             tf.add_to_collection('debug_layers', self.out_conv1)
+            convvars= get_vars_underscope(tf.get_variable_scope().name, 'conv2d')
+            for v in convvars:
+                tf.add_to_collection('decoding_trainable_vars', v)
+
             self.out_conv1 = tf.layers.batch_normalization(self.out_conv1, training=self.is_training, fused=True)
             tf.add_to_collection('debug_layers', self.out_conv1)
+            bnvars= get_vars_underscope(tf.get_variable_scope().name, 'batch_normalization')
+            for v in bnvars:
+                tf.add_to_collection('decoding_trainable_vars', v)
+
+
             self.out_conv1 = tf.nn.relu(self.out_conv1)
             print("output_block_conv1: %s" % (str(self.out_conv1.shape.as_list())))
             self.fscore = self._deconv('deconv_out_2', self.out_conv1, self.params.num_classes, (2, 2), stride=2)
@@ -101,9 +112,6 @@ class LinkNET(BasicModel):
 
     def _conv_1x1_block(self, name, x, filters):
         with tf.variable_scope(name):
-#            out = tf.layers.conv2d(x, filters=filters, kernel_size=(1, 1), padding="valid", use_bias=self.args.use_bias,
-#                                   kernel_initializer=tf.contrib.layers.xavier_initializer(),
-#                                   kernel_regularizer=tf.contrib.layers.l2_regularizer(self.args.weight_decay))
             with tf.variable_scope('conv2d'):
                 initializer=tf.contrib.layers.xavier_initializer()
                 kernel_shape = [1,1, x.shape[-1], filters]
@@ -116,6 +124,12 @@ class LinkNET(BasicModel):
 
             out = tf.layers.batch_normalization(out, training=self.is_training, fused=True)
             tf.add_to_collection('debug_layers', out)
+            tf.add_to_collection('decoding_trainable_vars', w)
+            tf.add_to_collection('decoding_trainable_vars', bias)
+
+            bnvars= get_vars_underscope(tf.get_variable_scope().name, 'batch_normalization')
+            for v in bnvars:
+                tf.add_to_collection('decoding_trainable_vars', v)
             out = tf.nn.relu(out)
         return out
 
@@ -124,6 +138,10 @@ class LinkNET(BasicModel):
             out = self._deconv('deconv', x, out_channels, kernel_size=(3, 3), stride=stride)
             out = tf.layers.batch_normalization(out, training=self.is_training, fused=True)
             tf.add_to_collection('debug_layers', out)
+            bnvars= get_vars_underscope(tf.get_variable_scope().name, 'batch_normalization')
+            for v in bnvars:
+                tf.add_to_collection('decoding_trainable_vars', v)
+
             out = tf.nn.relu(out)
         return out
 
@@ -135,9 +153,8 @@ class LinkNET(BasicModel):
             stride = [1, stride, stride, 1]
             kernel_shape = [kernel_size[0], kernel_size[1], out_channels, x.shape.as_list()[-1]]
             w = get_deconv_filter(kernel_shape, self.args.weight_decay)
+
             variable_summaries(w)
-            #if kernel_size==(3,3):
-            #    x = tf.pad(x, [[0,0],[1,1],[1,1],[0,0]], "CONSTANT")
             out = tf.nn.conv2d_transpose(x, w, tf.stack(output_shape), strides=stride, padding="SAME")
 
             if self.args.use_bias:
@@ -146,4 +163,6 @@ class LinkNET(BasicModel):
                 variable_summaries(bias)
                 out = tf.nn.bias_add(out, bias)
             tf.add_to_collection('debug_layers', out)
+            tf.add_to_collection('decoding_trainable_vars', w)
+            tf.add_to_collection('decoding_trainable_vars', bias)
         return out

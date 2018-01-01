@@ -251,9 +251,11 @@ class BasicModel:
                 extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
                 with tf.control_dependencies(extra_update_ops):
                     self.optimizer = tf.train.AdamOptimizer(self.curr_learning_rate)
-                    self.train_op = self.optimizer.minimize(self.loss)
-
-
+                    if self.args.freeze_encoder:
+                        train_vars = tf.get_collection('decoding_trainable_vars')
+                        self.train_op = self.optimizer.minimize(self.loss, var_list= train_vars)
+                    else:
+                        self.train_op = self.optimizer.minimize(self.loss)
 
     def init_summaries(self):
         with tf.name_scope('pixel_wise_accuracy'):
@@ -261,9 +263,9 @@ class BasicModel:
 
         with tf.name_scope('segmented_output'):
             input_summary = tf.cast(self.x_pl, tf.uint8)
-            # labels_summary = tf.py_func(decode_labels, [self.y_pl, self.params.num_classes], tf.uint8)
+#            labels_summary = tf.py_func(decode_labels, [self.y_pl, self.params.num_classes], tf.uint8)
             preds_summary = tf.py_func(decode_labels, [self.out_argmax, self.params.num_classes], tf.uint8)
-            self.segmented_summary = tf.concat(axis=2, values=[input_summary,
+            self.segmented_summary = tf.concat(axis=2, values=[input_summary, #labels_summary,
                                                                preds_summary])  # Concatenate row-wise
 
         # Every step evaluate these summaries

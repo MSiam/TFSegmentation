@@ -17,10 +17,13 @@ import h5py
 import pickle
 from utils.augmentation import flip_randomly_left_right_image_with_annotation, \
     scale_randomly_image_with_annotation_with_fixed_size_output
+import scipy.misc as misc
 
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import cv2
 
+from utils.img_utils import decode_labels
 from utils.seg_dataloader import SegDataLoader
 from tensorflow.contrib.data import Iterator
 import pdb
@@ -108,11 +111,22 @@ class Train(BasicTrain):
             self.generator = self.test_generator
         elif self.args.data_mode == "debug":
             print("Debugging photo loading..")
-            torch_data= torchfile.load('/home/eren/Data/Cityscapes/512_1024/data.t7')
-            self.debug_x= np.expand_dims(torch_data[b'testData'][b'data'][0,:,:,:].transpose(1,2,0), axis=0)
-            self.debug_y= np.expand_dims(torch_data[b'testData'][b'labels'][0,:,:], axis=0)
-#            self.debug_x = np.load('data/debug/debug_frankfurt_000001_x.npy')
-#            self.debug_y = np.load('data/debug/debug_frankfurt_000001_y.npy')
+#            self.debug_x= misc.imread('/data/menna/cityscapes/leftImg8bit/val/lindau/lindau_000048_000019_leftImg8bit.png')
+#            self.debug_y= misc.imread('/data/menna/cityscapes/gtFine/val/lindau/lindau_000048_000019_gtFine_labelIds.png')
+#            self.debug_x= np.expand_dims(misc.imresize(self.debug_x, (512,1024)), axis=0)
+#            self.debug_y= np.expand_dims(misc.imresize(self.debug_y, (512,1024)), axis=0)
+
+#            torch_data= torchfile.load('/data/menna/TFSegmentation/out_networks_layers/dict_out.t7')
+#            stat= torchfile.load('/data/menna/cityscape/512_1024/stat.t7')
+#            pdb.set_trace()
+#            torch_data= torchfile.load('/data/menna/cityscape/512_1024/data.t7')
+#            self.debug_x= np.expand_dims(torch_data[b'testData'][b'data'][0,:,:,:].transpose(1,2,0), axis=0)
+#            self.debug_y= np.expand_dims(torch_data[b'testData'][b'labels'][0,:,:], axis=0)
+#            np.save('data/debug/debug_x.npy', self.debug_x)
+#            np.save('data/debug/debug_y.npy', self.debug_y)
+
+            self.debug_x = np.load('data/debug/debug_x.npy')
+            self.debug_y = np.load('data/debug/debug_y.npy')
             print("Debugging photo loaded")
         else:
             print("ERROR Please select a proper data_mode BYE")
@@ -622,9 +636,9 @@ class Train(BasicTrain):
                 # Break the loop to finalize this epoch
                 break
 
-    def linknet_preprocess_gt(self, gt):
-        gt2 = gt + 2
-        gt2[gt == 19] = 1
+    def linknet_postprocess(self, gt):
+        gt2 = gt - 1
+        gt2[gt == -1] = 19
         return gt2
 
     def test(self, pkl=False):
@@ -656,9 +670,6 @@ class Train(BasicTrain):
 
             #print('mean images ', x_batch.mean())
             #print('mean gt ', y_batch.mean())
-
-#            y_batch = self.linknet_preprocess_gt(y_batch)
-
             # update idx of mini_batch
             idx += 1
 
@@ -680,6 +691,18 @@ class Train(BasicTrain):
                  # self.test_model.merged_summaries, self.test_model.segmented_summary],
                  self.test_model.segmented_summary],
                 feed_dict=feed_dict)
+
+            if pkl:
+#                yy= decode_labels(y_batch, 20)
+#                cv2.imshow('before ', yy[0][:,:,::-1])
+                out_argmax[0] = self.linknet_postprocess(out_argmax[0])
+                segmented_imgs= decode_labels(out_argmax, 20)
+#                cv2.imshow('after ', yy2[0][:,:,::-1])
+#                cv2.waitKey()
+
+
+#            cv2.imshow('result', segmented_imgs[0][:,:,::-1]);
+#            cv2.waitKey()
 
             #print('mean preds ', out_argmax.mean())
             # np.save(self.args.out_dir + 'npy/' + str(cur_iteration) + '.npy', out_argmax[0])
@@ -779,17 +802,7 @@ class Train(BasicTrain):
         """
         print("Debugging mode will begin NOW..")
 
-        # graph = tf.get_default_graph()
-        # print(graph.get_operations())
-        # print(tf.get_collection('debug_layers'))
-
         layers = tf.get_collection('debug_layers')
-        var = [v for v in tf.all_variables() if v.op.name == "network/decoder_block_4/deconv/deconv/weights"]
-        conv_w= self.sess.run(var[0])
-        var = [v for v in tf.all_variables() if v.op.name == "network/decoder_block_4/deconv/deconv/biases"]
-        bias= self.sess.run(var[0])
-
-
         print("ALL Layers in the collection that i wanna to run {} layer".format(len(layers)))
         for layer in layers:
             print(layer)
@@ -809,22 +822,36 @@ class Train(BasicTrain):
                      self.test_model.is_training: False
                      }
 
-        # # Layers of linknet .. All of it With order
-        # layers = [
-        #
-        # ]
+#        var = [v for v in tf.all_variables() if v.op.name == "network/decoder_block_4/deconv/deconv/weights"]
+#        conv_w= self.sess.run(var[0])
+#        var = [v for v in tf.all_variables() if v.op.name == "network/decoder_block_4/deconv/deconv/biases"]
+#        bias= self.sess.run(var[0])
 
         # run the feed_forward
         out_layers = self.sess.run(layers, feed_dict=feed_dict)
         for layer in out_layers:
             print(layer.shape)
 
-#        pdb.set_trace()
-#        pp=tf.image.resize_images(layers[39], [33,65], method= tf.image.ResizeMethod.BICUBIC)
-##        pp= tf.pad(pp, tf.constant([[0,0],[1,1],[1,1],[0,0]]), "CONSTANT")
-#        pp = tf.nn.conv2d(pp, conv_w, (1,1,1,1), padding='VALID')
+#        dict_out= torchfile.load('out_networks_layers/dict_out.t7')
+##        init= tf.constant_initializer(conv_w)
+##        conv_w1 = tf.get_variable('my_weights', [3,3,128,128], tf.float32, initializer=init, trainable=True)
+#        pp= tf.nn.relu(layers[39])
+#        out_relu= self.sess.run(pp, feed_dict={self.test_model.x_pl: self.debug_x,
+#                     self.test_model.y_pl: self.debug_y,
+#                     self.test_model.is_training: False
+#                     })
+##        pp = tf.nn.conv2d_transpose(layers[39], conv_w, (1,32,64,128), strides=(1,2,2,1), padding="SAME")
+##        pp= tf.image.resize_images(layers[39], (32,64))
+##        pp = tf.nn.conv2d(pp, conv_w, strides=(1,1,1,1), padding="SAME")
+##        bias1= tf.get_variable('my_bias', 128, tf.float32, tf.constant_initializer(bias))
 #        pp = tf.nn.bias_add(pp, bias)
-#        out= self.sess.run(pp, feed_dict={self.test_model.x_pl: self.debug_x,
+#        #self.sess.run(conv_w1.initializer)
+#        #self.sess.run(bias1.initializer)
+#        out_deconv= self.sess.run(pp, feed_dict={self.test_model.x_pl: self.debug_x,
+#                     self.test_model.y_pl: self.debug_y,
+#                     self.test_model.is_training: False
+#                     })
+#        out_deconv_direct= self.sess.run(layers[40], feed_dict={self.test_model.x_pl: self.debug_x,
 #                     self.test_model.y_pl: self.debug_y,
 #                     self.test_model.is_training: False
 #                     })
