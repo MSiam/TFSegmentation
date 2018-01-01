@@ -636,9 +636,9 @@ class Train(BasicTrain):
                 # Break the loop to finalize this epoch
                 break
 
-    def linknet_preprocess_gt(self, gt):
-        gt2 = gt + 2
-        gt2[gt == 19] = 1
+    def linknet_postprocess(self, gt):
+        gt2 = gt - 1
+        gt2[gt == -1] = 19
         return gt2
 
     def test(self, pkl=False):
@@ -670,14 +670,6 @@ class Train(BasicTrain):
 
             #print('mean images ', x_batch.mean())
             #print('mean gt ', y_batch.mean())
-#            if pkl:
-#                yy= decode_labels(y_batch, 20)
-#                cv2.imshow('before ', yy[0][:,:,::-1])
-#                y_batch = self.linknet_preprocess_gt(y_batch)
-#                yy2= decode_labels(y_batch, 20)
-#                cv2.imshow('after ', yy2[0][:,:,::-1])
-#                cv2.waitKey()
-
             # update idx of mini_batch
             idx += 1
 
@@ -699,6 +691,15 @@ class Train(BasicTrain):
                  # self.test_model.merged_summaries, self.test_model.segmented_summary],
                  self.test_model.segmented_summary],
                 feed_dict=feed_dict)
+
+            if pkl:
+#                yy= decode_labels(y_batch, 20)
+#                cv2.imshow('before ', yy[0][:,:,::-1])
+                out_argmax[0] = self.linknet_postprocess(out_argmax[0])
+                segmented_imgs= decode_labels(out_argmax, 20)
+#                cv2.imshow('after ', yy2[0][:,:,::-1])
+#                cv2.waitKey()
+
 
 #            cv2.imshow('result', segmented_imgs[0][:,:,::-1]);
 #            cv2.waitKey()
@@ -821,40 +822,40 @@ class Train(BasicTrain):
                      self.test_model.is_training: False
                      }
 
-        var = [v for v in tf.all_variables() if v.op.name == "network/decoder_block_4/deconv/deconv/weights"]
-        conv_w= self.sess.run(var[0])
-        var = [v for v in tf.all_variables() if v.op.name == "network/decoder_block_4/deconv/deconv/biases"]
-        bias= self.sess.run(var[0])
+#        var = [v for v in tf.all_variables() if v.op.name == "network/decoder_block_4/deconv/deconv/weights"]
+#        conv_w= self.sess.run(var[0])
+#        var = [v for v in tf.all_variables() if v.op.name == "network/decoder_block_4/deconv/deconv/biases"]
+#        bias= self.sess.run(var[0])
 
         # run the feed_forward
         out_layers = self.sess.run(layers, feed_dict=feed_dict)
         for layer in out_layers:
             print(layer.shape)
 
-        pdb.set_trace()
-        dict_out= torchfile.load('out_networks_layers/dict_out.t7')
-        init= tf.constant_initializer(conv_w)
-        conv_w1 = tf.get_variable('my_weights', [3,3,128,128], tf.float32, initializer=init, trainable=True)
-        pp= tf.nn.relu(layers[39])
-        out_relu= self.sess.run(pp, feed_dict={self.test_model.x_pl: self.debug_x,
-                     self.test_model.y_pl: self.debug_y,
-                     self.test_model.is_training: False
-                     })
-
-        pp = tf.nn.conv2d_transpose(pp, conv_w1, (1,32,64,128), strides=(1,2,2,1), padding="SAME")
-        bias1= tf.get_variable('my_bias', 128, tf.float32, tf.constant_initializer(bias))
-        pp = tf.nn.bias_add(pp, bias1)
-        self.sess.run(conv_w1.initializer)
-        self.sess.run(bias1.initializer)
-        out_deconv= self.sess.run(pp, feed_dict={self.test_model.x_pl: self.debug_x,
-                     self.test_model.y_pl: self.debug_y,
-                     self.test_model.is_training: False
-                     })
-        out_deconv_direct= self.sess.run(layers[40], feed_dict={self.test_model.x_pl: self.debug_x,
-                     self.test_model.y_pl: self.debug_y,
-                     self.test_model.is_training: False
-                     })
-        pdb.set_trace()
+#        dict_out= torchfile.load('out_networks_layers/dict_out.t7')
+##        init= tf.constant_initializer(conv_w)
+##        conv_w1 = tf.get_variable('my_weights', [3,3,128,128], tf.float32, initializer=init, trainable=True)
+#        pp= tf.nn.relu(layers[39])
+#        out_relu= self.sess.run(pp, feed_dict={self.test_model.x_pl: self.debug_x,
+#                     self.test_model.y_pl: self.debug_y,
+#                     self.test_model.is_training: False
+#                     })
+##        pp = tf.nn.conv2d_transpose(layers[39], conv_w, (1,32,64,128), strides=(1,2,2,1), padding="SAME")
+##        pp= tf.image.resize_images(layers[39], (32,64))
+##        pp = tf.nn.conv2d(pp, conv_w, strides=(1,1,1,1), padding="SAME")
+##        bias1= tf.get_variable('my_bias', 128, tf.float32, tf.constant_initializer(bias))
+#        pp = tf.nn.bias_add(pp, bias)
+#        #self.sess.run(conv_w1.initializer)
+#        #self.sess.run(bias1.initializer)
+#        out_deconv= self.sess.run(pp, feed_dict={self.test_model.x_pl: self.debug_x,
+#                     self.test_model.y_pl: self.debug_y,
+#                     self.test_model.is_training: False
+#                     })
+#        out_deconv_direct= self.sess.run(layers[40], feed_dict={self.test_model.x_pl: self.debug_x,
+#                     self.test_model.y_pl: self.debug_y,
+#                     self.test_model.is_training: False
+#                     })
+#        pdb.set_trace()
 
         # print(out_layers)
         # exit(0)
