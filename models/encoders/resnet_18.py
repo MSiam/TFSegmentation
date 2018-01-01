@@ -5,6 +5,7 @@ from layers.utils import variable_summaries, variable_with_weight_decay
 from utils.misc import timeit
 from utils.misc import _debug
 import torchfile
+import pickle
 import pdb
 
 class RESNET18:
@@ -29,8 +30,12 @@ class RESNET18:
         """
 
         # Load pretrained path
-        self.pretrained_weights = np.load(pretrained_path)
-        self.pretrained_weights = self.pretrained_weights.item()  # Load the dictionary
+        if pretrained_path.split('.')[-1]=='npy':
+            self.pretrained_weights = np.load(pretrained_path)
+        elif pretrained_path.split('.')[-1]=='pkl':
+            with open(pretrained_path, 'rb') as ff:
+               self.pretrained_weights = pickle.load(ff, encoding='latin1')
+
         print('pretrained weights dictionary loaded from disk')
 
         # init parameters and input
@@ -73,14 +78,11 @@ class RESNET18:
 
         # Convert RGB to BGR
         with tf.name_scope('Pre_Processing'):
-            #stat= torchfile.load('/home/eren/Data/Cityscapes/512_1024/stat.t7')
-            #self.resnet_mean = tf.constant([stat[0,0,0], stat[1,0,0], stat[2,0,0]], dtype=tf.float32)
-            self.resnet_mean = tf.constant([0.2869, 0.3251, 0.2839], dtype=tf.float32)
-            #self.resnet_mean = tf.constant([0.2869, 0.3251, 0.2839], dtype=tf.float32)
-            # self.resnet_mean = tf.constant([0.485, 0.456, 0.406], dtype=tf.float32)
-            # self.resnet_std = tf.constant([0.229, 0.224, 0.225], dtype=tf.float32)
-#            self.x_preprocessed = self.x_input * (1.0 / 255)
-            self.x_preprocessed= self.x_input
+            self.x_preprocessed = self.x_input * (1.0 / 255.0)
+            stat= torchfile.load('/data/menna/cityscape/512_1024/stat.t7')
+            self.resnet_mean= stat.transpose(1,2,0)
+#            self.resnet_mean = tf.constant([0.2869, 0.3251, 0.2839], dtype=tf.float32)
+#            self.x_preprocessed= self.x_input
             self.x_preprocessed = (self.x_preprocessed - self.resnet_mean) #/ self.resnet_std
 #            red, green, blue = tf.split(self.x_preprocessed, num_or_size_splits=3, axis=3)
 #            self.x_preprocessed = tf.concat([blue,green,red], 3)
