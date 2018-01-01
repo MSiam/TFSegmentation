@@ -135,9 +135,8 @@ class LinkNET(BasicModel):
             stride = [1, stride, stride, 1]
             kernel_shape = [kernel_size[0], kernel_size[1], out_channels, x.shape.as_list()[-1]]
             w = get_deconv_filter(kernel_shape, self.args.weight_decay)
+
             variable_summaries(w)
-            #if kernel_size==(3,3):
-            #    x = tf.pad(x, [[0,0],[1,1],[1,1],[0,0]], "CONSTANT")
             out = tf.nn.conv2d_transpose(x, w, tf.stack(output_shape), strides=stride, padding="SAME")
 
             if self.args.use_bias:
