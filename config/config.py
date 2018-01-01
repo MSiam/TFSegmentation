@@ -73,6 +73,7 @@ def parse_config():
     parser.add_argument('--max_to_keep', default=1, type=int, help='Max checkpoints to keep')
     parser.add_argument('--weighted_loss', action='store_true', help='Flag to use weighted loss or not')
     parser.add_argument('--random_cropping', action='store_true', help='Flag to use random cropping or not')
+    parser.add_argument('--freeze_encoder', action='store_true', help='Flag to freeze or train encoding layers')
 
     # Test arguments
 

@@ -82,6 +82,7 @@ def get_deconv_filter(f_shape, l2_strength, trainable=True):
     #         weights[:, :, i, j] = bilinear
 
     init = tf.constant_initializer(value=weights, dtype=tf.float32)
+#    init=tf.contrib.layers.xavier_initializer()
     return variable_with_weight_decay(weights.shape, init, l2_strength, trainable)
 
 
