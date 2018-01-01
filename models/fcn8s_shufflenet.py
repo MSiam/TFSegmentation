@@ -53,7 +53,7 @@ class FCN8sShuffleNet(BasicModel):
                 tf.add_to_collection('decoding_trainable_vars', v)
 
             self.score_feed1 = conv2d('score_feed1', x=self.encoder.feed1, batchnorm_enabled=self.args.batchnorm_enabled,
-                                      num_filters=self.params.num_classes, kernel_size=(1, 1),
+                                      num_filters=self.params.num_classes, kernel_size=(1, 1), bias= self.args.bias,
                                       l2_strength=self.encoder.wd)
             currvars= get_vars_underscope(tf.get_variable_scope().name, 'score_feed1')
             for v in currvars:
@@ -73,7 +73,7 @@ class FCN8sShuffleNet(BasicModel):
                 tf.add_to_collection('decoding_trainable_vars', v)
 
             self.score_feed2 = conv2d('score_feed2', x=self.encoder.feed2, batchnorm_enabled=self.args.batchnorm_enabled,
-                                      num_filters=self.params.num_classes, kernel_size=(1, 1),
+                                      num_filters=self.params.num_classes, kernel_size=(1, 1), bias=self.args.bias,
                                       l2_strength=self.encoder.wd)
             currvars= get_vars_underscope(tf.get_variable_scope().name, 'score_feed2')
             for v in currvars:

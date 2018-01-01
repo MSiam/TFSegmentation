@@ -61,7 +61,7 @@ python3 main.py --load_config=fcn8s_shufflenet_traincoarse.yaml train Train FCN8
 ##################################### ResNet18 ####################################################
 #3- UNet ResNet18 Train
 #python3 main.py --load_config=unet_resnet18_traincoarse.yaml train Train LinkNET
-python3 main.py --load_config=unet_resnet18_train.yaml train Train LinkNET
+#python3 main.py --load_config=unet_resnet18_train.yaml train Train LinkNET
 
 # - UNet ResNet18 Inference .. FPS Test
 #python3 main.py --load_config=unet_resnet18_test.yaml inference_pkl Train LinkNET
