@@ -111,10 +111,10 @@ class Train(BasicTrain):
             self.generator = self.test_generator
         elif self.args.data_mode == "debug":
             print("Debugging photo loading..")
-            self.debug_x= misc.imread('/data/menna/cityscapes/leftImg8bit/val/lindau/lindau_000048_000019_leftImg8bit.png')
-            self.debug_y= misc.imread('/data/menna/cityscapes/gtFine/val/lindau/lindau_000048_000019_gtFine_labelIds.png')
-            self.debug_x= np.expand_dims(misc.imresize(self.debug_x, (512,1024)), axis=0)
-            self.debug_y= np.expand_dims(misc.imresize(self.debug_y, (512,1024)), axis=0)
+#            self.debug_x= misc.imread('/data/menna/cityscapes/leftImg8bit/val/lindau/lindau_000048_000019_leftImg8bit.png')
+#            self.debug_y= misc.imread('/data/menna/cityscapes/gtFine/val/lindau/lindau_000048_000019_gtFine_labelIds.png')
+#            self.debug_x= np.expand_dims(misc.imresize(self.debug_x, (512,1024)), axis=0)
+#            self.debug_y= np.expand_dims(misc.imresize(self.debug_y, (512,1024)), axis=0)
 
 #            torch_data= torchfile.load('/data/menna/TFSegmentation/out_networks_layers/dict_out.t7')
 #            stat= torchfile.load('/data/menna/cityscape/512_1024/stat.t7')
@@ -122,8 +122,11 @@ class Train(BasicTrain):
 #            torch_data= torchfile.load('/data/menna/cityscape/512_1024/data.t7')
 #            self.debug_x= np.expand_dims(torch_data[b'testData'][b'data'][0,:,:,:].transpose(1,2,0), axis=0)
 #            self.debug_y= np.expand_dims(torch_data[b'testData'][b'labels'][0,:,:], axis=0)
-#            self.debug_x = np.load('data/debug/debug_frankfurt_000001_x.npy')
-#            self.debug_y = np.load('data/debug/debug_frankfurt_000001_y.npy')
+#            np.save('data/debug/debug_x.npy', self.debug_x)
+#            np.save('data/debug/debug_y.npy', self.debug_y)
+
+            self.debug_x = np.load('data/debug/debug_x.npy')
+            self.debug_y = np.load('data/debug/debug_y.npy')
             print("Debugging photo loaded")
         else:
             print("ERROR Please select a proper data_mode BYE")
@@ -828,25 +831,30 @@ class Train(BasicTrain):
         for layer in out_layers:
             print(layer.shape)
 
-#        pdb.set_trace()
-#        dict_out= torchfile.load('out_networks_layers/dict_out.t7')
-#        init= tf.constant_initializer(conv_w)
-#        conv_w1 = tf.get_variable('my_weights', [3,3,128,128], tf.float32, initializer=init, trainable=True)
-#        pp = tf.nn.conv2d_transpose(layers[39], conv_w1, (1,32,64,128), strides=(1,2,2,1), padding="SAME")
-#        bias1= tf.get_variable('my_bias', 128, tf.float32, tf.constant_initializer(bias))
-#        pp = tf.nn.bias_add(pp, bias1)
-#        self.sess.run(conv_w1.initializer)
-#        self.sess.run(bias1.initializer)
-#        out= self.sess.run(pp, feed_dict={self.test_model.x_pl: self.debug_x,
-#                     self.test_model.y_pl: self.debug_y,
-#                     self.test_model.is_training: False
-#                     })
-#        out2= self.sess.run(layer_special, feed_dict={self.test_model.x_pl: self.debug_x,
-#                     self.test_model.y_pl: self.debug_y,
-#                     self.test_model.is_training: False
-#                     })
+        pdb.set_trace()
+        dict_out= torchfile.load('out_networks_layers/dict_out.t7')
+        init= tf.constant_initializer(conv_w)
+        conv_w1 = tf.get_variable('my_weights', [3,3,128,128], tf.float32, initializer=init, trainable=True)
+        pp= tf.nn.relu(layers[39])
+        out_relu= self.sess.run(pp, feed_dict={self.test_model.x_pl: self.debug_x,
+                     self.test_model.y_pl: self.debug_y,
+                     self.test_model.is_training: False
+                     })
 
-        #pdb.set_trace()
+        pp = tf.nn.conv2d_transpose(pp, conv_w1, (1,32,64,128), strides=(1,2,2,1), padding="SAME")
+        bias1= tf.get_variable('my_bias', 128, tf.float32, tf.constant_initializer(bias))
+        pp = tf.nn.bias_add(pp, bias1)
+        self.sess.run(conv_w1.initializer)
+        self.sess.run(bias1.initializer)
+        out_deconv= self.sess.run(pp, feed_dict={self.test_model.x_pl: self.debug_x,
+                     self.test_model.y_pl: self.debug_y,
+                     self.test_model.is_training: False
+                     })
+        out_deconv_direct= self.sess.run(layers[40], feed_dict={self.test_model.x_pl: self.debug_x,
+                     self.test_model.y_pl: self.debug_y,
+                     self.test_model.is_training: False
+                     })
+        pdb.set_trace()
 
         # print(out_layers)
         # exit(0)
