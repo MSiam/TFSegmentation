@@ -19,6 +19,7 @@ test_every: 10
 max_to_keep: 1
 weighted_loss: True
 random_cropping: False
+freeze_encoder: True
 
 # Models arguments
 learning_rate: 0.0001
