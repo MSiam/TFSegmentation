@@ -20,6 +20,7 @@ test_every: 5
 max_to_keep: 1
 weighted_loss: False
 random_cropping: False
+freeze_encoder: True
 
 # Models arguments
 batchnorm_enabled: True
