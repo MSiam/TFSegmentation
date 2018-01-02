@@ -40,7 +40,7 @@
 #6- Dilation v1 MobileNet Test
 
 #7- Dilation v2 MobileNet Train 
-#python3 main.py --load_config=dilationv2_mobilenet_train.yaml train Train DilationV2MobileNet
+python3 main.py --load_config=dilationv2_mobilenet_train.yaml train Train DilationV2MobileNet
 
 ###################################### ShuffleNet #################################################
 #1- FCN8s ShuffleNet Train Coarse+Fine
@@ -63,7 +63,7 @@
 
 ##################################### ResNet18 ####################################################
 #3- UNet ResNet18 Train
-python3 main.py --load_config=unet_resnet18_traincoarse.yaml train Train LinkNET
+#python3 main.py --load_config=unet_resnet18_traincoarse.yaml train Train LinkNET
 #python3 main.py --load_config=unet_resnet18_train.yaml train Train LinkNET
 
 # - UNet ResNet18 Inference .. FPS Test
