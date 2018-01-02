@@ -21,7 +21,7 @@ import scipy.misc as misc
 
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import cv2
+#import cv2
 
 from utils.img_utils import decode_labels
 from utils.seg_dataloader import SegDataLoader
@@ -81,6 +81,16 @@ class Train(BasicTrain):
             self.num_iterations_validation_per_epoch = None
             self.load_train_data_h5()
             self.generator = self.train_h5_generator
+        elif self.args.data_mode == "experiment_v2":
+            self.targets_resize= 8
+            self.train_data = None
+            self.train_data_len = None
+            self.val_data = None
+            self.val_data_len = None
+            self.num_iterations_training_per_epoch = None
+            self.num_iterations_validation_per_epoch = None
+            self.load_train_data(v2=True)
+            self.generator = self.train_generator
         elif self.args.data_mode == "experiment":
             self.train_data = None
             self.train_data_len = None
@@ -115,16 +125,6 @@ class Train(BasicTrain):
 #            self.debug_y= misc.imread('/data/menna/cityscapes/gtFine/val/lindau/lindau_000048_000019_gtFine_labelIds.png')
 #            self.debug_x= np.expand_dims(misc.imresize(self.debug_x, (512,1024)), axis=0)
 #            self.debug_y= np.expand_dims(misc.imresize(self.debug_y, (512,1024)), axis=0)
-
-#            torch_data= torchfile.load('/data/menna/TFSegmentation/out_networks_layers/dict_out.t7')
-#            stat= torchfile.load('/data/menna/cityscape/512_1024/stat.t7')
-#            pdb.set_trace()
-#            torch_data= torchfile.load('/data/menna/cityscape/512_1024/data.t7')
-#            self.debug_x= np.expand_dims(torch_data[b'testData'][b'data'][0,:,:,:].transpose(1,2,0), axis=0)
-#            self.debug_y= np.expand_dims(torch_data[b'testData'][b'labels'][0,:,:], axis=0)
-#            np.save('data/debug/debug_x.npy', self.debug_x)
-#            np.save('data/debug/debug_y.npy', self.debug_y)
-
             self.debug_x = np.load('data/debug/debug_x.npy')
             self.debug_y = np.load('data/debug/debug_y.npy')
             print("Debugging photo loaded")
@@ -270,13 +270,21 @@ class Train(BasicTrain):
             self.summary_writer.add_summary(summaries_merged, step)
 
     @timeit
-    def load_train_data(self):
+    def load_train_data(self, v2=False):
         print("Loading Training data..")
         self.train_data = {'X': np.load(self.args.data_dir + "X_train.npy"),
                            'Y': np.load(self.args.data_dir + "Y_train.npy")}
+        if v2:
+            out_shape= (self.train_data['Y'].shape[1]//self.targets_resize,
+                self.train_data['Y'].shape[2]//self.targets_resize)
+            yy= np.zeros((self.train_data['Y'].shape[0],out_shape[0],out_shape[1]), dtype=self.train_data['Y'].dtype)
+            for y in range(self.train_data['Y'].shape[0]):
+                yy[y,...]= misc.imresize(self.train_data['Y'][y,...], out_shape, interp='nearest')
+            self.train_data['Y']=yy
         self.train_data_len = self.train_data['X'].shape[0]
-        self.num_iterations_training_per_epoch = (
-                                                     self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+
+        self.num_iterations_training_per_epoch = (self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+
         print("Train-shape-x -- " + str(self.train_data['X'].shape) + " " + str(self.train_data_len))
         print("Train-shape-y -- " + str(self.train_data['Y'].shape))
         print("Num of iterations on training data in one epoch -- " + str(self.num_iterations_training_per_epoch))
@@ -285,6 +293,14 @@ class Train(BasicTrain):
         print("Loading Validation data..")
         self.val_data = {'X': np.load(self.args.data_dir + "X_val.npy"),
                          'Y': np.load(self.args.data_dir + "Y_val.npy")}
+        if v2:
+            out_shape= (self.val_data['Y'].shape[1]//self.targets_resize,
+                self.val_data['Y'].shape[2]//self.targets_resize)
+            yy= np.zeros((self.val_data['Y'].shape[0],out_shape[0],out_shape[1]), dtype=self.train_data['Y'].dtype)
+            for y in range(self.val_data['Y'].shape[0]):
+                yy[y,...]= misc.imresize(self.val_data['Y'][y,...], out_shape, interp='nearest')
+            self.val_data['Y']=yy
+
         self.val_data_len = self.val_data['X'].shape[0] - self.val_data['X'].shape[0] % self.args.batch_size
         self.num_iterations_validation_per_epoch = (
                                                        self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
@@ -409,7 +425,6 @@ class Train(BasicTrain):
 
     def train(self):
         print("Training mode will begin NOW ..")
-
         curr_lr = self.train_model.args.learning_rate
         for cur_epoch in range(self.train_model.global_epoch_tensor.eval(self.sess) + 1, self.args.num_epochs + 1, 1):
 
