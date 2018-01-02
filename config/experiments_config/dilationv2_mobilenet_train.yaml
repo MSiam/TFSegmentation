@@ -18,6 +18,8 @@ save_every: 10
 test_every: 5
 max_to_keep: 2
 weighted_loss: True
+freeze_encoder: False
+random_cropping: False
 
 # Models arguments
 learning_rate:   0.0001
