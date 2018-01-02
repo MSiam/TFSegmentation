@@ -82,7 +82,7 @@ class Train(BasicTrain):
             self.load_train_data_h5()
             self.generator = self.train_h5_generator
         elif self.args.data_mode == "experiment_v2":
-            self.targets_resize= 8
+            self.targets_resize= self.args.targets_resize
             self.train_data = None
             self.train_data_len = None
             self.val_data = None
@@ -597,12 +597,15 @@ class Train(BasicTrain):
                     y_batch = y_batch[:, :, 256:256 + 512]
 
                 if self.args.data_mode == 'experiment_v2':
-                    yy= np.zeros((out_argmax.shape[0], y_batch_large.shape[1], y_batch_large.shape[2]), dtype=out_argmax.dtype)
+                    yy= np.zeros((out_argmax.shape[0], y_batch_large.shape[1], y_batch_large.shape[2]), dtype=np.uint32)
+                    out_argmax= np.asarray(out_argmax, dtype= np.uint8)
                     for y in range(out_argmax.shape[0]):
                         yy[y,...]= misc.imresize(out_argmax[y,...], y_batch_large.shape[1:], interp='nearest')
                     y_batch= y_batch_large
                     out_argmax= yy
-                self.metrics.update_metrics_batch(out_argmax, y_batch)
+
+                    self.metrics.update_metrics_batch(out_argmax, y_batch)
+
 
             else:
                 # run the feed_forward
@@ -623,12 +626,12 @@ class Train(BasicTrain):
                     y_batch = y_batch[:, :, 256:256 + 512]
 
                 if self.args.data_mode == 'experiment_v2':
-                    yy= np.zeros((out_argmax.shape[0], y_batch_large.shape[1], y_batch_large.shape[2]), dtype=out_argmax.dtype)
+                    yy= np.zeros((out_argmax.shape[0], y_batch_large.shape[1], y_batch_large.shape[2]), dtype=np.uint32)
+                    out_argmax= np.asarray(out_argmax, dtype= np.uint8)
                     for y in range(out_argmax.shape[0]):
                         yy[y,...]= misc.imresize(out_argmax[y,...], y_batch_large.shape[1:], interp='nearest')
                     y_batch= y_batch_large
                     out_argmax= yy
-
 
                 self.metrics.update_metrics_batch(out_argmax, y_batch)
                 # mean over batches

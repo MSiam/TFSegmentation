@@ -26,7 +26,7 @@ class DilationV2MobileNet(BasicModel):
         self.score_feed2 = None
         self.fuse_feed2 = None
         self.upscore8 = None
-        self.targets_size = 8
+        self.targets_resize = self.args.targets_resize
 
     def build(self):
         print("\nBuilding the MODEL...")
@@ -41,8 +41,8 @@ class DilationV2MobileNet(BasicModel):
         with tf.name_scope('input'):
             self.x_pl = tf.placeholder(tf.float32,
                                        [self.args.batch_size, self.params.img_height, self.params.img_width, 3])
-            self.y_pl = tf.placeholder(tf.int32, [self.args.batch_size, self.params.img_height//self.targets_size,
-                self.params.img_width//self.targets_size])
+            self.y_pl = tf.placeholder(tf.int32, [self.args.batch_size, self.params.img_height//self.targets_resize,
+                self.params.img_width//self.targets_resize])
             print('X_batch shape ', self.x_pl.get_shape().as_list(), ' ', self.y_pl.get_shape().as_list())
             print('Afterwards: X_batch shape ', self.x_pl.get_shape().as_list(), ' ', self.y_pl.get_shape().as_list())
 
@@ -125,7 +125,17 @@ class DilationV2MobileNet(BasicModel):
             # Pooling is removed.
             self.score_fr = conv2d('conv_1c_1x1_dil', self.conv6_1, num_filters=self.params.num_classes, l2_strength=self.wd,
                                    kernel_size=(1, 1))
-
             _debug(self.score_fr)
-            self.logits= self.score_fr
+
+            if self.targets_resize < 8:
+                self.targets_resize= 8 // self.targets_resize
+                self.upscore8 = conv2d_transpose('upscore8', x=self.score_fr,
+                                                 output_shape=self.y_pl.shape.as_list()[0:3] + [self.params.num_classes],
+                                                 kernel_size=(self.targets_resize*2, self.targets_resize*2),
+                                                 stride=(self.targets_resize,self.targets_resize),
+                                                 l2_strength=self.encoder.wd, is_training= self.is_training)
+                _debug(self.upscore8)
+                self.logits= self.upscore8
+            else:
+                self.logits= self.score_fr
 
