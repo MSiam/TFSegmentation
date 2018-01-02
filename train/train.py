@@ -303,8 +303,7 @@ class Train(BasicTrain):
             self.val_data['Y']=yy
 
         self.val_data_len = self.val_data['X'].shape[0] - self.val_data['X'].shape[0] % self.args.batch_size
-        self.num_iterations_validation_per_epoch = (
-                                                       self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
+        self.num_iterations_validation_per_epoch = (self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Val-shape-x -- " + str(self.val_data['X'].shape) + " " + str(self.val_data_len))
         print("Val-shape-y -- " + str(self.val_data['Y'].shape))
         print("Num of iterations on validation data in one epoch -- " + str(self.num_iterations_validation_per_epoch))
@@ -565,6 +564,8 @@ class Train(BasicTrain):
             # load minibatches
             x_batch = self.val_data['X'][idx:idx + self.args.batch_size]
             y_batch = self.val_data['Y'][idx:idx + self.args.batch_size]
+            if self.args.data_mode == 'experiment_v2':
+                y_batch_large= self.val_data['Y_large'][idx:idx+self.args.batch_size]
 
             # update idx of minibatch
             idx += self.args.batch_size
@@ -596,7 +597,6 @@ class Train(BasicTrain):
                     y_batch = y_batch[:, :, 256:256 + 512]
 
                 if self.args.data_mode == 'experiment_v2':
-                    y_batch_large = self.val_data['Y_large'][idx:idx + self.args.batch_size]
                     yy= np.zeros((out_argmax.shape[0], y_batch_large.shape[1], y_batch_large.shape[2]), dtype=out_argmax.dtype)
                     for y in range(out_argmax.shape[0]):
                         yy[y,...]= misc.imresize(out_argmax[y,...], y_batch_large.shape[1:], interp='nearest')
@@ -605,12 +605,16 @@ class Train(BasicTrain):
                 self.metrics.update_metrics_batch(out_argmax, y_batch)
 
             else:
-                start = time.time()
                 # run the feed_forward
-                out_argmax, acc, segmented_imgs = self.sess.run(
-                    [self.test_model.out_argmax, self.test_model.accuracy, self.test_model.segmented_summary],
-                    feed_dict=feed_dict)
-                end = time.time()
+                if self.args.data_mode=='experiment_v2': #Issues in concatenating gt and img with diff sizes now for segmented_imgs
+                     out_argmax, acc = self.sess.run(
+                        [self.test_model.out_argmax, self.test_model.accuracy],
+                        feed_dict=feed_dict)
+                else:
+                     out_argmax, acc, segmented_imgs = self.sess.run(
+                        [self.test_model.out_argmax, self.test_model.accuracy, self.test_model.segmented_summary],
+                        feed_dict=feed_dict)
+
                 # log loss and acc
                 acc_list += [acc]
                 inf_list += [end - start]
@@ -619,12 +623,12 @@ class Train(BasicTrain):
                     y_batch = y_batch[:, :, 256:256 + 512]
 
                 if self.args.data_mode == 'experiment_v2':
-                    y_batch_large = self.val_data['Y_large'][idx:idx + self.args.batch_size]
                     yy= np.zeros((out_argmax.shape[0], y_batch_large.shape[1], y_batch_large.shape[2]), dtype=out_argmax.dtype)
                     for y in range(out_argmax.shape[0]):
                         yy[y,...]= misc.imresize(out_argmax[y,...], y_batch_large.shape[1:], interp='nearest')
                     y_batch= y_batch_large
                     out_argmax= yy
+
 
                 self.metrics.update_metrics_batch(out_argmax, y_batch)
                 # mean over batches
@@ -638,7 +642,8 @@ class Train(BasicTrain):
                 summaries_dict['val-loss-per-epoch'] = total_loss
                 summaries_dict['val-acc-per-epoch'] = total_acc
                 summaries_dict['mean_iou_on_val'] = mean_iou
-                summaries_dict['val_prediction_sample'] = segmented_imgs
+                if self.args.data_mode != 'experiment_v2':
+                    summaries_dict['val_prediction_sample'] = segmented_imgs
                 self.add_summary(step, summaries_dict=summaries_dict)
                 self.summary_writer.flush()
 
