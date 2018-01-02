@@ -618,6 +618,14 @@ class Train(BasicTrain):
                 if self.args.random_cropping:
                     y_batch = y_batch[:, :, 256:256 + 512]
 
+                if self.args.data_mode == 'experiment_v2':
+                    y_batch_large = self.val_data['Y_large'][idx:idx + self.args.batch_size]
+                    yy= np.zeros((out_argmax.shape[0], y_batch_large.shape[1], y_batch_large.shape[2]), dtype=out_argmax.dtype)
+                    for y in range(out_argmax.shape[0]):
+                        yy[y,...]= misc.imresize(out_argmax[y,...], y_batch_large.shape[1:], interp='nearest')
+                    y_batch= y_batch_large
+                    out_argmax= yy
+
                 self.metrics.update_metrics_batch(out_argmax, y_batch)
                 # mean over batches
                 total_loss = 0
