@@ -1,8 +1,8 @@
 # Directories arguments
 data_dir: "full_cityscapes_res"
-abs_data_dir: "/home/eren/Data/Cityscapes_Coarse/"
-exp_dir:  "unet_resnet18_coarse"
-out_dir:  "unet_resnet18_coarse"
+abs_data_dir: "/home/nray1/ms/cityscapes/"
+exp_dir:  "unet_resnet18"
+out_dir:  "unet_resnet18"
 
 # Data arguments
 img_height:   512
@@ -20,6 +20,7 @@ test_every: 10
 max_to_keep: 1
 weighted_loss: True
 random_cropping: False
+freeze_encoder: False
 
 # Models arguments
 batchnorm_enabled: True

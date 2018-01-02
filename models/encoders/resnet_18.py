@@ -80,7 +80,7 @@ class RESNET18:
         with tf.name_scope('Pre_Processing'):
             self.x_preprocessed = self.x_input * (1.0 / 255.0)
 #            self.x_preprocessed= self.x_input
-            stat= torchfile.load('/data/menna/cityscape/512_1024/stat.t7')
+            stat= torchfile.load('stat.t7')
             self.resnet_mean= stat.transpose(1,2,0)
 #            self.resnet_mean = tf.constant([0.2869, 0.3251, 0.2839], dtype=tf.float32)
             self.x_preprocessed = (self.x_preprocessed - self.resnet_mean) #/ self.resnet_std
