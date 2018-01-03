@@ -1,0 +1,32 @@
+# Directories arguments
+data_dir: "full_cityscapes_res"
+abs_data_dir: "/home/menna/projects/def-jag/menna/Cityscapes_Coarse/"
+exp_dir:  "unet_mobilenet"
+out_dir:  "unet_mobilenet"
+
+# Data arguments
+img_height:   512
+img_width:    1024
+num_channels: 3
+num_classes:  20
+
+# Train arguments
+num_epochs: 200
+batch_size: 3
+shuffle: True
+data_mode: "experiment_tfdata"
+save_every: 5
+test_every: 5
+max_to_keep: 1
+weighted_loss: True
+random_cropping: False
+
+# Models arguments
+learning_rate:   0.0001
+weight_decay: 5e-4
+bias: 0.0
+pretrained_path: "pretrained_weights/mobilenet_v1.pkl"
+
+# Misc arguments
+verbose: False
+
