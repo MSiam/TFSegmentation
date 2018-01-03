@@ -6,7 +6,7 @@
 #python3 main.py --load_config=fcn8s_vgg16_train.yaml train Train FCN8s
 
 #2- FCN8s VGG16 Test
-python3 main.py --load_config=fcn8s_vgg16_test.yaml test Train FCN8s
+#python3 main.py --load_config=fcn8s_vgg16_test.yaml test Train FCN8s
 #python3 main.py --load_config=fcn8s_vgg16_test.yaml inference Train FCN8s
 
 #3- UNET VGG16 Train
@@ -39,6 +39,9 @@ python3 main.py --load_config=fcn8s_vgg16_test.yaml test Train FCN8s
 
 #6- Dilation v1 MobileNet Test
 
+#7- Dilation v2 MobileNet Train 
+python3 main.py --load_config=dilationv2_mobilenet_train.yaml train Train DilationV2MobileNet
+
 ###################################### ShuffleNet #################################################
 #1- FCN8s ShuffleNet Train Coarse+Fine
 #python3 main.py --load_config=fcn8s_shufflenet_traincoarse.yaml train Train FCN8sShuffleNet
@@ -64,8 +67,8 @@ python3 main.py --load_config=fcn8s_vgg16_test.yaml test Train FCN8s
 #python3 main.py --load_config=unet_resnet18_train.yaml train Train LinkNET
 
 # - UNet ResNet18 Inference .. FPS Test
-#python main.py --load_config=unet_resnet18_test.yaml inference_pkl Train LinkNET
-#python main.py --load_config=unet_resnet18_test.yaml debug Train LinkNET
+#python3 main.py --load_config=unet_resnet18_test.yaml inference_pkl Train LinkNET
+#python3 main.py --load_config=unet_resnet18_test.yaml debug Train LinkNET
 
 #4- UNet ResNet18 Test
 #python3 main.py --load_config=unet_resnet18_test.yaml test Train LinkNET
