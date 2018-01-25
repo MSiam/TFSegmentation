@@ -1,7 +1,7 @@
 # Directories arguments
-data_dir: "full_cityscapes"
-exp_dir:  "fcn8s_mobilenet_exp_no_bias"
-out_dir:  "fcn8s_mobilenet_exp_no_bias"
+data_dir: "full_cityscapes_res"
+exp_dir:  "fcn8s_mobilenet"
+out_dir:  "fcn8s_mobilenet"
 
 # Data arguments
 img_height:   512
@@ -15,17 +15,18 @@ batch_size: 4
 shuffle: True
 data_mode: "experiment"
 save_every: 10
-test_every: 2
-max_to_keep: 2
+test_every: 10
+max_to_keep: 1
 weighted_loss: True
+random_cropping: False
+freeze_encoder: False
 
 # Models arguments
-learning_rate:   9e-5
-weight_decay: 0.000005
-momentum: 0.9
-learning_decay: 0.7
+learning_rate:   0.0001
+weight_decay: 0.0005
+bias : 0.0
+batchnorm_enabled: True
 pretrained_path: "pretrained_weights/mobilenet_v1.pkl"
-learning_decay_every: 10
 
 # Misc arguments
 verbose: False

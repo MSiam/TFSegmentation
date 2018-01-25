@@ -2,6 +2,24 @@ import tensorflow as tf
 import math
 import numpy as np
 
+
+def variable_with_weight_decay(kernel_shape, initializer, wd):
+    """
+    Create a variable with L2 Regularization (Weight Decay)
+    :param kernel_shape: the size of the convolving weight kernel.
+    :param initializer: The initialization scheme, He et al. normal or Xavier normal are recommended.
+    :param wd:(weight decay) L2 regularization parameter.
+    :return: The weights of the kernel initialized. The L2 loss is added to the loss collection.
+    """
+    w = tf.get_variable('weights', kernel_shape, tf.float32, initializer=initializer)
+
+    collection_name = tf.GraphKeys.REGULARIZATION_LOSSES
+    if wd and (not tf.get_variable_scope().reuse):
+        weight_decay = tf.multiply(tf.nn.l2_loss(w), wd, name='w_loss')
+        tf.add_to_collection(collection_name, weight_decay)
+    variable_summaries(w)
+    return w
+
 def variable_with_weight_decay2(kernel_shape, initializer, wd, trainable=True):
     """
     Create a variable with L2 Regularization (Weight Decay)
@@ -19,26 +37,6 @@ def variable_with_weight_decay2(kernel_shape, initializer, wd, trainable=True):
             tf.add_to_collection(collection_name, weight_decay)
     variable_summaries(w)
     return w
-
-
-def variable_with_weight_decay(kernel_shape, initializer, wd, trainable=True):
-    """
-    Create a variable with L2 Regularization (Weight Decay)
-    :param kernel_shape: the size of the convolving weight kernel.
-    :param initializer: The initialization scheme, He et al. normal or Xavier normal are recommended.
-    :param wd:(weight decay) L2 regularization parameter.
-    :return: The weights of the kernel initialized. The L2 loss is added to the loss collection.
-    """
-    w = tf.get_variable('weights', kernel_shape, tf.float32, initializer=initializer, trainable=trainable)
-
-    if trainable:
-        collection_name = tf.GraphKeys.REGULARIZATION_LOSSES
-        if wd and (not tf.get_variable_scope().reuse):
-            weight_decay = tf.multiply(tf.nn.l2_loss(w), wd, name='w_loss')
-            tf.add_to_collection(collection_name, weight_decay)
-    variable_summaries(w)
-    return w
-
 
 # Summaries for variables
 def variable_summaries(var):
@@ -58,7 +56,7 @@ def variable_summaries(var):
         tf.summary.histogram('histogram', var)
 
 
-def get_deconv_filter(f_shape, l2_strength, trainable=True):
+def get_deconv_filter(f_shape, l2_strength):
     """
     The initializer for the bilinear convolution transpose filters
     :param f_shape: The shape of the filter used in convolution transpose.
@@ -74,16 +72,12 @@ def get_deconv_filter(f_shape, l2_strength, trainable=True):
         for y in range(height):
             value = (1 - abs(x / f - c)) * (1 - abs(y / f - c))
             bilinear[x, y] = value
-    weights = np.zeros(f_shape, dtype=np.float32)
+    weights = np.zeros(f_shape)
     for i in range(f_shape[2]):
         weights[:, :, i, i] = bilinear
-    # for i in range(f_shape[2]):
-    #     for j in range(f_shape[3]):
-    #         weights[:, :, i, j] = bilinear
 
     init = tf.constant_initializer(value=weights, dtype=tf.float32)
-#    init=tf.contrib.layers.xavier_initializer()
-    return variable_with_weight_decay(weights.shape, init, l2_strength, trainable)
+    return variable_with_weight_decay(weights.shape, init, l2_strength)
 
 
 def load_conv_filter(name, pretrained_weights, l2_strength=0.0, trainable=True):

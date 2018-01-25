@@ -8,17 +8,16 @@ def dense_p(name, x, w=None, output_dim=128, initializer=tf.contrib.layers.xavie
     """
     Fully connected layer
     :param name: (string) The name scope provided by the upper tf.name_scope('name') as scope.
-    :param w: (tf.tensor) pretrained weights (if None, it means no pretrained weights)
     :param x: (tf.tensor) The input to the layer (N, D).
     :param output_dim: (integer) It specifies H, the output second dimension of the fully connected layer [ie:(N, H)]
-    :param initializer: The initialization scheme, He et al. normal or Xavier normal are recommended.
+    :param initializer: (tf.contrib initializer) The initialization scheme, He et al. normal or Xavier normal are recommended.
     :param l2_strength:(weight decay) (float) L2 regularization parameter.
     :param bias: (float) Amount of bias. (if not float, it means pretrained bias)
     :return out: The output of the layer. (N, H)
     """
     n_in = x.get_shape()[-1].value
     with tf.variable_scope(name):
-        if w is None:
+        if w == None:
             w = variable_with_weight_decay([n_in, output_dim], initializer, l2_strength)
         variable_summaries(w)
         if isinstance(bias, float):
@@ -37,13 +36,12 @@ def dense(name, x, w=None, output_dim=128, initializer=tf.contrib.layers.xavier_
     This block is responsible for a fully connected followed by optional (non-linearity, dropout, max-pooling).
     Note that: "is_training" should be passed by a correct value based on being in either training or testing.
     :param name: (string) The name scope provided by the upper tf.name_scope('name') as scope.
-    :param w: (tf.tensor) pretrained weights (if None, it means no pretrained weights)
     :param x: (tf.tensor) The input to the layer (N, D).
     :param output_dim: (integer) It specifies H, the output second dimension of the fully connected layer [ie:(N, H)]
-    :param initializer: The initialization scheme, He et al. normal or Xavier normal are recommended.
+    :param initializer: (tf.contrib initializer) The initialization scheme, He et al. normal or Xavier normal are recommended.
     :param l2_strength:(weight decay) (float) L2 regularization parameter.
     :param bias: (float) Amount of bias.
-    :param activation: The activation function applied after the convolution operation. If None, linear is applied.
+    :param activation: (tf.graph operator) The activation function applied after the convolution operation. If None, linear is applied.
     :param batchnorm_enabled: (boolean) for enabling batch normalization.
     :param dropout_keep_prob: (float) for the probability of keeping neurons. If equals -1, it means no dropout
     :param is_training: (boolean) to diff. between training and testing (important for batch normalization and dropout) 

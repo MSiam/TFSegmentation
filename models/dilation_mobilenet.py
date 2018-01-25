@@ -11,8 +11,8 @@ class DilationMobileNet(BasicModel):
     FCN8s with MobileNet as an encoder Model Architecture
     """
 
-    def __init__(self, args, phase=0):
-        super().__init__(args, phase=phase)
+    def __init__(self, args):
+        super().__init__(args)
         # init encoder
         self.encoder = None
         self.wd= self.args.weight_decay
@@ -105,7 +105,7 @@ class DilationMobileNet(BasicModel):
             _debug(self.conv6_1)
             # Pooling is removed.
             self.score_fr = conv2d('conv_1c_1x1_dil', self.conv6_1, num_filters=self.params.num_classes, l2_strength=self.wd,
-                                   kernel_size=(1, 1))
+                                   batchnorm_enabled= True, is_training= self.is_training, kernel_size=(1, 1))
 
             _debug(self.score_fr)
             self.upscore8 = conv2d_transpose('upscore8', x=self.score_fr,

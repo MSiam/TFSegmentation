@@ -18,7 +18,7 @@ class BasicTrain(object):
 
         self.args = args
         self.sess = sess
-        self.train_model = train_model
+        self.model = train_model
         self.test_model = test_model
 
         # shortcut for model params
@@ -58,7 +58,7 @@ class BasicTrain(object):
         :return:
         """
         print("saving a checkpoint")
-        self.saver.save(self.sess, self.args.checkpoint_dir, self.train_model.global_step_tensor)
+        self.saver.save(self.sess, self.args.checkpoint_dir, self.model.global_step_tensor)
         print("Saved a checkpoint")
 
     def save_best_model(self):
@@ -67,7 +67,7 @@ class BasicTrain(object):
         :return:
         """
         print("saving a checkpoint for the best model")
-        self.saver_best.save(self.sess, self.args.checkpoint_best_dir, self.train_model.global_step_tensor)
+        self.saver_best.save(self.sess, self.args.checkpoint_best_dir, self.model.global_step_tensor)
         print("Saved a checkpoint for the best model")
 
     def load_best_model(self):
