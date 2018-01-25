@@ -24,7 +24,9 @@ targets_resize: 4
 
 # Models arguments
 learning_rate:   0.0001
-weight_decay: 0.000005
+weight_decay: 0.0005
+bias : 0.0
+batchnorm_enabled: True
 pretrained_path: "pretrained_weights/mobilenet_v1.pkl"
 
 # Misc arguments

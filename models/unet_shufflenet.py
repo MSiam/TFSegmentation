@@ -6,8 +6,8 @@ import tensorflow as tf
 
 
 class UNetShuffleNet(BasicModel):
-    def __init__(self, args, phase=0):
-        super().__init__(args, phase=phase)
+    def __init__(self, args):
+        super().__init__(args)
         # init encoder
         self.encoder = None
 
