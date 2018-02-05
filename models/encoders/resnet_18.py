@@ -4,7 +4,7 @@ import numpy as np
 from layers.utils import variable_summaries, variable_with_weight_decay
 from utils.misc import timeit
 from utils.misc import _debug
-import torchfile
+# import torchfile
 import pickle
 import pdb
 
