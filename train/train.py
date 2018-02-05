@@ -687,7 +687,7 @@ class Train(BasicTrain):
         self.metrics.reset()
 
         # Load the name mapper
-        names = np.load(self.args.data_dir + "names.npy")
+        names = np.load(self.args.data_dir + "val_names.npy")
         i = 0
 
         # loop by the number of iterations
@@ -756,8 +756,9 @@ class Train(BasicTrain):
             to_be_saved[out_argmax[0] == 18] = 33
             to_be_saved[out_argmax[0] == 19] = 0
 
-            import scipy.misc
-            scipy.misc.imsave(self.args.out_dir + 'imgs/' + names[i], to_be_saved)
+            from scipy.misc import imsave, imresize
+            to_be_saved = imresize(to_be_saved, 2.0, 'nearest')
+            imsave(self.args.out_dir + 'imgs/' + names[i], to_be_saved)
             # plt.imsave(self.args.out_dir + 'imgs/' + names[i], out_argmax[0])
             i += 1
             # log loss and acc
