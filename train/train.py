@@ -286,7 +286,7 @@ class Train(BasicTrain):
         self.train_data_len = self.train_data['X'].shape[0]
 
         self.num_iterations_training_per_epoch = (
-                                                             self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+                                                         self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
 
         print("Train-shape-x -- " + str(self.train_data['X'].shape) + " " + str(self.train_data_len))
         print("Train-shape-y -- " + str(self.train_data['Y'].shape))
@@ -307,7 +307,7 @@ class Train(BasicTrain):
 
         self.val_data_len = self.val_data['X'].shape[0] - self.val_data['X'].shape[0] % self.args.batch_size
         self.num_iterations_validation_per_epoch = (
-                                                               self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
+                                                           self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Val-shape-x -- " + str(self.val_data['X'].shape) + " " + str(self.val_data_len))
         print("Val-shape-y -- " + str(self.val_data['Y'].shape))
         print("Num of iterations on validation data in one epoch -- " + str(self.num_iterations_validation_per_epoch))
@@ -733,7 +733,32 @@ class Train(BasicTrain):
 
             # print('mean preds ', out_argmax.mean())
             # np.save(self.args.out_dir + 'npy/' + str(cur_iteration) + '.npy', out_argmax[0])
-            plt.imsave(self.args.out_dir + 'imgs/' + names[i], segmented_imgs[0])
+            to_be_saved = np.zeros(out_argmax[0].shape).astype(np.uint8)
+            # Mapping from CityScapes -> labels.py
+            to_be_saved[out_argmax[0] == 0] = 7
+            to_be_saved[out_argmax[0] == 1] = 8
+            to_be_saved[out_argmax[0] == 2] = 11
+            to_be_saved[out_argmax[0] == 3] = 12
+            to_be_saved[out_argmax[0] == 4] = 13
+            to_be_saved[out_argmax[0] == 5] = 17
+            to_be_saved[out_argmax[0] == 6] = 19
+            to_be_saved[out_argmax[0] == 7] = 20
+            to_be_saved[out_argmax[0] == 8] = 21
+            to_be_saved[out_argmax[0] == 9] = 22
+            to_be_saved[out_argmax[0] == 10] = 23
+            to_be_saved[out_argmax[0] == 11] = 24
+            to_be_saved[out_argmax[0] == 12] = 25
+            to_be_saved[out_argmax[0] == 13] = 26
+            to_be_saved[out_argmax[0] == 14] = 27
+            to_be_saved[out_argmax[0] == 15] = 28
+            to_be_saved[out_argmax[0] == 16] = 31
+            to_be_saved[out_argmax[0] == 17] = 32
+            to_be_saved[out_argmax[0] == 18] = 33
+            to_be_saved[out_argmax[0] == 19] = 0
+
+            import scipy.misc
+            scipy.misc.imsave(self.args.out_dir + 'imgs/' + names[i], to_be_saved)
+            # plt.imsave(self.args.out_dir + 'imgs/' + names[i], out_argmax[0])
             i += 1
             # log loss and acc
             acc_list += [acc]
