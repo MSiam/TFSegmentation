@@ -168,7 +168,9 @@ class BasicModel:
             input_summary = tf.cast(self.x_pl, tf.uint8)
             # labels_summary = tf.py_func(decode_labels, [self.y_pl, self.params.num_classes], tf.uint8)
             preds_summary = tf.py_func(decode_labels, [self.out_argmax, self.params.num_classes], tf.uint8)
-            self.segmented_summary = preds_summary  # Concatenate row-wise
+            self.segmented_summary = tf.concat(axis=2, values=[input_summary, #labels_summary,
+                                                               preds_summary])  # Concatenate row-wise
+  # Concatenate row-wise
 
         # Every step evaluate these summaries
         with tf.name_scope('train-summary'):
