@@ -26,6 +26,8 @@ import matplotlib.pyplot as plt
 from utils.img_utils import decode_labels
 from utils.seg_dataloader import SegDataLoader
 from tensorflow.contrib.data import Iterator
+from scipy.misc import imsave, imresize
+
 import pdb
 
 
@@ -687,7 +689,7 @@ class Train(BasicTrain):
         self.metrics.reset()
 
         # Load the name mapper
-        names = np.load(self.args.data_dir + "val_names.npy")
+        names = np.load(self.args.data_dir + self.args.test_naming_mapper)
         i = 0
 
         # loop by the number of iterations
@@ -721,45 +723,18 @@ class Train(BasicTrain):
                 feed_dict=feed_dict)
 
             if pkl:
-                #                yy= decode_labels(y_batch, 20)
-                #                cv2.imshow('before ', yy[0][:,:,::-1])
                 out_argmax[0] = self.linknet_postprocess(out_argmax[0])
                 segmented_imgs = decode_labels(out_argmax, 20)
-            #                cv2.imshow('after ', yy2[0][:,:,::-1])
-            #                cv2.waitKey()
 
-            #            cv2.imshow('result', segmented_imgs[0][:,:,::-1]);
-            #            cv2.waitKey()
+            # Saving result images for evaluation script.
+            # Output image should be 1024x2048
+            result_image = self.label_mapping(out_argmax[0])
+            result_image = imresize(result_image, 2.0, 'nearest')
+            imsave(self.args.out_dir + 'results/' + names[i], result_image)
 
-            # print('mean preds ', out_argmax.mean())
-            # np.save(self.args.out_dir + 'npy/' + str(cur_iteration) + '.npy', out_argmax[0])
-            to_be_saved = np.zeros(out_argmax[0].shape).astype(np.uint8)
-            # Mapping from CityScapes -> labels.py
-            to_be_saved[out_argmax[0] == 0] = 7
-            to_be_saved[out_argmax[0] == 1] = 8
-            to_be_saved[out_argmax[0] == 2] = 11
-            to_be_saved[out_argmax[0] == 3] = 12
-            to_be_saved[out_argmax[0] == 4] = 13
-            to_be_saved[out_argmax[0] == 5] = 17
-            to_be_saved[out_argmax[0] == 6] = 19
-            to_be_saved[out_argmax[0] == 7] = 20
-            to_be_saved[out_argmax[0] == 8] = 21
-            to_be_saved[out_argmax[0] == 9] = 22
-            to_be_saved[out_argmax[0] == 10] = 23
-            to_be_saved[out_argmax[0] == 11] = 24
-            to_be_saved[out_argmax[0] == 12] = 25
-            to_be_saved[out_argmax[0] == 13] = 26
-            to_be_saved[out_argmax[0] == 14] = 27
-            to_be_saved[out_argmax[0] == 15] = 28
-            to_be_saved[out_argmax[0] == 16] = 31
-            to_be_saved[out_argmax[0] == 17] = 32
-            to_be_saved[out_argmax[0] == 18] = 33
-            to_be_saved[out_argmax[0] == 19] = 0
+            # Saving images for visualization purposes
+            imsave(self.args.out_dir + 'imgs/' + names[i], segmented_imgs)
 
-            from scipy.misc import imsave, imresize
-            to_be_saved = imresize(to_be_saved, 2.0, 'nearest')
-            imsave(self.args.out_dir + 'imgs/' + names[i], to_be_saved)
-            # plt.imsave(self.args.out_dir + 'imgs/' + names[i], out_argmax[0])
             i += 1
             # log loss and acc
             acc_list += [acc]
@@ -788,6 +763,32 @@ class Train(BasicTrain):
         print("Plotting imgs")
         for i in range(len(img_list)):
             plt.imsave(self.args.imgs_dir + 'test_' + str(i) + '.png', img_list[i])
+
+    def label_mapping(self, input_image):
+
+        to_be_saved = np.zeros(input_image.shape).astype(np.uint8)
+        # Mapping from CityScapes -> labels.py
+        to_be_saved[input_image == 0] = 7
+        to_be_saved[input_image == 1] = 8
+        to_be_saved[input_image == 2] = 11
+        to_be_saved[input_image == 3] = 12
+        to_be_saved[input_image == 4] = 13
+        to_be_saved[input_image == 5] = 17
+        to_be_saved[input_image == 6] = 19
+        to_be_saved[input_image == 7] = 20
+        to_be_saved[input_image == 8] = 21
+        to_be_saved[input_image == 9] = 22
+        to_be_saved[input_image == 10] = 23
+        to_be_saved[input_image == 11] = 24
+        to_be_saved[input_image == 12] = 25
+        to_be_saved[input_image == 13] = 26
+        to_be_saved[input_image == 14] = 27
+        to_be_saved[input_image == 15] = 28
+        to_be_saved[input_image == 16] = 31
+        to_be_saved[input_image == 17] = 32
+        to_be_saved[input_image == 18] = 33
+        to_be_saved[input_image == 19] = 0
+        return to_be_saved
 
     def test_inference(self):
         """
