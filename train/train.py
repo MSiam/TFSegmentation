@@ -733,7 +733,7 @@ class Train(BasicTrain):
             imsave(self.args.results_dir + names[i], result_image)
 
             # Saving images for visualization purposes
-            imsave(self.args.imgs_dir + names[i], segmented_imgs)
+            imsave(self.args.imgs_dir + names[i], segmented_imgs[0])
 
             i += 1
             # log loss and acc
