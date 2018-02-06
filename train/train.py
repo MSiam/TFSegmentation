@@ -730,10 +730,10 @@ class Train(BasicTrain):
             # Output image should be 1024x2048
             result_image = self.label_mapping(out_argmax[0])
             result_image = imresize(result_image, 2.0, 'nearest')
-            imsave(self.args.out_dir + 'results/' + names[i], result_image)
+            imsave(self.args.results_dir + names[i], result_image)
 
             # Saving images for visualization purposes
-            imsave(self.args.out_dir + 'imgs/' + names[i], segmented_imgs)
+            imsave(self.args.imgs_dir + names[i], segmented_imgs)
 
             i += 1
             # log loss and acc
