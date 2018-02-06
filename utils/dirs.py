@@ -39,7 +39,8 @@ def create_exp_dirs(args):
                           args.summary_dir,
                           args.npy_dir,
                           args.metrics_dir,
-                          args.imgs_dir]
+                          args.imgs_dir,
+                          args.results_dir]
     # Create the dirs if it is not exist
     create_dirs(dirs_to_be_created)
 
