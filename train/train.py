@@ -767,6 +767,46 @@ class Train(BasicTrain):
 
         fps_meter.print_statistics()
 
+<<<<<<< HEAD
+=======
+    def test_inference_optimized(self):
+        print("INFERENCE mode will begin NOW..")
+
+        # load the best model checkpoint to test on it
+        self.load_best_model()
+
+        # init tqdm and get the epoch value
+        tt = tqdm()
+
+        # idx of image
+        idx = 0
+
+        # create the FPS Meter
+        fps_meter = FPSMeter()
+
+        # loop by the number of iterations
+        for cur in tt:
+            # update idx of mini_batch
+            idx += self.args.batch_size
+
+            # calculate the time of one inference
+            start = time.time()
+
+            try:
+                # run the feed_forward
+                _ = self.sess.run(self.test_model.out_argmax)
+                # update the FPS meter
+                fps_meter.update_n(time.time() - start, self.args.batch_size)
+
+            except:
+                print("FINISHED..")
+                break
+
+
+
+        fps_meter.print_statistics()
+
+>>>>>>> d853f5572bbe77674216bd2ea5ad3c5c75deb3ce
     def finalize(self):
         self.reporter.finalize()
         self.summary_writer.close()
