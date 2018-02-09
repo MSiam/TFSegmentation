@@ -80,9 +80,16 @@ class Agent:
         gpu_options = tf.GPUOptions(allow_growth=True)
         self.sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True))
 
+        if self.mode == 'inference_opt':
+            x_in = self.optimized_data_loader()
+
         # Create Model class and build it
-        with self.sess.as_default():
-            self.build_model()
+        if self.mode != 'inference_opt':
+            with self.sess.as_default():
+                self.build_model()
+        else:
+            with self.sess.as_default():
+                self.build_model(x_in)
 
         # Create the operator
         self.operator = self.operator(self.args, self.sess, self.model, self.model)
@@ -105,6 +112,8 @@ class Agent:
             self.debug()
         elif self.mode == 'test':
             self.test()
+        elif self.mode == 'inference_opt':
+            self.inference(True)
         else:
             print("This mode {{{}}}  is not found in our framework".format(self.mode))
             exit(-1)
@@ -153,9 +162,12 @@ class Agent:
         except KeyboardInterrupt:
             self.operator.finalize()
 
-    def inference(self):
+    def inference(self, opt=False):
         try:
-            self.operator.test_inference()
+            if opt:
+                self.operator.test_inference_optimized()
+            else:
+                self.operator.test_inference()
         except KeyboardInterrupt:
             pass
 
@@ -165,3 +177,19 @@ class Agent:
             self.operator.debug_layers()
         except KeyboardInterrupt:
             pass
+
+    def optimized_data_loader(self):
+        import numpy as np
+        with tf.device('/cpu:0'):
+            self.data_x = np.load(self.args.data_dir + "X_val.npy")
+
+            self.features_placeholder = tf.placeholder(tf.float32, self.data_x.shape)
+
+            dataset = tf.data.Dataset.from_tensor_slices(self.features_placeholder)
+            dataset = dataset.batch(self.args.batch_size)
+            self.iterator = tf.data.Iterator.from_structure(dataset.output_types,
+                                                            dataset.output_shapes)
+            self.next_batch = self.iterator.get_next()
+            self.training_init_op = self.iterator.make_initializer(dataset)
+            self.sess.run(self.training_init_op, feed_dict={self.features_placeholder: self.data_x})
+        return self.next_batch

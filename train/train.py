@@ -200,7 +200,7 @@ class Train(BasicTrain):
                            'Y': np.load(self.args.data_dir + "Y_train.npy")}
         self.train_data_len = self.train_data['X'].shape[0] - self.train_data['X'].shape[0] % self.args.batch_size
         self.num_iterations_training_per_epoch = (
-                                                         self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+                                                     self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Train-shape-x -- " + str(self.train_data['X'].shape))
         print("Train-shape-y -- " + str(self.train_data['Y'].shape))
         print("Num of iterations in one epoch -- " + str(self.num_iterations_training_per_epoch))
@@ -210,7 +210,7 @@ class Train(BasicTrain):
         self.val_data = self.train_data
         self.val_data_len = self.val_data['X'].shape[0] - self.val_data['X'].shape[0] % self.args.batch_size
         self.num_iterations_validation_per_epoch = (
-                                                           self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
+                                                       self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Val-shape-x -- " + str(self.val_data['X'].shape) + " " + str(self.val_data_len))
         print("Val-shape-y -- " + str(self.val_data['Y'].shape))
         print("Num of iterations on validation data in one epoch -- " + str(self.num_iterations_validation_per_epoch))
@@ -288,7 +288,7 @@ class Train(BasicTrain):
         self.train_data_len = self.train_data['X'].shape[0]
 
         self.num_iterations_training_per_epoch = (
-                                                         self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+                                                     self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
 
         print("Train-shape-x -- " + str(self.train_data['X'].shape) + " " + str(self.train_data_len))
         print("Train-shape-y -- " + str(self.train_data['Y'].shape))
@@ -309,7 +309,7 @@ class Train(BasicTrain):
 
         self.val_data_len = self.val_data['X'].shape[0] - self.val_data['X'].shape[0] % self.args.batch_size
         self.num_iterations_validation_per_epoch = (
-                                                           self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
+                                                       self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Val-shape-x -- " + str(self.val_data['X'].shape) + " " + str(self.val_data_len))
         print("Val-shape-y -- " + str(self.val_data['Y'].shape))
         print("Num of iterations on validation data in one epoch -- " + str(self.num_iterations_validation_per_epoch))
@@ -321,7 +321,7 @@ class Train(BasicTrain):
         self.train_data = h5py.File(self.args.data_dir + self.args.h5_train_file, 'r')
         self.train_data_len = self.args.h5_train_len
         self.num_iterations_training_per_epoch = (
-                                                         self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+                                                     self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Train-shape-x -- " + str(self.train_data['X'].shape) + " " + str(self.train_data_len))
         print("Train-shape-y -- " + str(self.train_data['Y'].shape))
         print("Num of iterations on training data in one epoch -- " + str(self.num_iterations_training_per_epoch))
@@ -332,7 +332,7 @@ class Train(BasicTrain):
                          'Y': np.load(self.args.data_dir + "Y_val.npy")}
         self.val_data_len = self.val_data['X'].shape[0] - self.val_data['X'].shape[0] % self.args.batch_size
         self.num_iterations_validation_per_epoch = (
-                                                           self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
+                                                       self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Val-shape-x -- " + str(self.val_data['X'].shape) + " " + str(self.val_data_len))
         print("Val-shape-y -- " + str(self.val_data['Y'].shape))
         print("Num of iterations on validation data in one epoch -- " + str(self.num_iterations_validation_per_epoch))
@@ -535,7 +535,7 @@ class Train(BasicTrain):
             if cur_epoch % self.args.test_every == 0:
                 self.test_per_epoch(step=self.model.global_step_tensor.eval(self.sess),
                                     epoch=self.model.global_epoch_tensor.eval(self.sess))
-        #            if cur_epoch % self.args.learning_decay_every == 0:
+        # if cur_epoch % self.args.learning_decay_every == 0:
         #                curr_lr= curr_lr*self.args.learning_decay
         #                print('Current learning rate is ', curr_lr)
 
@@ -635,7 +635,7 @@ class Train(BasicTrain):
                 summaries_dict['mean_iou_on_val'] = mean_iou
                 if self.args.data_mode != 'experiment_v2':  # Issues in concatenating gt and img with diff sizes now for segmented_imgs
                     summaries_dict['val_prediction_sample'] = segmented_imgs
-                #                self.add_summary(step, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
+                # self.add_summary(step, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
 
                 # report
                 self.reporter.report_experiment_statistics('validation-acc', 'epoch-' + str(epoch), str(total_acc))
@@ -843,6 +843,40 @@ class Train(BasicTrain):
 
         fps_meter.print_statistics()
 
+    def test_inference_optimized(self):
+        print("INFERENCE mode will begin NOW..")
+
+        # load the best model checkpoint to test on it
+        self.load_best_model()
+
+        # init tqdm and get the epoch value
+        tt = tqdm()
+
+        # idx of image
+        idx = 0
+
+        # create the FPS Meter
+        fps_meter = FPSMeter()
+
+        # loop by the number of iterations
+        for cur in tt:
+            # update idx of mini_batch
+            idx += self.args.batch_size
+
+            # calculate the time of one inference
+            start = time.time()
+
+            try:
+                # run the feed_forward
+                _ = self.sess.run(self.test_model.out_argmax)
+            except:
+                print("FINISHED..")
+
+            # update the FPS meter
+            fps_meter.update_n(time.time() - start, self.args.batch_size)
+
+        fps_meter.print_statistics()
+
     def finalize(self):
         self.reporter.finalize()
         self.summary_writer.close()
@@ -886,7 +920,7 @@ class Train(BasicTrain):
         for layer in out_layers:
             print(layer.shape)
 
-        #        dict_out= torchfile.load('out_networks_layers/dict_out.t7')
+        # dict_out= torchfile.load('out_networks_layers/dict_out.t7')
         ##        init= tf.constant_initializer(conv_w)
         ##        conv_w1 = tf.get_variable('my_weights', [3,3,128,128], tf.float32, initializer=init, trainable=True)
         #        pp= tf.nn.relu(layers[39])
