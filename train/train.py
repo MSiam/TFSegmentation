@@ -869,11 +869,14 @@ class Train(BasicTrain):
             try:
                 # run the feed_forward
                 _ = self.sess.run(self.test_model.out_argmax)
+                # update the FPS meter
+                fps_meter.update_n(time.time() - start, self.args.batch_size)
+
             except:
                 print("FINISHED..")
+                break
 
-            # update the FPS meter
-            fps_meter.update_n(time.time() - start, self.args.batch_size)
+
 
         fps_meter.print_statistics()
 
