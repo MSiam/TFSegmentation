@@ -41,9 +41,9 @@ class FPSMeter(AverageMeter):
 
         self.frame_count = 0
 
-    def update(self, seconds):
+    def update_n(self, seconds, n_frames):
         self.milliseconds += seconds * 1000
-        self.frame_count += 1
+        self.frame_count += n_frames
 
         self.frame_per_second = self.frame_count / (self.milliseconds / 1000.0)
         self.f_in_milliseconds = self.milliseconds / self.frame_count
