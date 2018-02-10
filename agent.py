@@ -180,8 +180,15 @@ class Agent:
 
     def optimized_data_loader(self):
         import numpy as np
+        import scipy.misc
         with tf.device('/cpu:0'):
             self.data_x = np.load(self.args.data_dir + "X_val.npy")
+
+            self.data_x_new = np.zeros((self.data_x.shape[0],self.args.img_height,self.args.img_width,3),dtype=np.uint8)
+            for i in range(self.data_x.shape[0]):
+                    self.data_x_new[i] = scipy.misc.imresize(self.data_x[i],(self.args.img_height,self.args.img_width))
+
+            self.data_x = self.data_x_new
 
             self.features_placeholder = tf.placeholder(tf.float32, self.data_x.shape)
 
