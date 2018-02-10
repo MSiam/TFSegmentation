@@ -37,7 +37,8 @@ class FCN8sShuffleNet(BasicModel):
         print(x)
         x_in = self.x_pl if x is None else x
 
-        self.is_training = False
+        if x is not None:
+            self.is_training = False
 
         # Init ShuffleNet as an encoder
         self.encoder = ShuffleNet(x_input=x_in, num_classes=self.params.num_classes,
