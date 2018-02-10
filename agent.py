@@ -189,6 +189,9 @@ class Agent:
                     self.data_x_new[i] = scipy.misc.imresize(self.data_x[i],(self.args.img_height,self.args.img_width))
 
             self.data_x = self.data_x_new
+            print(self.data_x.shape)
+            print(self.data_x.dtype)
+            print("DATA ITERATOR HERE!!")
 
             self.features_placeholder = tf.placeholder(tf.float32, self.data_x.shape)
 
