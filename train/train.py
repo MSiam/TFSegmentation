@@ -727,10 +727,10 @@ class Train(BasicTrain):
             plt.imsave(self.args.out_dir + 'imgs/' + 'test_' + str(cur_iteration) + '.png', segmented_imgs[0])
             self.metrics.update_metrics(out_argmax[0], y_batch[0], 0, 0)
 
-        # mean over batches
-        mean_iou = self.metrics.compute_final_metrics(self.test_data_len)
+            # mean over batches
+            mean_iou = self.metrics.compute_final_metrics(self.test_data_len)
 
-        # print in console
+            # print in console
             # Saving result images for evaluation script.
             # Output image should be 1024x2048
             for j in range(out_argmax[0].shape[0]):
@@ -740,15 +740,15 @@ class Train(BasicTrain):
 
             idx += self.args.batch_size
 
-        # # print in console
-        tt.close()
-        print("Here the statistics")
-        print("mean_iou: " + str(mean_iou))
-        print("foreground iou: " + str(self.metrics.iou[1]))
+            # # print in console
+            tt.close()
+            print("Here the statistics")
+            print("mean_iou: " + str(mean_iou))
+            print("foreground iou: " + str(self.metrics.iou[1]))
 
-        print("Plotting imgs")
-        for i in range(len(img_list)):
-            plt.imsave(self.args.imgs_dir + 'test_' + str(i) + '.png', img_list[i])
+            print("Plotting imgs")
+            for i in range(len(img_list)):
+                plt.imsave(self.args.imgs_dir + 'test_' + str(i) + '.png', img_list[i])
 
     def test_inference(self):
         """
