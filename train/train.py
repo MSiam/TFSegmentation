@@ -670,95 +670,52 @@ class Train(BasicTrain):
     def test(self, pkl=False):
         print("Testing mode will begin NOW..")
 
-        # load the best model checkpoint to test on it
-        if not pkl:
-            self.load_best_model()
-
         # init tqdm and get the epoch value
         tt = tqdm(range(self.test_data_len))
         # naming = np.load(self.args.data_dir + 'names_train.npy')
 
         # init acc and loss lists
-        acc_list = []
         img_list = []
-
-        # idx of image
-        idx = 0
 
         # reset metrics
         self.metrics.reset()
 
         # Load the name mapper
         names = np.load(self.args.data_dir + self.args.test_naming_mapper)
-        i = 0
+        idx = 0
 
         # loop by the number of iterations
         for cur_iteration in tt:
             # load mini_batches
-            x_batch = self.test_data['X'][idx:idx + 1]
-            y_batch = self.test_data['Y'][idx:idx + 1]
 
-            # print('mean images ', x_batch.mean())
-            # print('mean gt ', y_batch.mean())
-            # update idx of mini_batch
-            idx += 1
+            x_batch = self.test_data['X'][idx:idx + self.args.batch_size]
 
             # Feed this variables to the network
             if self.args.random_cropping:
                 feed_dict = {self.test_model.x_pl_before: x_batch,
-                             self.test_model.y_pl_before: y_batch,
                              self.test_model.is_training: False,
                              }
             else:
                 feed_dict = {self.test_model.x_pl: x_batch,
-                             self.test_model.y_pl: y_batch,
                              self.test_model.is_training: False
                              }
 
             # run the feed_forward
-            out_argmax, acc, segmented_imgs = self.sess.run(
-                [self.test_model.out_argmax, self.test_model.accuracy,
-                 # self.test_model.merged_summaries, self.test_model.segmented_summary],
-                 self.test_model.segmented_summary],
+            out_argmax = self.sess.run(
+                [self.test_model.out_argmax],
                 feed_dict=feed_dict)
-
-            if pkl:
-                out_argmax[0] = self.linknet_postprocess(out_argmax[0])
-                segmented_imgs = decode_labels(out_argmax, 20)
 
             # Saving result images for evaluation script.
             # Output image should be 1024x2048
-            result_image = self.label_mapping(out_argmax[0])
-            result_image = imresize(result_image, 2.0, 'nearest')
-            imsave(self.args.results_dir + names[i], result_image)
+            for j in range(out_argmax[0].shape[0]):
+                result_image = self.label_mapping(out_argmax[0][j])
+                result_image = imresize(result_image, 2.0, 'nearest')
+                imsave(self.args.results_dir + names[idx + j], result_image)
 
-            # Saving images for visualization purposes
-            imsave(self.args.imgs_dir + names[i], segmented_imgs[0])
+            idx += self.args.batch_size
 
-            i += 1
-            # log loss and acc
-            acc_list += [acc]
-
-            # log metrics
-            if self.args.random_cropping:
-                y1 = np.expand_dims(y_batch[0, :, :512], axis=0)
-                y2 = np.expand_dims(y_batch[0, :, 512:], axis=0)
-                y_batch = np.concatenate((y1, y2), axis=0)
-                self.metrics.update_metrics(out_argmax, y_batch, 0, 0)
-            else:
-                self.metrics.update_metrics(out_argmax[0], y_batch[0], 0, 0)
-
-        # mean over batches
-        total_loss = 0
-        total_acc = np.mean(acc_list)
-        mean_iou = self.metrics.compute_final_metrics(self.test_data_len)
-
-        # print in console
+        # # print in console
         tt.close()
-        print("Here the statistics")
-        print("Total_loss: " + str(total_loss))
-        print("Total_acc: " + str(total_acc)[:6])
-        print("mean_iou: " + str(mean_iou))
 
         print("Plotting imgs")
         for i in range(len(img_list)):
@@ -850,7 +807,7 @@ class Train(BasicTrain):
         self.load_best_model()
 
         # init tqdm and get the epoch value
-        tt = tqdm()
+        tt = tqdm(range(1000))
 
         # idx of image
         idx = 0

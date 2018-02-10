@@ -33,7 +33,10 @@ class FCN8sShuffleNet(BasicModel):
         :return:
         """
 
+        print(x)
         x_in = self.x_pl if x is None else x
+
+        self.is_training = False
 
         # Init ShuffleNet as an encoder
         self.encoder = ShuffleNet(x_input=x_in, num_classes=self.params.num_classes,
@@ -47,7 +50,7 @@ class FCN8sShuffleNet(BasicModel):
         # Build Decoding part
         with tf.name_scope('upscore_2s'):
             self.upscore2 = conv2d_transpose('upscore2', x=self.encoder.score_fr,
-                                             output_shape=self.encoder.feed1.shape.as_list()[0:3] + [
+                                             output_shape=[self.args.batch_size]+self.encoder.feed1.shape.as_list()[1:3] + [
                                                  self.params.num_classes],
                                              batchnorm_enabled=self.args.batchnorm_enabled,
                                              is_training=self.is_training,
@@ -70,7 +73,7 @@ class FCN8sShuffleNet(BasicModel):
 
         with tf.name_scope('upscore_4s'):
             self.upscore4 = conv2d_transpose('upscore4', x=self.fuse_feed1,
-                                             output_shape=self.encoder.feed2.shape.as_list()[0:3] + [
+                                             output_shape=[self.args.batch_size] + self.encoder.feed2.shape.as_list()[1:3] + [
                                                  self.params.num_classes],
                                              batchnorm_enabled=self.args.batchnorm_enabled,
                                              is_training=self.is_training,
@@ -93,7 +96,7 @@ class FCN8sShuffleNet(BasicModel):
 
         with tf.name_scope('upscore_8s'):
             self.upscore8 = conv2d_transpose('upscore8', x=self.fuse_feed2,
-                                             output_shape=self.x_pl.shape.as_list()[0:3] + [self.params.num_classes],
+                                             output_shape=[self.args.batch_size] + self.x_pl.shape.as_list()[1:3] + [self.params.num_classes],
                                              is_training=self.is_training,
                                              kernel_size=(16, 16), stride=(8, 8), l2_strength=self.encoder.wd,
                                              bias=self.args.bias,

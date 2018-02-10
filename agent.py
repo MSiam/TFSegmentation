@@ -39,7 +39,7 @@ class Agent:
         self.sess = None
 
     @timeit
-    def build_model(self):
+    def build_model(self, x_in=None):
 
         if self.mode == 'train' or self.mode == 'overfit':  # validation phase
             with tf.variable_scope('network') as scope:
@@ -61,8 +61,8 @@ class Agent:
             with tf.variable_scope('network') as scope:
                 self.train_model = None
                 self.model = self.model(self.args)
-                self.model.build()
-                calculate_flops()
+                self.model.build(x_in)
+                # calculate_flops()
 
     @timeit
     def run(self):
