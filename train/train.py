@@ -832,8 +832,9 @@ class Train(BasicTrain):
                 # update the FPS meter
                 fps_meter.update_n(time.time() - start, self.args.batch_size)
 
-            except:
+            except Exception as e:
                 print("FINISHED..")
+                print(e)
                 break
 
         fps_meter.print_statistics()
