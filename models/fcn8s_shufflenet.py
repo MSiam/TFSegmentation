@@ -23,7 +23,8 @@ class FCN8sShuffleNet(BasicModel):
         self.init_input()
         self.init_network(x)
         self.init_output()
-        self.init_train()
+        if self.args.data_mode=='experiment':
+            self.init_train()
         self.init_summaries()
         print("The Model is built successfully\n")
 
@@ -42,7 +43,8 @@ class FCN8sShuffleNet(BasicModel):
         self.encoder = ShuffleNet(x_input=x_in, num_classes=self.params.num_classes,
                                   pretrained_path=self.args.pretrained_path, train_flag=self.is_training,
                                   batchnorm_enabled=self.args.batchnorm_enabled, num_groups=self.args.num_groups,
-                                  weight_decay=self.args.weight_decay, bias=self.args.bias)
+                                  weight_decay=self.args.weight_decay, bias=self.args.bias, mean_path= self.args.data_dir+'mean.npy')
+
 
         # Build Encoding part
         self.encoder.build()

@@ -29,6 +29,7 @@ from tensorflow.contrib.data import Iterator
 from scipy.misc import imsave, imresize
 
 import pdb
+import torchfile
 
 
 # import torchfile
@@ -288,7 +289,7 @@ class Train(BasicTrain):
         self.train_data_len = self.train_data['X'].shape[0]
 
         self.num_iterations_training_per_epoch = (
-                                                     self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
+                                                 self.train_data_len + self.args.batch_size - 1) // self.args.batch_size
 
         print("Train-shape-x -- " + str(self.train_data['X'].shape) + " " + str(self.train_data_len))
         print("Train-shape-y -- " + str(self.train_data['Y'].shape))
@@ -309,7 +310,7 @@ class Train(BasicTrain):
 
         self.val_data_len = self.val_data['X'].shape[0] - self.val_data['X'].shape[0] % self.args.batch_size
         self.num_iterations_validation_per_epoch = (
-                                                       self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
+                                                   self.val_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Val-shape-x -- " + str(self.val_data['X'].shape) + " " + str(self.val_data_len))
         print("Val-shape-y -- " + str(self.val_data['Y'].shape))
         print("Num of iterations on validation data in one epoch -- " + str(self.num_iterations_validation_per_epoch))
@@ -349,11 +350,22 @@ class Train(BasicTrain):
         self.num_iterations_testing_per_epoch = (self.test_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Video data is loaded")
 
+    def resize(self, data):
+        X = []
+        Y = []
+        for i in range(data['X'].shape[0]):
+            X.append(misc.imresize(data['X'][i, ...], (self.args.img_height, self.args.img_width)))
+            Y.append(misc.imresize(data['Y'][i, ...], (self.args.img_height, self.args.img_width), 'nearest'))
+        data['X'] = np.asarray(X)
+        data['Y'] = np.asarray(Y)
+        return data
+
     @timeit
     def load_test_data(self):
         print("Loading Testing data..")
         self.test_data = {'X': np.load(self.args.data_dir + "X_val.npy"),
                           'Y': np.load(self.args.data_dir + "Y_val.npy")}
+        self.test_data = self.resize(self.test_data)
         self.test_data_len = self.test_data['X'].shape[0] - self.test_data['X'].shape[0] % self.args.batch_size
         print("Test-shape-x -- " + str(self.test_data['X'].shape))
         print("Test-shape-y -- " + str(self.test_data['Y'].shape))
@@ -473,17 +485,10 @@ class Train(BasicTrain):
 
                 else:
                     # run the feed_forward
-                    if self.args.data_mode == 'experiment_v2':
-                        _, loss, acc, summaries_merged = self.sess.run(
-                            [self.model.train_op, self.model.loss, self.model.accuracy,
-                             self.model.merged_summaries],
-                            feed_dict=feed_dict)
-                    else:
-                        _, loss, acc, summaries_merged, segmented_imgs = self.sess.run(
-                            [self.model.train_op, self.model.loss, self.model.accuracy,
-                             self.model.merged_summaries, self.model.segmented_summary],
-                            feed_dict=feed_dict)
-
+                    _, loss, acc, summaries_merged, segmented_imgs = self.sess.run(
+                        [self.model.train_op, self.model.loss, self.model.accuracy,
+                         self.model.merged_summaries, self.model.segmented_summary],
+                        feed_dict=feed_dict)
                     # log loss and acc
                     loss_list += [loss]
                     acc_list += [acc]
@@ -493,10 +498,8 @@ class Train(BasicTrain):
                     summaries_dict = dict()
                     summaries_dict['train-loss-per-epoch'] = total_loss
                     summaries_dict['train-acc-per-epoch'] = total_acc
-
-                    if self.args.data_mode != 'experiment_v2':
-                        summaries_dict['train_prediction_sample'] = segmented_imgs
-                    # self.add_summary(cur_it, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
+                    summaries_dict['train_prediction_sample'] = segmented_imgs
+                    #                    self.add_summary(cur_it, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
 
                     # report
                     self.reporter.report_experiment_statistics('train-acc', 'epoch-' + str(cur_epoch), str(total_acc))
@@ -535,9 +538,9 @@ class Train(BasicTrain):
             if cur_epoch % self.args.test_every == 0:
                 self.test_per_epoch(step=self.model.global_step_tensor.eval(self.sess),
                                     epoch=self.model.global_epoch_tensor.eval(self.sess))
-        # if cur_epoch % self.args.learning_decay_every == 0:
-        #                curr_lr= curr_lr*self.args.learning_decay
-        #                print('Current learning rate is ', curr_lr)
+            #            if cur_epoch % self.args.learning_decay_every == 0:
+            #                curr_lr= curr_lr*self.args.learning_decay
+            #                print('Current learning rate is ', curr_lr)
 
         print("Training Finished")
 
@@ -584,11 +587,9 @@ class Train(BasicTrain):
 
                 start = time.time()
                 # run the feed_forward
-
                 out_argmax, loss, acc, summaries_merged = self.sess.run(
                     [self.model.out_argmax, self.model.loss, self.model.accuracy, self.model.merged_summaries],
                     feed_dict=feed_dict)
-
                 end = time.time()
                 # log loss and acc
                 loss_list += [loss]
@@ -633,9 +634,8 @@ class Train(BasicTrain):
                 summaries_dict = dict()
                 summaries_dict['val-acc-per-epoch'] = total_acc
                 summaries_dict['mean_iou_on_val'] = mean_iou
-                if self.args.data_mode != 'experiment_v2':  # Issues in concatenating gt and img with diff sizes now for segmented_imgs
-                    summaries_dict['val_prediction_sample'] = segmented_imgs
-                # self.add_summary(step, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
+                summaries_dict['val_prediction_sample'] = segmented_imgs
+                #                self.add_summary(step, summaries_dict=summaries_dict, summaries_merged=summaries_merged)
 
                 # report
                 self.reporter.report_experiment_statistics('validation-acc', 'epoch-' + str(epoch), str(total_acc))
@@ -670,12 +670,19 @@ class Train(BasicTrain):
     def test(self, pkl=False):
         print("Testing mode will begin NOW..")
 
+        # load the best model checkpoint to test on it
+        if not pkl:
+            self.load_best_model()
+
         # init tqdm and get the epoch value
         tt = tqdm(range(self.test_data_len))
-        # naming = np.load(self.args.data_dir + 'names_train.npy')
 
         # init acc and loss lists
+        acc_list = []
         img_list = []
+
+        # idx of image
+        idx = 0
 
         # reset metrics
         self.metrics.reset()
@@ -687,10 +694,17 @@ class Train(BasicTrain):
         # loop by the number of iterations
         for cur_iteration in tt:
             # load mini_batches
+            x_batch = self.test_data['X'][idx:idx + 1]
+            y_batch = self.test_data['Y'][idx:idx + 1]
+            idx += 1
 
             x_batch = self.test_data['X'][idx:idx + self.args.batch_size]
 
             # Feed this variables to the network
+            feed_dict = {self.test_model.x_pl: x_batch,
+                         self.test_model.y_pl: y_batch,
+                         self.test_model.is_training: False
+                         }
             if self.args.random_cropping:
                 feed_dict = {self.test_model.x_pl_before: x_batch,
                              self.test_model.is_training: False,
@@ -701,10 +715,22 @@ class Train(BasicTrain):
                              }
 
             # run the feed_forward
+            out_argmax, segmented_imgs = self.sess.run([self.test_model.out_argmax,
+                                                        self.test_model.segmented_summary],
+                                                       feed_dict=feed_dict)
             out_argmax = self.sess.run(
                 [self.test_model.out_argmax],
                 feed_dict=feed_dict)
 
+            # print('mean preds ', out_argmax.mean())
+            # np.save(self.args.out_dir + 'npy/' + str(cur_iteration) + '.npy', out_argmax[0])
+            plt.imsave(self.args.out_dir + 'imgs/' + 'test_' + str(cur_iteration) + '.png', segmented_imgs[0])
+            self.metrics.update_metrics(out_argmax[0], y_batch[0], 0, 0)
+
+        # mean over batches
+        mean_iou = self.metrics.compute_final_metrics(self.test_data_len)
+
+        # print in console
             # Saving result images for evaluation script.
             # Output image should be 1024x2048
             for j in range(out_argmax[0].shape[0]):
@@ -716,36 +742,13 @@ class Train(BasicTrain):
 
         # # print in console
         tt.close()
+        print("Here the statistics")
+        print("mean_iou: " + str(mean_iou))
+        print("foreground iou: " + str(self.metrics.iou[1]))
 
         print("Plotting imgs")
         for i in range(len(img_list)):
             plt.imsave(self.args.imgs_dir + 'test_' + str(i) + '.png', img_list[i])
-
-    def label_mapping(self, input_image):
-
-        to_be_saved = np.zeros(input_image.shape).astype(np.uint8)
-        # Mapping from CityScapes -> labels.py
-        to_be_saved[input_image == 0] = 7
-        to_be_saved[input_image == 1] = 8
-        to_be_saved[input_image == 2] = 11
-        to_be_saved[input_image == 3] = 12
-        to_be_saved[input_image == 4] = 13
-        to_be_saved[input_image == 5] = 17
-        to_be_saved[input_image == 6] = 19
-        to_be_saved[input_image == 7] = 20
-        to_be_saved[input_image == 8] = 21
-        to_be_saved[input_image == 9] = 22
-        to_be_saved[input_image == 10] = 23
-        to_be_saved[input_image == 11] = 24
-        to_be_saved[input_image == 12] = 25
-        to_be_saved[input_image == 13] = 26
-        to_be_saved[input_image == 14] = 27
-        to_be_saved[input_image == 15] = 28
-        to_be_saved[input_image == 16] = 31
-        to_be_saved[input_image == 17] = 32
-        to_be_saved[input_image == 18] = 33
-        to_be_saved[input_image == 19] = 0
-        return to_be_saved
 
     def test_inference(self):
         """
@@ -826,11 +829,12 @@ class Train(BasicTrain):
             try:
                 # run the feed_forward
                 _ = self.sess.run(self.test_model.out_argmax)
+                # update the FPS meter
+                fps_meter.update_n(time.time() - start, self.args.batch_size)
+
             except:
                 print("FINISHED..")
-
-            # update the FPS meter
-            fps_meter.update_n(time.time() - start, self.args.batch_size)
+                break
 
         fps_meter.print_statistics()
 
@@ -877,7 +881,7 @@ class Train(BasicTrain):
         for layer in out_layers:
             print(layer.shape)
 
-        # dict_out= torchfile.load('out_networks_layers/dict_out.t7')
+        #        dict_out= torchfile.load('out_networks_layers/dict_out.t7')
         ##        init= tf.constant_initializer(conv_w)
         ##        conv_w1 = tf.get_variable('my_weights', [3,3,128,128], tf.float32, initializer=init, trainable=True)
         #        pp= tf.nn.relu(layers[39])
