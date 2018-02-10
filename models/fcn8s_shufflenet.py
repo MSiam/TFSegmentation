@@ -25,7 +25,7 @@ class FCN8sShuffleNet(BasicModel):
         self.init_output()
         if self.args.data_mode=='experiment':
             self.init_train()
-        self.init_summaries()
+            self.init_summaries()
         print("The Model is built successfully\n")
 
     def init_network(self, x=None):
