@@ -174,7 +174,7 @@ def conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAME', 
                               initializer=initializer, l2_strength=l2_strength, bias=bias)
 
         if batchnorm_enabled:
-            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training)
+            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training, fused=True)
             if not activation:
                 conv_a = conv_o_bn
             else:
@@ -232,7 +232,7 @@ def atrous_conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='
                                      initializer=initializer, l2_strength=l2_strength, bias=bias)
 
         if batchnorm_enabled:
-            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training)
+            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training, fused=True)
             if not activation:
                 conv_a = conv_o_bn
             else:
@@ -289,7 +289,7 @@ def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), pad
                                         bias=bias)
 
         if batchnorm_enabled:
-            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training)
+            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training, fused=True)
             if not activation:
                 conv_a = conv_o_bn
             else:
@@ -353,7 +353,7 @@ def depthwise_conv2d(name, x, w=None, kernel_size=(3, 3), padding='SAME', stride
                                         stride=stride, initializer=initializer, l2_strength=l2_strength, bias=bias)
 
         if batchnorm_enabled:
-            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training)
+            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training, fused=True)
             if not activation:
                 conv_a = conv_o_bn
             else:
@@ -431,7 +431,7 @@ def grouped_conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding=
         conv_g = tf.concat(conv_side_layers, axis=-1)
 
         if batchnorm_enabled:
-            conv_o_bn = tf.layers.batch_normalization(conv_g, training=is_training, epsilon=1e-5)
+            conv_o_bn = tf.layers.batch_normalization(conv_g, training=is_training, epsilon=1e-5, fused=True)
             if not activation:
                 conv_a = conv_o_bn
             else:
