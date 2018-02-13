@@ -118,7 +118,7 @@ class BasicModel:
     def init_output(self):
         with tf.name_scope('output'):
             self.out_softmax = tf.nn.softmax(self.logits)
-            self.out_argmax = tf.argmax(self.logits, axis=3, output_type=tf.int32)
+            self.out_argmax = tf.argmax(self.logits, axis=1, output_type=tf.int32)
 
     def get_class_weighting(self):
         self.wghts= tf.one_hot(self.y_pl, dtype='float32', depth=self.params.num_classes)* \
