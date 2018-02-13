@@ -110,3 +110,5 @@ class FCN8sShuffleNet(BasicModel):
         #                tf.add_to_collection('decoding_trainable_vars', v)
 
         self.logits = self.upscore8
+
+        print(self.logits.shape)
