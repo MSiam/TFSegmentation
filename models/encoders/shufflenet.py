@@ -93,7 +93,7 @@ class ShuffleNet:
 
         with tf.variable_scope(var_scope):
             with tf.name_scope('Pre_Processing'):
-                preprocessed_input = tf.transpose(tf.subtract(self.x_input, self.MEAN) / tf.constant(255.0), [0,3,1,2])
+                preprocessed_input = tf.subtract(self.x_input, self.MEAN) / tf.constant(255.0)
 
             self.conv1 = conv2d('conv1', x=preprocessed_input, w=None, num_filters=self.output_channels['conv1'],
                                 kernel_size=(3, 3),

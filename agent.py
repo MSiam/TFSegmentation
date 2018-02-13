@@ -46,16 +46,16 @@ class Agent:
                 self.model = self.model(self.args)
                 self.model.build()
 
-#            print('Building Train Network')
-#            with tf.variable_scope('network') as scope:
-#                self.train_model = self.model(self.args, phase=0)
-#                self.train_model.build()
-#
-#            print('Building Test Network')
-#            with tf.variable_scope('network') as scope:
-#                scope.reuse_variables()
-#                self.test_model = self.model(self.args, phase=1)
-#                self.test_model.build()
+            #            print('Building Train Network')
+            #            with tf.variable_scope('network') as scope:
+            #                self.train_model = self.model(self.args, phase=0)
+            #                self.train_model.build()
+            #
+            #            print('Building Test Network')
+            #            with tf.variable_scope('network') as scope:
+            #                scope.reuse_variables()
+            #                self.test_model = self.model(self.args, phase=1)
+            #                self.test_model.build()
         else:  # inference phase
             print('Building Test Network')
             with tf.variable_scope('network') as scope:
@@ -184,11 +184,13 @@ class Agent:
         with tf.device('/cpu:0'):
             self.data_x = np.load(self.args.data_dir + "X_val.npy")
 
-            self.data_x_new = np.zeros((self.data_x.shape[0],self.args.img_height,self.args.img_width,3),dtype=np.uint8)
+            self.data_x_new = np.zeros((self.data_x.shape[0], self.args.img_height, self.args.img_width, 3),
+                                       dtype=np.uint8)
             for i in range(self.data_x.shape[0]):
-                    self.data_x_new[i] = scipy.misc.imresize(self.data_x[i],(self.args.img_height,self.args.img_width))
+                self.data_x_new[i] = scipy.misc.imresize(self.data_x[i], (self.args.img_height, self.args.img_width))
 
             self.data_x = self.data_x_new
+            self.data_x = self.data_x.transpose(0, 3, 1, 2)
             print(self.data_x.shape)
             print(self.data_x.dtype)
             print("DATA ITERATOR HERE!!")
