@@ -111,4 +111,4 @@ class FCN8sShuffleNet(BasicModel):
 
         self.logits = self.upscore8
 
-        print(self.logits.shape)
+        print("********************** OUTPUT*******", self.logits.shape)
