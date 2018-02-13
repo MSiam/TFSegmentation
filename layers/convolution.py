@@ -3,6 +3,7 @@ from layers.pooling import max_pool_2d, avg_pool_2d
 import tensorflow as tf
 import pdb
 
+
 def __conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
                initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0):
     """
@@ -20,8 +21,8 @@ def __conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAM
     :return out: The output of the layer. (N, H', W', num_filters)
     """
     with tf.variable_scope(name):
-        stride = [1, stride[0], stride[1], 1]
-        kernel_shape = [kernel_size[0], kernel_size[1], x.shape[-1], num_filters]
+        stride = [1, 1, stride[0], stride[1]]
+        kernel_shape = [kernel_size[0], kernel_size[1], x.shape[1], num_filters]
 
         with tf.name_scope('layer_weights'):
             if w == None:
@@ -32,8 +33,8 @@ def __conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAM
                 bias = tf.get_variable('biases', [num_filters], initializer=tf.constant_initializer(bias))
             variable_summaries(bias)
         with tf.name_scope('layer_conv2d'):
-            conv = tf.nn.conv2d(x, w, stride, padding)
-            out = tf.nn.bias_add(conv, bias)
+            conv = tf.nn.conv2d(x, w, stride, padding, data_format="NCHW")
+            out = tf.nn.bias_add(conv, bias, data_format="NCHW")
 
     return out
 
@@ -55,7 +56,7 @@ def __atrous_conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), paddi
     :return out: The output of the layer. (N, H', W', num_filters)
     """
     with tf.variable_scope(name):
-        kernel_shape = [kernel_size[0], kernel_size[1], x.shape[-1], num_filters]
+        kernel_shape = [kernel_size[0], kernel_size[1], x.shape[1], num_filters]
 
         with tf.name_scope('layer_weights'):
             if w == None:
@@ -67,7 +68,7 @@ def __atrous_conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), paddi
             variable_summaries(bias)
         with tf.name_scope('layer_atrous_conv2d'):
             conv = tf.nn.atrous_conv2d(x, w, dilation_rate, padding)
-            out = tf.nn.bias_add(conv, bias)
+            out = tf.nn.bias_add(conv, bias, data_format="NCHW")
 
     return out
 
@@ -88,22 +89,23 @@ def __conv2d_transpose_p(name, x, w=None, output_shape=None, kernel_size=(3, 3),
     :return out: The output of the layer. (output_shape[0], output_shape[1], output_shape[2], output_shape[3])
     """
     with tf.variable_scope(name):
-        stride = [1, stride[0], stride[1], 1]
+        stride = [1, 1, stride[0], stride[1]]
         kernel_shape = [kernel_size[0], kernel_size[1], output_shape[-1], x.shape[-1]]
         if w == None:
             w = get_deconv_filter(kernel_shape, l2_strength)
         variable_summaries(w)
-        deconv = tf.nn.conv2d_transpose(x, w, tf.stack(output_shape), strides=stride, padding=padding)
+        deconv = tf.nn.conv2d_transpose(x, w, tf.stack(output_shape), strides=stride, padding=padding, data_format="NCHW")
         if isinstance(bias, float):
             bias = tf.get_variable('layer_biases', [output_shape[-1]], initializer=tf.constant_initializer(bias))
         variable_summaries(bias)
-        out = tf.nn.bias_add(deconv, bias)
+        out = tf.nn.bias_add(deconv, bias, data_format="NCHW")
 
     return out
 
+
 def __depthwise_conv2d_atrous_p(name, x, w=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
-                         initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0,
-                         dilation_factor= 1):
+                                initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0,
+                                dilation_factor=1):
     with tf.variable_scope(name):
         stride = [1, stride[0], stride[1], 1]
         kernel_shape = [kernel_size[0], kernel_size[1], x.shape[-1], 1]
@@ -117,8 +119,8 @@ def __depthwise_conv2d_atrous_p(name, x, w=None, kernel_size=(3, 3), padding='SA
                 bias = tf.get_variable('biases', [x.shape[-1]], initializer=tf.constant_initializer(bias))
             variable_summaries(bias)
         with tf.name_scope('layer_conv2d'):
-            conv = tf.nn.depthwise_conv2d(x, w, stride, padding, [dilation_factor, dilation_factor])
-            out = tf.nn.bias_add(conv, bias)
+            conv = tf.nn.depthwise_conv2d(x, w, stride, padding, [dilation_factor, dilation_factor], data_format="NCHW")
+            out = tf.nn.bias_add(conv, bias, data_format="NCHW")
 
     return out
 
@@ -126,8 +128,8 @@ def __depthwise_conv2d_atrous_p(name, x, w=None, kernel_size=(3, 3), padding='SA
 def __depthwise_conv2d_p(name, x, w=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
                          initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0):
     with tf.variable_scope(name):
-        stride = [1, stride[0], stride[1], 1]
-        kernel_shape = [kernel_size[0], kernel_size[1], x.shape[-1], 1]
+        stride = [1, 1, stride[0], stride[1]]
+        kernel_shape = [kernel_size[0], kernel_size[1], x.shape[1], 1]
 
         with tf.name_scope('layer_weights'):
             if w == None:
@@ -135,12 +137,12 @@ def __depthwise_conv2d_p(name, x, w=None, kernel_size=(3, 3), padding='SAME', st
             variable_summaries(w)
         with tf.name_scope('layer_biases'):
             if isinstance(bias, float):
-                bias = tf.get_variable('biases', [x.shape[-1]], initializer=tf.constant_initializer(bias))
+                bias = tf.get_variable('biases', [x.shape[1]], initializer=tf.constant_initializer(bias))
             variable_summaries(bias)
         with tf.name_scope('layer_conv2d'):
-#            pdb.set_trace()
-            conv = tf.nn.depthwise_conv2d(x, w, stride, padding)
-            out = tf.nn.bias_add(conv, bias)
+            #            pdb.set_trace()
+            conv = tf.nn.depthwise_conv2d(x, w, stride, padding, data_format="NCHW")
+            out = tf.nn.bias_add(conv, bias, data_format="NCHW")
 
     return out
 
@@ -174,7 +176,7 @@ def conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAME', 
                               initializer=initializer, l2_strength=l2_strength, bias=bias)
 
         if batchnorm_enabled:
-            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training, fused=True)
+            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training, fused=True, axis=1)
             if not activation:
                 conv_a = conv_o_bn
             else:
@@ -232,7 +234,7 @@ def atrous_conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='
                                      initializer=initializer, l2_strength=l2_strength, bias=bias)
 
         if batchnorm_enabled:
-            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training, fused=True)
+            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training, fused=True, axis=1)
             if not activation:
                 conv_a = conv_o_bn
             else:
@@ -289,7 +291,7 @@ def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), pad
                                         bias=bias)
 
         if batchnorm_enabled:
-            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training, fused=True)
+            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training, fused=True, axis=1)
             if not activation:
                 conv_a = conv_o_bn
             else:
@@ -340,20 +342,21 @@ def load_depthwise_separable_conv_layer(x, name, pretrained_depthwise_weights, p
                                       activation=tf.nn.relu, padding=padding, stride=stride, is_training=is_training)
 
 
-def depthwise_conv2d(name, x, w=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1),dilation_factor=1,
+def depthwise_conv2d(name, x, w=None, kernel_size=(3, 3), padding='SAME', stride=(1, 1), dilation_factor=1,
                      initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, bias=0.0, activation=None,
                      batchnorm_enabled=False, is_training=True):
     with tf.variable_scope(name) as scope:
-        if dilation_factor>1:
-             conv_o_b = __depthwise_conv2d_atrous_p(name=scope, x=x, w=w, kernel_size=kernel_size, padding=padding,
-                                        stride=stride, initializer=initializer, l2_strength=l2_strength, bias=bias,
-                                        dilation_factor= dilation_factor)
+        if dilation_factor > 1:
+            conv_o_b = __depthwise_conv2d_atrous_p(name=scope, x=x, w=w, kernel_size=kernel_size, padding=padding,
+                                                   stride=stride, initializer=initializer, l2_strength=l2_strength,
+                                                   bias=bias,
+                                                   dilation_factor=dilation_factor)
         else:
             conv_o_b = __depthwise_conv2d_p(name=scope, x=x, w=w, kernel_size=kernel_size, padding=padding,
-                                        stride=stride, initializer=initializer, l2_strength=l2_strength, bias=bias)
+                                            stride=stride, initializer=initializer, l2_strength=l2_strength, bias=bias)
 
         if batchnorm_enabled:
-            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training, fused=True)
+            conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training, fused=True, axis=1)
             if not activation:
                 conv_a = conv_o_bn
             else:
@@ -386,16 +389,18 @@ def depthwise_separable_conv2d(name, x, w_depthwise=None, w_pointwise=None, widt
 
     return conv_o
 
+
 def depthwise_separable_atrous_conv2d(name, x, w_depthwise=None, w_pointwise=None, width_multiplier=1.0, num_filters=16,
-                               kernel_size=(3, 3), dilation_factor=1,
-                               padding='SAME', stride=(1, 1),
-                               initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0, biases=(0.0, 0.0),
-                               activation=None, batchnorm_enabled=True,
-                               is_training=True):
+                                      kernel_size=(3, 3), dilation_factor=1,
+                                      padding='SAME', stride=(1, 1),
+                                      initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0,
+                                      biases=(0.0, 0.0),
+                                      activation=None, batchnorm_enabled=True,
+                                      is_training=True):
     total_num_filters = int(round(num_filters * width_multiplier))
     with tf.variable_scope(name) as scope:
         conv_a = depthwise_conv2d('depthwise', x=x, w=w_depthwise, kernel_size=kernel_size, padding=padding,
-                                  stride=stride, dilation_factor=filation_factor,
+                                  stride=stride, dilation_factor=dilation_factor,
                                   initializer=initializer, l2_strength=l2_strength, bias=biases[0],
                                   activation=activation,
                                   batchnorm_enabled=batchnorm_enabled, is_training=is_training)
@@ -418,7 +423,7 @@ def grouped_conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding=
                    activation=None, batchnorm_enabled=False, dropout_keep_prob=-1,
                    is_training=True):
     with tf.variable_scope(name) as scope:
-        sz = x.get_shape()[3].value // num_groups
+        sz = x.get_shape()[1].value // num_groups
         conv_side_layers = [
             conv2d(name + "_" + str(i), x[:, :, :, i * sz:i * sz + sz], w, num_filters // num_groups, kernel_size,
                    padding,
@@ -431,7 +436,7 @@ def grouped_conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding=
         conv_g = tf.concat(conv_side_layers, axis=-1)
 
         if batchnorm_enabled:
-            conv_o_bn = tf.layers.batch_normalization(conv_g, training=is_training, epsilon=1e-5, fused=True)
+            conv_o_bn = tf.layers.batch_normalization(conv_g, training=is_training, epsilon=1e-5, fused=True, axis=1)
             if not activation:
                 conv_a = conv_o_bn
             else:
@@ -453,7 +458,7 @@ def shufflenet_unit(name, x, w=None, num_groups=1, group_conv_bottleneck=True, n
     with tf.variable_scope(name) as scope:
         residual = x
         bottleneck_filters = (num_filters // 4) if fusion == 'add' else (num_filters - residual.get_shape()[
-            3].value) // 4
+            1].value) // 4
 
         if group_conv_bottleneck:
             bottleneck = grouped_conv2d('Gbottleneck', x=x, w=None, num_filters=bottleneck_filters, kernel_size=(1, 1),
@@ -461,42 +466,42 @@ def shufflenet_unit(name, x, w=None, num_groups=1, group_conv_bottleneck=True, n
                                         num_groups=num_groups, l2_strength=l2_strength, bias=bias,
                                         activation=activation,
                                         batchnorm_enabled=batchnorm_enabled, is_training=is_training)
-            #_debug(bottleneck)
+            # _debug(bottleneck)
             shuffled = channel_shuffle('channel_shuffle', bottleneck, num_groups)
-            #_debug(shuffled)
+            # _debug(shuffled)
         else:
             bottleneck = conv2d('bottleneck', x=x, w=None, num_filters=bottleneck_filters, kernel_size=(1, 1),
                                 padding='VALID', l2_strength=l2_strength, bias=bias, activation=activation,
                                 batchnorm_enabled=batchnorm_enabled, is_training=is_training)
-            #_debug(bottleneck)
+            # _debug(bottleneck)
             shuffled = bottleneck
 
-        if dilation>1:
+        if dilation > 1:
             depthwise = depthwise_conv2d('depthwise', x=shuffled, w=None, stride=stride, l2_strength=l2_strength,
-                                     padding='SAME', bias=bias, dilation_factor= dilation,
-                                     activation=None, batchnorm_enabled=batchnorm_enabled, is_training=is_training)
+                                         padding='SAME', bias=bias, dilation_factor=dilation,
+                                         activation=None, batchnorm_enabled=batchnorm_enabled, is_training=is_training)
         else:
-            padded = tf.pad(shuffled, [[0, 0], [1, 1], [1, 1], [0, 0]], "CONSTANT")
+            padded = tf.pad(shuffled, [[0, 0], [0, 0], [1, 1], [1, 1]], "CONSTANT")
             depthwise = depthwise_conv2d('depthwise', x=padded, w=None, stride=stride, l2_strength=l2_strength,
-                                     padding='VALID', bias=bias, dilation_factor= dilation,
-                                     activation=None, batchnorm_enabled=batchnorm_enabled, is_training=is_training)
+                                         padding='VALID', bias=bias, dilation_factor=dilation,
+                                         activation=None, batchnorm_enabled=batchnorm_enabled, is_training=is_training)
 
-        #_debug(depthwise)
+        # _debug(depthwise)
         if stride == (2, 2):
             residual_pooled = avg_pool_2d(residual, size=(3, 3), stride=stride, padding='SAME')
-            #_debug(residual_pooled)
+            # _debug(residual_pooled)
         else:
             residual_pooled = residual
-            #_debug(residual_pooled)
+            # _debug(residual_pooled)
         if fusion == 'concat':
             group_conv1x1 = grouped_conv2d('Gconv1x1', x=depthwise, w=None,
-                                           num_filters=num_filters - residual.get_shape()[3].value,
+                                           num_filters=num_filters - residual.get_shape()[1].value,
                                            kernel_size=(1, 1),
                                            padding='VALID',
                                            num_groups=num_groups, l2_strength=l2_strength, bias=bias,
                                            activation=None,
                                            batchnorm_enabled=batchnorm_enabled, is_training=is_training)
-            return activation(tf.concat([residual_pooled, group_conv1x1], axis=-1))
+            return activation(tf.concat([residual_pooled, group_conv1x1], axis=1))
         elif fusion == 'add':
             group_conv1x1 = grouped_conv2d('Gconv1x1', x=depthwise, w=None,
                                            num_filters=num_filters,
@@ -505,11 +510,11 @@ def shufflenet_unit(name, x, w=None, num_groups=1, group_conv_bottleneck=True, n
                                            num_groups=num_groups, l2_strength=l2_strength, bias=bias,
                                            activation=None,
                                            batchnorm_enabled=batchnorm_enabled, is_training=is_training)
-            #_debug(group_conv1x1)
+            # _debug(group_conv1x1)
             residual_match = residual_pooled
             # This is used if the number of filters of the residual block is different from that
             # of the group convolution.
-            if num_filters != residual_pooled.get_shape()[3].value:
+            if num_filters != residual_pooled.get_shape()[1].value:
                 residual_match = conv2d('residual_match', x=residual_pooled, w=None, num_filters=num_filters,
                                         kernel_size=(1, 1),
                                         padding='VALID', l2_strength=l2_strength, bias=bias, activation=None,
@@ -521,8 +526,8 @@ def shufflenet_unit(name, x, w=None, num_groups=1, group_conv_bottleneck=True, n
 
 def channel_shuffle(name, x, num_groups):
     with tf.variable_scope(name) as scope:
-        n, h, w, c = x.shape.as_list()
-        x_reshaped = tf.reshape(x, [-1, h, w, num_groups, c // num_groups])
+        n, c, h, w = x.shape.as_list()
+        x_reshaped = tf.reshape(x, [-1, c // num_groups, h, w, num_groups])
         x_transposed = tf.transpose(x_reshaped, [0, 1, 2, 4, 3])
-        output = tf.reshape(x_transposed, [-1, h, w, c])
+        output = tf.reshape(x_transposed, [-1, c, h, w])
     return output

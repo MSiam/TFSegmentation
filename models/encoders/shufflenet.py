@@ -93,7 +93,7 @@ class ShuffleNet:
 
         with tf.variable_scope(var_scope):
             with tf.name_scope('Pre_Processing'):
-                preprocessed_input = tf.subtract(self.x_input, self.MEAN) / tf.constant(255.0)
+                preprocessed_input = tf.transpose(tf.subtract(self.x_input, self.MEAN) / tf.constant(255.0), [0,3,1,2])
 
             self.conv1 = conv2d('conv1', x=preprocessed_input, w=None, num_filters=self.output_channels['conv1'],
                                 kernel_size=(3, 3),
@@ -101,7 +101,7 @@ class ShuffleNet:
                                 batchnorm_enabled=self.batchnorm_enabled, is_training=self.train_flag,
                                 activation=tf.nn.relu, padding='VALID')
             _debug(self.conv1)
-            padded = tf.pad(self.conv1, [[0, 0], [0, 1], [0, 1], [0, 0]], "CONSTANT")
+            padded = tf.pad(self.conv1, [[0, 0], [0, 0], [0, 1], [0, 1]], "CONSTANT")
             self.max_pool = max_pool_2d(padded, size=(3, 3), stride=(2, 2), name='max_pool')
             _debug(self.max_pool)
             self.stage2 = self.stage(self.max_pool, stage=2, repeat=3)
