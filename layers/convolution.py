@@ -90,13 +90,13 @@ def __conv2d_transpose_p(name, x, w=None, output_shape=None, kernel_size=(3, 3),
     """
     with tf.variable_scope(name):
         stride = [1, 1, stride[0], stride[1]]
-        kernel_shape = [kernel_size[0], kernel_size[1], output_shape[-1], x.shape[-1]]
+        kernel_shape = [kernel_size[0], kernel_size[1], output_shape[1], x.shape[1]]
         if w == None:
             w = get_deconv_filter(kernel_shape, l2_strength)
         variable_summaries(w)
         deconv = tf.nn.conv2d_transpose(x, w, tf.stack(output_shape), strides=stride, padding=padding, data_format="NCHW")
         if isinstance(bias, float):
-            bias = tf.get_variable('layer_biases', [output_shape[-1]], initializer=tf.constant_initializer(bias))
+            bias = tf.get_variable('layer_biases', [output_shape[1]], initializer=tf.constant_initializer(bias))
         variable_summaries(bias)
         out = tf.nn.bias_add(deconv, bias, data_format="NCHW")
 
@@ -108,7 +108,7 @@ def __depthwise_conv2d_atrous_p(name, x, w=None, kernel_size=(3, 3), padding='SA
                                 dilation_factor=1):
     with tf.variable_scope(name):
         stride = [1, stride[0], stride[1], 1]
-        kernel_shape = [kernel_size[0], kernel_size[1], x.shape[-1], 1]
+        kernel_shape = [kernel_size[0], kernel_size[1], x.shape[1], 1]
 
         with tf.name_scope('layer_weights'):
             if w == None:
@@ -116,7 +116,7 @@ def __depthwise_conv2d_atrous_p(name, x, w=None, kernel_size=(3, 3), padding='SA
             variable_summaries(w)
         with tf.name_scope('layer_biases'):
             if isinstance(bias, float):
-                bias = tf.get_variable('biases', [x.shape[-1]], initializer=tf.constant_initializer(bias))
+                bias = tf.get_variable('biases', [x.shape[1]], initializer=tf.constant_initializer(bias))
             variable_summaries(bias)
         with tf.name_scope('layer_conv2d'):
             conv = tf.nn.depthwise_conv2d(x, w, stride, padding, [dilation_factor, dilation_factor], data_format="NCHW")
@@ -289,7 +289,6 @@ def conv2d_transpose(name, x, w=None, output_shape=None, kernel_size=(3, 3), pad
                                         padding=padding, stride=stride,
                                         l2_strength=l2_strength,
                                         bias=bias)
-
         if batchnorm_enabled:
             conv_o_bn = tf.layers.batch_normalization(conv_o_b, training=is_training, fused=True, axis=1)
             if not activation:
@@ -425,7 +424,7 @@ def grouped_conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding=
     with tf.variable_scope(name) as scope:
         sz = x.get_shape()[1].value // num_groups
         conv_side_layers = [
-            conv2d(name + "_" + str(i), x[:, :, :, i * sz:i * sz + sz], w, num_filters // num_groups, kernel_size,
+            conv2d(name + "_" + str(i), x[:, i * sz:i * sz + sz, :, :], w, num_filters // num_groups, kernel_size,
                    padding,
                    stride,
                    initializer,
@@ -433,7 +432,7 @@ def grouped_conv2d(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding=
                    batchnorm_enabled=False, max_pool_enabled=False, dropout_keep_prob=dropout_keep_prob,
                    is_training=is_training) for i in
             range(num_groups)]
-        conv_g = tf.concat(conv_side_layers, axis=-1)
+        conv_g = tf.concat(conv_side_layers, axis=1)
 
         if batchnorm_enabled:
             conv_o_bn = tf.layers.batch_normalization(conv_g, training=is_training, epsilon=1e-5, fused=True, axis=1)

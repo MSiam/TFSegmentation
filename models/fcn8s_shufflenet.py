@@ -23,7 +23,7 @@ class FCN8sShuffleNet(BasicModel):
         self.init_input()
         self.init_network(x)
         self.init_output()
-        if self.args.data_mode=='experiment':
+        if self.args.data_mode == 'experiment':
             self.init_train()
             self.init_summaries()
         print("The Model is built successfully\n")
@@ -44,17 +44,18 @@ class FCN8sShuffleNet(BasicModel):
         self.encoder = ShuffleNet(x_input=x_in, num_classes=self.params.num_classes,
                                   pretrained_path=self.args.pretrained_path, train_flag=self.is_training,
                                   batchnorm_enabled=self.args.batchnorm_enabled, num_groups=self.args.num_groups,
-                                  weight_decay=self.args.weight_decay, bias=self.args.bias, mean_path= self.args.data_dir+'mean.npy')
-
+                                  weight_decay=self.args.weight_decay, bias=self.args.bias,
+                                  mean_path=self.args.data_dir + 'mean.npy')
 
         # Build Encoding part
         self.encoder.build()
 
         # Build Decoding part
         with tf.name_scope('upscore_2s'):
+            print(self.encoder.score_fr.shape)
             self.upscore2 = conv2d_transpose('upscore2', x=self.encoder.score_fr,
-                                             output_shape=[self.args.batch_size]+self.encoder.feed1.shape.as_list()[1:3] + [
-                                                 self.params.num_classes],
+                                             output_shape=[self.args.batch_size] + [
+                                                 self.params.num_classes] + self.encoder.feed1.shape.as_list()[2:4],
                                              batchnorm_enabled=self.args.batchnorm_enabled,
                                              is_training=self.is_training,
                                              kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd,
@@ -71,13 +72,12 @@ class FCN8sShuffleNet(BasicModel):
             #            for v in currvars:
             #                tf.add_to_collection('decoding_trainable_vars', v)
 
-
             self.fuse_feed1 = tf.add(self.score_feed1, self.upscore2)
 
         with tf.name_scope('upscore_4s'):
             self.upscore4 = conv2d_transpose('upscore4', x=self.fuse_feed1,
-                                             output_shape=[self.args.batch_size] + self.encoder.feed2.shape.as_list()[1:3] + [
-                                                 self.params.num_classes],
+                                             output_shape=[self.args.batch_size] + [
+                                                 self.params.num_classes] + self.encoder.feed2.shape.as_list()[2:4],
                                              batchnorm_enabled=self.args.batchnorm_enabled,
                                              is_training=self.is_training,
                                              kernel_size=(4, 4), stride=(2, 2), l2_strength=self.encoder.wd,
@@ -99,7 +99,8 @@ class FCN8sShuffleNet(BasicModel):
 
         with tf.name_scope('upscore_8s'):
             self.upscore8 = conv2d_transpose('upscore8', x=self.fuse_feed2,
-                                             output_shape=[self.args.batch_size] + self.x_pl.shape.as_list()[1:3] + [self.params.num_classes],
+                                             output_shape=[self.args.batch_size] + [
+                                                 self.params.num_classes] + self.x_pl.shape.as_list()[2:4],
                                              is_training=self.is_training,
                                              kernel_size=(16, 16), stride=(8, 8), l2_strength=self.encoder.wd,
                                              bias=self.args.bias,
