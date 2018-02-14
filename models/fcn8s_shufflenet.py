@@ -101,7 +101,7 @@ class FCN8sShuffleNet(BasicModel):
         with tf.name_scope('upscore_8s'):
             self.upscore8 = conv2d_transpose('upscore8', x=self.fuse_feed2,
                                              output_shape=[self.args.batch_size] + [
-                                                 self.params.num_classes] + self.x_in.shape.as_list()[2:4],
+                                                 self.params.num_classes] + x_in.shape.as_list()[2:4],
                                              is_training=self.is_training,
                                              kernel_size=(16, 16), stride=(8, 8), l2_strength=self.encoder.wd,
                                              bias=self.args.bias,
