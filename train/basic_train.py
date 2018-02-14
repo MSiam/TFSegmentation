@@ -82,7 +82,7 @@ class BasicTrain(object):
             self.saver_best.restore(self.sess, latest_checkpoint)
         else:
             print("ERROR NO best checkpoint found")
-            exit(-1)
+            # exit(-1)
         print("BEST MODEL LOADED..")
 
     @timeit

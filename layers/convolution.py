@@ -67,7 +67,7 @@ def __atrous_conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), paddi
                 bias = tf.get_variable('biases', [num_filters], initializer=tf.constant_initializer(bias))
             variable_summaries(bias)
         with tf.name_scope('layer_atrous_conv2d'):
-            conv = tf.nn.atrous_conv2d(x, w, dilation_rate, padding)
+            conv = tf.nn.atrous_conv2d(x, w, dilation_rate, padding, data_format="NCHW")
             out = tf.nn.bias_add(conv, bias, data_format="NCHW")
 
     return out
@@ -94,7 +94,8 @@ def __conv2d_transpose_p(name, x, w=None, output_shape=None, kernel_size=(3, 3),
         if w == None:
             w = get_deconv_filter(kernel_shape, l2_strength)
         variable_summaries(w)
-        deconv = tf.nn.conv2d_transpose(x, w, tf.stack(output_shape), strides=stride, padding=padding, data_format="NCHW")
+        deconv = tf.nn.conv2d_transpose(x, w, tf.stack(output_shape), strides=stride, padding=padding,
+                                        data_format="NCHW")
         if isinstance(bias, float):
             bias = tf.get_variable('layer_biases', [output_shape[1]], initializer=tf.constant_initializer(bias))
         variable_summaries(bias)
