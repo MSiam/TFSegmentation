@@ -50,6 +50,8 @@ class FCN8sShuffleNet(BasicModel):
         # Build Encoding part
         self.encoder.build()
 
+        print("********************** Encoder*******", self.encoder.score_fr.shape)
+
         # Build Decoding part
         with tf.name_scope('upscore_2s'):
             print(self.encoder.score_fr.shape)
