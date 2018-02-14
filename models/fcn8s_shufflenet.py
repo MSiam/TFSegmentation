@@ -54,7 +54,6 @@ class FCN8sShuffleNet(BasicModel):
 
         # Build Decoding part
         with tf.name_scope('upscore_2s'):
-            print(self.encoder.score_fr.shape)
             self.upscore2 = conv2d_transpose('upscore2', x=self.encoder.score_fr,
                                              output_shape=[self.args.batch_size] + [
                                                  self.params.num_classes] + self.encoder.feed1.shape.as_list()[2:4],
