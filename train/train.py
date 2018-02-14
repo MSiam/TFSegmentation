@@ -804,7 +804,7 @@ class Train(BasicTrain):
         fps_meter.print_statistics()
 
     def test_inference_optimized(self):
-        print("INFERENCE mode will begin NOW..")
+        print("OPTTTTTT mode will begin NOW..")
 
         # load the best model checkpoint to test on it
         self.load_best_model()
