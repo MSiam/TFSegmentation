@@ -3,7 +3,7 @@ from models.encoders.shufflenet import ShuffleNet
 from layers.convolution import conv2d_transpose, conv2d, atrous_conv2d
 from utils.misc import _debug
 import tensorflow as tf
-import pdb
+#import pdb
 
 class DilationShuffleNet(BasicModel):
     """

@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import sys
-import pdb
+#import pdb
 import scipy.misc
 
 #def main(main_path, split, out_path):

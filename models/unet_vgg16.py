@@ -3,7 +3,7 @@ from models.encoders.VGG import VGG16
 from layers.convolution import conv2d_transpose, conv2d
 
 import tensorflow as tf
-import pdb
+#import pdb
 from utils.misc import _debug
 
 class UNetVGG16(BasicModel):

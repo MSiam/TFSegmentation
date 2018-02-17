@@ -3,7 +3,7 @@ from pycocotools.coco import COCO
 import scipy.misc
 import numpy as np
 import skimage.io as io
-import pdb
+#import pdb
 import matplotlib.pyplot as plt
 
 class MYCOCO(object):

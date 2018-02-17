@@ -13,7 +13,7 @@ import numpy as np
 import tensorflow as tf
 import matplotlib
 import time
-import h5py
+#import h5py
 import pickle
 from utils.augmentation import flip_randomly_left_right_image_with_annotation, \
     scale_randomly_image_with_annotation_with_fixed_size_output
@@ -28,7 +28,7 @@ from utils.seg_dataloader import SegDataLoader
 from tensorflow.contrib.data import Iterator
 from scipy.misc import imsave, imresize
 
-import pdb
+#import pdb
 import torchfile
 
 

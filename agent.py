@@ -10,7 +10,7 @@ from test import *
 from utils.misc import timeit
 
 import os
-import pdb
+#import pdb
 import pickle
 from utils.misc import calculate_flops
 
@@ -197,9 +197,9 @@ class Agent:
 
             self.features_placeholder = tf.placeholder(tf.float32, self.data_x.shape)
 
-            dataset = tf.data.Dataset.from_tensor_slices(self.features_placeholder)
+            dataset = tf.contrib.data.Dataset.from_tensor_slices(self.features_placeholder)
             dataset = dataset.batch(self.args.batch_size)
-            self.iterator = tf.data.Iterator.from_structure(dataset.output_types,
+            self.iterator = tf.contrib.data.Iterator.from_structure(dataset.output_types,
                                                             dataset.output_shapes)
             self.next_batch = self.iterator.get_next()
             self.training_init_op = self.iterator.make_initializer(dataset)

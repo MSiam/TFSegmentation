@@ -1,7 +1,7 @@
 from layers.utils import *
 from layers.pooling import max_pool_2d, avg_pool_2d
 import tensorflow as tf
-import pdb
+#import pdb
 
 
 def __conv2d_p(name, x, w=None, num_filters=16, kernel_size=(3, 3), padding='SAME', stride=(1, 1),

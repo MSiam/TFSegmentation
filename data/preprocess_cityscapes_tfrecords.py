@@ -7,7 +7,7 @@ from tqdm import tqdm
 import tensorflow as tf
 from PIL import Image
 import scipy.misc as misc
-import pdb
+#import pdb
 
 def _bytes_feature(value):
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))

@@ -3,7 +3,7 @@ import pickle
 import os
 import torchfile
 from collections import OrderedDict
-import pdb
+#import pdb
 
 model_weights= torchfile.load('/usr/data/menna/LinkNet-1.0/dict_net.t7')
 pdb.set_trace()

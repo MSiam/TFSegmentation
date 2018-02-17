@@ -5,7 +5,7 @@ import os
 from scipy import misc
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-import pdb
+#import pdb
 def main(args):
     hf = h5py.File(args.output_file, 'w')
     for d in os.listdir(args.root+'images/'):

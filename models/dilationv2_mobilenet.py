@@ -5,7 +5,7 @@ from layers.convolution import conv2d_transpose, conv2d, atrous_conv2d, depthwis
 import numpy as np
 import tensorflow as tf
 from utils.misc import _debug
-import pdb
+#import pdb
 
 class DilationV2MobileNet(BasicModel):
     """

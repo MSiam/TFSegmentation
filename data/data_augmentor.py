@@ -13,7 +13,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from imgaug import augmenters as iaa
 import os
-import pdb
+#import pdb
 
 def create_dirs(dirs):
     """

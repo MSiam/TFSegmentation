@@ -3,7 +3,7 @@ import sys
 import os
 import scipy.misc as misc
 import matplotlib.pyplot as plt
-import pdb
+#import pdb
 
 trainID_2_labelID = {19: 0,  # 'unlabeled'
                      0: 7,  # 'road'

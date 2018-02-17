@@ -5,7 +5,7 @@ from layers.convolution import conv2d_transpose, conv2d
 
 import tensorflow as tf
 from utils.misc import _debug
-import pdb
+#import pdb
 
 class FCN8s(BasicModel):
     """

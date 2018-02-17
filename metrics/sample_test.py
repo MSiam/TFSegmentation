@@ -3,7 +3,7 @@ from os import listdir
 from os.path import isfile, join
 from scipy.misc import imread
 
-import pdb
+#import pdb
 
 gt_imagesDir='/menna/motion_segmentation/DATA/imagepair/testing_1/mask'
 

@@ -4,7 +4,7 @@ from layers.convolution import conv2d_transpose, conv2d, atrous_conv2d
 from utils.misc import get_vars_underscope
 
 import tensorflow as tf
-import pdb
+#import pdb
 
 
 class FCN8sShuffleNet(BasicModel):

@@ -4,7 +4,7 @@ from layers.utils import get_deconv_filter, variable_summaries
 from layers.utils import variable_with_weight_decay2
 from utils.misc import get_vars_underscope
 import tensorflow as tf
-import pdb
+#import pdb
 
 class LinkNET(BasicModel):
     def __init__(self, args, phase=0):
