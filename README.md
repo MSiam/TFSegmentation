@@ -19,6 +19,19 @@ segmentation is only on increasing the accuracy of segmentation models with litt
 - U-Net  
 - Dilation Frontend with different subsampling factors.
 
+## Reported Results
+### Test Set
+Model | GFLOPs** | Class IoU | Class iIoU | Category IoU | Category iIoU
+----- | ------ | --------- | ---------- | ------------ | -------------
+SegNet | 286.03 | 56.1 | 34.2 | 79.8 | 66.4
+ENet | 3.83 | 58.3 | 24.4 | 80.4 | 64.0
+DeepLab | - | 70.4 | 42.6 | 86.4 | 67.7
+SkipNet-VGG16 | - | 65.3 | 41.7 | 85.7 | 70.1
+SkipNet-ShuffleNet | 2.0 | 58.3 | 32.4 | 80.2 | 62.2
+SkipNet-MobileNet | 6.2 | 61.5 | 35.2 | 82.0 | 63.0
+
+** GFLOPs is computed on image resolution 360x640.
+
 ## Usage
 ### Run
 The file named run.sh provide a good example for running different architectures. Have a look at this file.
