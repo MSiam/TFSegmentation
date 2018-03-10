@@ -30,6 +30,19 @@ SkipNet-VGG16 | - | 65.3 | 41.7 | 85.7 | 70.1
 SkipNet-ShuffleNet | 2.0 | 58.3 | 32.4 | 80.2 | 62.2
 SkipNet-MobileNet | 6.2 | 61.5 | 35.2 | 82.0 | 63.0
 
+### Validation Set
+Encoder | Decoder | Coarse | mIoU
+------- | ------- | ------ | ----
+SkipNet | MobileNet | No | 61.3
+SkipNet | ShuffleNet | No | 55.5
+UNet | ResNet18 | No | 57.9
+UNet | MobileNet | No | 61.0
+UNet | ShuffleNet | No | 57.0
+Dilation | MobileNet | No | 57.8
+Dilation | ShuffleNet | No | 53.9
+SkipNet | MobileNet | Yes | 62.4
+SkipNet | ShuffleNet | Yes | 59.3
+
 ** GFLOPs is computed on image resolution 360x640.
 
 ## Usage
