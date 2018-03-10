@@ -132,15 +132,15 @@ pretrained_weights/*.pkl
 pretrained_weights/linknet/
 
 # imgs
-*.png
-*.jpg
+#*.png
+#*.jpg
 
 # tmp files
 *~
 
 # h5 files
 *.h5
-# I will push this to test the code
+
 !data/data_for_test_n_overfit/X.npy
 !data/data_for_test_n_overfit/Y.npy
 cityscapesScripts/cityscapesscripts/annotation/icons/
