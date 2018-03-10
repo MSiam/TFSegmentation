@@ -20,6 +20,8 @@ Encoder | Skip | U-Net | DilationV1 | DilationV2
 [MobileNet](https://github.com/MSiam/TFSegmentation/blob/master/models/encoders/mobilenet.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/fcn8s_mobilenet.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/unet_mobilenet.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/dilation_mobilenet.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/dilationv2_mobilenet.py)
 [ShuffleNet](https://github.com/MSiam/TFSegmentation/blob/master/models/encoders/shufflenet.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/fcn8s_shufflenet.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/unet_shufflenet.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/dilation_shufflenet.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/dilationv2_shufflenet.py)
 
+**NOTE: The pretrained weights for all the implemented models will be released soon. Stay in touch for the updates.**
+
 ## Reported Results
 ### Test Set
 Model | GFLOPs** | Class IoU | Class iIoU | Category IoU | Category iIoU
