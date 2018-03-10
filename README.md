@@ -2,7 +2,7 @@
 # Real-time Semantic Segmentation Comparative Study   
 By: Mennatullah Siam, Mostafa Gamal, Moemen AbdelRazek, Senthil Yogamani, Martin Jagersand
 
-The repository contains the official code used in the our paper [RTSEG: REAL-TIME SEMANTIC SEGMENTATION COMPARATIVE STUDY] (https://arxiv.org/abs/1803.02758)
+The repository contains the official code used in the our paper [RTSEG: REAL-TIME SEMANTIC SEGMENTATION COMPARATIVE STUDY](https://arxiv.org/abs/1803.02758)
 
 ## Introduction
 Semantic segmentation benefits robotics related applications especially autonomous driving. Most of the research on semantic
