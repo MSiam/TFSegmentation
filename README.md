@@ -11,6 +11,7 @@ segmentation is only on increasing the accuracy of segmentation models with litt
 <div align="center">
 <img src="https://github.com/MSiam/TFSegmentation/blob/master/figures/fig.png" width="50%" height="50%"><br><br>
 </div>
+
 ## Feature Extractors
 - [VGG-16](https://github.com/MSiam/TFSegmentation/blob/master/models/encoders/VGG.py)
 - [ResNet-18](https://github.com/MSiam/TFSegmentation/blob/master/models/encoders/resnet_18.py)
