@@ -2,9 +2,9 @@
 # Real-time Semantic Segmentation Comparative Study   
 By: Mennatullah Siam, Mostafa Gamal, Moemen AbdelRazek, Senthil Yogamani, Martin Jagersand
 
-The repository contains the official code used in the our paper [RTSEG: REAL-TIME SEMANTIC SEGMENTATION COMPARATIVE STUDY](https://arxiv.org/abs/1803.02758)
+The repository contains the official code used in the our paper [RTSEG: REAL-TIME SEMANTIC SEGMENTATION COMPARATIVE STUDY](https://arxiv.org/abs/1803.02758) for comparing different realtime semantic segmentation architectures.
 
-## Brief Description
+## Description
 Semantic segmentation benefits robotics related applications especially autonomous driving. Most of the research on semantic
 segmentation is only on increasing the accuracy of segmentation models with little attention to computationally efficient solutions. The few work conducted in this direction does not provide principled methods to evaluate the different design choices for segmentation. In this paper, we address this gap by presenting a real-time semantic segmentation benchmarking framework with a decoupled design for feature extraction and decoding methods. The code and the experimental results are presented on the [Cityscapes dataset for urban scenes](www.cityscapes-dataset.com).
 
