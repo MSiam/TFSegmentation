@@ -1,7 +1,7 @@
 # Directories arguments
 data_dir: "full_cityscapes_res"
-exp_dir:  "dilationv2_mobilenet"
-out_dir:  "dilationv2_mobilenet"
+exp_dir:  "dilationv2_shufflenet"
+out_dir:  "dilationv2_shufflenet"
 
 # Data arguments
 img_height:   512
@@ -11,11 +11,11 @@ num_classes:  20
 
 # Train arguments
 num_epochs: 200
-batch_size: 4
+batch_size: 1
 shuffle: True
-data_mode: "experiment_v2"
+data_mode: "test_v2"
 save_every: 10
-test_every: 5
+test_every: 10
 max_to_keep: 1
 weighted_loss: True
 freeze_encoder: False
@@ -23,11 +23,12 @@ random_cropping: False
 targets_resize: 4
 
 # Models arguments
-learning_rate:   0.0001
-weight_decay: 0.0005
-bias : 0.0
 batchnorm_enabled: True
-pretrained_path: "pretrained_weights/mobilenet_v1.pkl"
+num_groups: 3
+learning_rate:   0.0001
+weight_decay: 4e-5
+bias: 0.0
+pretrained_path: "pretrained_weights/shufflenet_weights.pkl"
 
 # Misc arguments
 verbose: False

@@ -1,7 +1,7 @@
 # Directories arguments
 data_dir: "full_cityscapes_res"
-exp_dir:  "dilationv1_mobilenet"
-out_dir:  "dilationv1_mobilenet"
+exp_dir:  "dilation_mobilenet"
+out_dir:  "dilation_mobilenet"
 
 # Data arguments
 img_height:   512

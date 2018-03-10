@@ -118,7 +118,7 @@ class BasicModel:
     def init_output(self):
         with tf.name_scope('output'):
             self.out_softmax = tf.nn.softmax(self.logits)
-            self.out_argmax = tf.argmax(self.logits, axis=3, output_type=tf.int32)
+            self.out_argmax = tf.argmax(self.out_softmax, axis=3, output_type=tf.int32)
 
     def get_class_weighting(self):
         self.wghts= tf.one_hot(self.y_pl, dtype='float32', depth=self.params.num_classes)* \
@@ -168,9 +168,8 @@ class BasicModel:
             input_summary = tf.cast(self.x_pl, tf.uint8)
             # labels_summary = tf.py_func(decode_labels, [self.y_pl, self.params.num_classes], tf.uint8)
             preds_summary = tf.py_func(decode_labels, [self.out_argmax, self.params.num_classes], tf.uint8)
-            self.segmented_summary = tf.concat(axis=2, values=[input_summary, #labels_summary,
+            self.segmented_summary = tf.concat(axis=2, values=[input_summary,
                                                                preds_summary])  # Concatenate row-wise
-  # Concatenate row-wise
 
         # Every step evaluate these summaries
         with tf.name_scope('train-summary'):

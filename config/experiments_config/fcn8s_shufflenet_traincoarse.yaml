@@ -1,6 +1,6 @@
 # Directories arguments
 data_dir: "full_cityscapes_res"
-abs_data_dir: "/home/nray1/ms/cityscapes/"
+abs_data_dir: "/home/eren/Data/Cityscapes_Coarse/"
 exp_dir:  "fcn8s_shufflenet"
 out_dir:  "fcn8s_shufflenet"
 

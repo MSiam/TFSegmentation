@@ -7,8 +7,8 @@ import tensorflow as tf
 import pdb
 
 class LinkNET(BasicModel):
-    def __init__(self, args, phase=0):
-        super().__init__(args, phase=phase)
+    def __init__(self, args):
+        super().__init__(args)
         # init encoder
         self.encoder = None
         # all layers
@@ -149,7 +149,7 @@ class LinkNET(BasicModel):
         with tf.variable_scope(name):
             h, w = x.shape.as_list()[1:3]
             h, w = h * stride, w * stride
-            output_shape = [self.bs, h, w, out_channels]
+            output_shape = [self.args.batch_size, h, w, out_channels]
             stride = [1, stride, stride, 1]
             kernel_shape = [kernel_size[0], kernel_size[1], out_channels, x.shape.as_list()[-1]]
             w = get_deconv_filter(kernel_shape, self.args.weight_decay)

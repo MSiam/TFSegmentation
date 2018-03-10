@@ -26,6 +26,7 @@
 
 #2- FCN8s MobileNet Test
 #python3 main.py --load_config=fcn8s_mobilenet_test.yaml test Train FCN8sMobileNet
+#python3 main.py --load_config=fcn8s_mobilenet_test.yaml inference Train FCN8sMobileNet
 
 #3- UNet MobileNet Train Coarse+Fine
 #python3 main.py --load_config=unet_mobilenet_traincoarse.yaml train Train UNetMobileNet
@@ -33,14 +34,18 @@
 
 #4- UNet MobileNet Test 
 #python3 main.py --load_config=unet_mobilenet_test.yaml test Train UNetMobileNet
+#python3 main.py --load_config=unet_mobilenet_test.yaml inference Train UNetMobileNet
 
 #5- Dilation v1 MobileNet Train
 #python3 main.py --load_config=dilation_mobilenet_train.yaml train Train DilationMobileNet
 
 #6- Dilation v1 MobileNet Test
+#python3 main.py --load_config=dilation_mobilenet_test.yaml test Train DilationMobileNet
+#python3 main.py --load_config=dilation_mobilenet_test.yaml inference Train DilationMobileNet
 
 #7- Dilation v2 MobileNet Train 
 #python3 main.py --load_config=dilationv2_mobilenet_train.yaml train Train DilationV2MobileNet
+#python3 main.py --load_config=dilationv2_mobilenet_test.yaml test Train DilationV2MobileNet
 
 ###################################### ShuffleNet #################################################
 #1- FCN8s ShuffleNet Train Coarse+Fine
@@ -49,17 +54,24 @@
 
 #2- FCN8s ShuffleNet Test
 #python3 main.py --load_config=fcn8s_shufflenet_test.yaml test Train FCN8sShuffleNet
-python3 main.py --load_config=fcn8s_shufflenet_test.yaml inference_opt Train FCN8sShuffleNet
+#python3 main.py --load_config=fcn8s_shufflenet_test.yaml inference Train FCN8sShuffleNet
 
 #3- UNet ShuffleNet Train Coarse+Fine
 #python3 main.py --load_config=fcn8s_shufflenet_traincoarse.yaml train Train FCN8sShuffleNet
-#python3 main.py --load_config=fcn8s_shufflenet_train.yaml train Train FCN8sShuffleNet
+#python3 main.py --load_config=unet_shufflenet_train.yaml train Train UNetShuffleNet
 
 #4- UNet ShuffleNet Test
-#python3 main.py --load_config=fcn8s_shufflenet_test.yaml test Train FCN8sShuffleNet
+python3 main.py --load_config=unet_shufflenet_test.yaml test Train UNetShuffleNet
+#python3 main.py --load_config=unet_shufflenet_test.yaml inference Train UNetShuffleNet
 
 #5- Dilation v1 ShuffleNet Train
 #python3 main.py --load_config=dilation_shufflenet_train.yaml train Train DilationShuffleNet
+#python3 main.py --load_config=dilation_shufflenet_train.yaml test Train DilationShuffleNet
+
+#7- Dilation v2 ShuffleNet Train
+#python3 main.py --load_config=dilationv2_shufflenet_train.yaml train Train DilationV2ShuffleNet
+#python3 main.py --load_config=dilationv2_shufflenet_test.yaml test Train DilationV2ShuffleNet
+#python3 main.py --load_config=dilationv2_shufflenet_test.yaml inference Train DilationV2ShuffleNet
 
 ##################################### ResNet18 ####################################################
 #3- UNet ResNet18 Train

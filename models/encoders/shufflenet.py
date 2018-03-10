@@ -1,22 +1,20 @@
 import tensorflow as tf
 from layers.convolution import shufflenet_unit, conv2d, max_pool_2d
-from utils.misc import load_obj, _debug
+from utils.misc import load_obj, _debug, save_obj
 import os
-import numpy as np
-import pdb
-import scipy
+
 
 class ShuffleNet:
     """ShuffleNet is implemented here!"""
 
+    # MEAN = [103.94, 116.78, 123.68]
+    MEAN = [73.29132098, 83.04442645, 72.5238962]
+
+    # NORMALIZER = 0.017
+
     def __init__(self, x_input, num_classes, pretrained_path, train_flag, batchnorm_enabled=True, num_groups=3,
-                 weight_decay=4e-5, mean_path=None, prefix=None, size= None,
+                 weight_decay=4e-5,
                  bias=0.0):
-        if mean_path is not None:
-            self.MEAN= np.load(mean_path)
-        if size is not None:
-            if self.MEAN.shape[:2] != size:
-                self.MEAN= scipy.misc.imresize(self.MEAN, size)
         self.x_input = x_input
         self.train_flag = train_flag
         self.num_classes = num_classes
@@ -31,7 +29,7 @@ class ShuffleNet:
         self.stage4 = None
         self.max_pool = None
         self.conv1 = None
-        self.prefix= prefix
+
         # These feed layers are for the decoder
         self.feed1 = None
         self.feed2 = None
@@ -86,15 +84,14 @@ class ShuffleNet:
 
     def build(self):
         print("Building the ShuffleNet..")
-        if self.prefix is not None:
-            var_scope= self.prefix+'shufflenet_encoder'
-        else:
-            var_scope= 'shufflenet_encoder'
-
-        with tf.variable_scope(var_scope):
+        with tf.variable_scope('shufflenet_encoder'):
             with tf.name_scope('Pre_Processing'):
-                preprocessed_input = tf.subtract(self.x_input, self.MEAN) / tf.constant(255.0)
-
+                red, green, blue = tf.split(self.x_input, num_or_size_splits=3, axis=3)
+                preprocessed_input = tf.concat([
+                    tf.subtract(blue, ShuffleNet.MEAN[0]) / tf.constant(255.0),
+                    tf.subtract(green, ShuffleNet.MEAN[1]) / tf.constant(255.0),
+                    tf.subtract(red, ShuffleNet.MEAN[2]) / tf.constant(255.0),
+                ], 3)
             self.conv1 = conv2d('conv1', x=preprocessed_input, w=None, num_filters=self.output_channels['conv1'],
                                 kernel_size=(3, 3),
                                 stride=(2, 2), l2_strength=self.wd, bias=self.bias,
@@ -117,10 +114,31 @@ class ShuffleNet:
             # First Experiment is to use the regular conv2d
             self.score_fr = conv2d('conv_1c_1x1', self.stage4, num_filters=self.num_classes, l2_strength=self.wd,
                                    kernel_size=(1, 1))
-            if self.prefix is not None:
-                self.score_fr= tf.nn.relu(self.score_fr)
 
             print("\nEncoder ShuffleNet is built successfully\n\n")
+
+    def __save(self, sess):
+        file_name= self.pretrained_path
+        variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+        try:
+            print("Loading ImageNet pretrained weights...")
+            dict = load_obj(file_name)
+            saved_dict= {}
+            run_list = []
+            for variable in variables:
+                for key, value in dict.items():
+                    if key + ":" in variable.name:
+                        saved_dict[key]= sess.run(variable)
+
+            save_obj(saved_dict, 'pretrained_weights/shufflenet_cityscapes.pkl')
+            for k, v in saved_dict.items():
+                if k not in dict.keys():
+                    import pdb; pdb.set_trace()
+
+            print("ImageNet Pretrained Weights Loaded Initially\n\n")
+        except KeyboardInterrupt:
+            print("No pretrained ImageNet weights exist. Skipping...\n\n")
+
 
     def __restore(self, file_name, sess):
         variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
@@ -142,3 +160,4 @@ class ShuffleNet:
 
     def load_pretrained_weights(self, sess):
         self.__restore(self.pretrained_path, sess)
+        #self.__save(sess)
