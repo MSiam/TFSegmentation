@@ -8,6 +8,10 @@ The repository contains the official code used in the our paper [RTSEG: REAL-TIM
 Semantic segmentation benefits robotics related applications especially autonomous driving. Most of the research on semantic
 segmentation is only on increasing the accuracy of segmentation models with little attention to computationally efficient solutions. The few work conducted in this direction does not provide principled methods to evaluate the different design choices for segmentation. In this paper, we address this gap by presenting a real-time semantic segmentation benchmarking framework with a decoupled design for feature extraction and decoding methods. The code and the experimental results are presented on the [CityScapes dataset for urban scenes](https://www.cityscapes-dataset.com/).
 
+<div align="center">
+<img src="https://github.com/MSiam/TFSegmentation/blob/master/figures/fig.png"><br><br>
+</div>
+
 ## Feature Extractors
 - [VGG-16](https://github.com/MSiam/TFSegmentation/blob/master/models/encoders/VGG.py)
 - [ResNet-18](https://github.com/MSiam/TFSegmentation/blob/master/models/encoders/resnet_18.py)
