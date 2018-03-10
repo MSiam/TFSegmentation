@@ -1,11 +1,8 @@
 
-# RTSeg
-RTSeg: Real-time Semantic Segmentation Comparative Study   
+# RTSeg: Real-time Semantic Segmentation Comparative Study   
 By: Mennatullah Siam, Mostafa Gamal, Moemen AbdelRazek, Senthil Yogamani, Martin Jagersand
 
 The repository contains the official Code used in the comparative study between different design choices for real-time semantic segmentation.
-
-
 
 # Encoders
 ResNet-18  
