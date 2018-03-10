@@ -5,7 +5,35 @@ By: Mennatullah Siam, Mostafa Gamal, Moemen AbdelRazek, Senthil Yogamani, Martin
 
 The repository contains the official Code used in the comparative study between different design choices for real-time semantic segmentation.
 
-Citing RTSeg: 
+
+
+# Encoders
+ResNet-18  
+VGG-16  
+MobileNet  
+ShuffleNet
+
+# Decoding Methods
+SkipNet   
+U-Net  
+Dilation
+
+## Usage
+### Main Dependencies
+ ```
+ Python 3 and above
+ tensorflow 1.3.0/1.4.0
+ numpy 1.13.1
+ tqdm 4.15.0
+ matplotlib 2.0.2
+ pillow 4.2.1
+ ```
+### All Dependencies
+ ```
+ pip install -r [requirements_gpu.txt] or [requirements.txt]  
+ ```
+
+## Citation
 If you find RTSeg useful in your research, please consider citing our work: 
 
 ```
@@ -24,21 +52,5 @@ archivePrefix = "arXiv",
   adsnote = {Provided by the SAO/NASA Astrophysics Data System}   
 }
 ```
-
-# Encoders
-ResNet-18  
-VGG-16  
-MobileNet  
-ShuffleNet
-
-# Deconding Methods
-SkipNet   
-U-Net  
-Dilation
-
-# Dependencies
-Python 3.5.2  
-Tensorflow 1.4
-
-1- pip install -r requirements_gpu.txt   
-2- ./run.sh
+## License
+This project is licensed under the Apache License 2.0 - see the LICENSE file for details.
