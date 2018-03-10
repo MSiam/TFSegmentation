@@ -23,7 +23,7 @@ segmentation is only on increasing the accuracy of segmentation models with litt
 ### Run
 The file named run.sh provide a good example for running different architectures. Have a look at this file.
 
-Example to the run command written in the file:
+#### Example to the running command written in the file:
 ```
 python3 main.py --load_config=[config_file_name].yaml [train/test] [Trainer Class Name] [Model Class Name]
 ```
