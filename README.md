@@ -1,6 +1,6 @@
 
 # Real-time Semantic Segmentation Comparative Study   
-By: Mennatullah Siam, Mostafa Gamal, Moemen AbdelRazek, Senthil Yogamani, Martin Jagersand
+By: [Mennatullah Siam](https://github.com/MSiam), [Mostafa Gamal](https://github.com/MG2033), [Moemen AbdelRazek](https://github.com/moemen95), Senthil Yogamani, Martin Jagersand
 
 The repository contains the official **TensorFlow** code used in the our paper [RTSEG: REAL-TIME SEMANTIC SEGMENTATION COMPARATIVE STUDY](https://arxiv.org/abs/1803.02758) for comparing different realtime semantic segmentation architectures.
 
