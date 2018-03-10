@@ -12,16 +12,13 @@ segmentation is only on increasing the accuracy of segmentation models with litt
 <img src="https://github.com/MSiam/TFSegmentation/blob/master/figures/fig.png" width="70%" height="70%"><br><br>
 </div>
 
-## Feature Extractors
-- [VGG-16](https://github.com/MSiam/TFSegmentation/blob/master/models/encoders/VGG.py)
-- [ResNet-18](https://github.com/MSiam/TFSegmentation/blob/master/models/encoders/resnet_18.py)
-- [MobileNet](https://github.com/MSiam/TFSegmentation/blob/master/models/encoders/mobilenet.py)
-- [ShuffleNet](https://github.com/MSiam/TFSegmentation/blob/master/models/encoders/shufflenet.py)
-
-## Decoding Methods
-- SkipNet   
-- U-Net  
-- Dilation Frontend with different subsampling factors.
+## Models
+Encoder | Skip | U-Net | DilationV1 | DilationV2
+------- | ---- | ----- | ---------- | ----------
+[VGG-16](https://github.com/MSiam/TFSegmentation/blob/master/models/encoders/VGG.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/fcn8s.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/unet_vgg16.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/dilation.py) | No
+[ResNet-18](https://github.com/MSiam/TFSegmentation/blob/master/models/encoders/resnet_18.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/fcn8s_resnet18.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/linknet.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/dilation_resnet18.py) | No
+[MobileNet](https://github.com/MSiam/TFSegmentation/blob/master/models/encoders/mobilenet.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/fcn8s_mobilenet.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/unet_mobilenet.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/dilation_mobilenet.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/dilationv2_mobilenet.py)
+[ShuffleNet](https://github.com/MSiam/TFSegmentation/blob/master/models/encoders/shufflenet.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/fcn8s_shufflenet.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/unet_shufflenet.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/dilation_shufflenet.py) | [Yes](https://github.com/MSiam/TFSegmentation/blob/master/models/dilationv2_shufflenet.py)
 
 ## Reported Results
 ### Test Set
