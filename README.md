@@ -43,7 +43,7 @@ Dilation | ShuffleNet | No | 53.9
 SkipNet | MobileNet | Yes | 62.4
 SkipNet | ShuffleNet | Yes | 59.3
 
-** GFLOPs is computed on image resolution 360x640.
+** GFLOPs is computed on image resolution 360x640. However, the mIOU(s) are computed on the official image resolution required by CityScapes evaluation script 1024x2048.
 
 ## Usage
 ### Run
