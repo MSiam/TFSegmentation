@@ -36,15 +36,15 @@ SkipNet-MobileNet | 6.2 | 61.5 | 35.2 | 82.0 | 63.0
 ### Validation Set
 Encoder | Decoder | Coarse | mIoU
 ------- | ------- | ------ | ----
-SkipNet | MobileNet | No | 61.3
-SkipNet | ShuffleNet | No | 55.5
-UNet | ResNet18 | No | 57.9
-UNet | MobileNet | No | 61.0
-UNet | ShuffleNet | No | 57.0
-Dilation | MobileNet | No | 57.8
-Dilation | ShuffleNet | No | 53.9
-SkipNet | MobileNet | Yes | 62.4
-SkipNet | ShuffleNet | Yes | 59.3
+MobileNet | SkipNet | No | 61.3
+ShuffleNet | SkipNet | No | 55.5
+ResNet-18 | UNet | No | 57.9
+MobileNet | UNet | No | 61.0
+ShuffleNet | UNet | No | 57.0
+MobileNet | Dilation | No | 57.8
+ShuffleNet | Dilation | No | 53.9
+MobileNet | SkipNet | Yes | 62.4
+ShuffleNet | SkipNet | Yes | 59.3
 
 ** GFLOPs is computed on image resolution 360x640. However, the mIOU(s) are computed on the official image resolution required by CityScapes evaluation script 1024x2048.
 
