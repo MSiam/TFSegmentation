@@ -1,10 +1,12 @@
 # Real-time Semantic Segmentation Comparative Study
 By: [Mennatullah Siam](https://github.com/MSiam), [Mostafa Gamal](https://github.com/MG2033), [Moemen AbdelRazek](https://github.com/moemen95), Senthil Yogamani, Martin Jagersand
 
-The repository contains the official **TensorFlow** code used in the our paper [RTSEG: REAL-TIME SEMANTIC SEGMENTATION COMPARATIVE STUDY](https://arxiv.org/abs/1803.02758) for comparing different realtime semantic segmentation     architectures.
+The repository contains the official **TensorFlow** code used in the our papers:
+- [RTSEG: REAL-TIME SEMANTIC SEGMENTATION COMPARATIVE STUDY](https://arxiv.org/abs/1803.02758) for comparing different realtime semantic segmentation architectures.
+- [SHUFFLESEG: REAL-TIME SEMANTIC SEGMENTATION NETWORK](https://arxiv.org/abs/1803.03816) which introduces a new fast realtime semantic segmentation network based on the ShuffleNet unit.
 
 ## Description
-Semantic segmentation benefits robotics related applications especially autonomous driving. Most of the research on semantic segmentation is only on increasing the accuracy of segmentation models with little attention to computationally efficient solutions. The few work conducted in this direction does not provide principled methods to evaluate the      different design choices for segmentation. In this paper, we address this gap by presenting a real-time semantic segmentation benchmarking framework with a decoupled design for feature extraction and decoding methods. The code and the experimental results are presented on the [CityScapes dataset for urban scenes](https://www.cityscapes-dataset.com/).
+Semantic segmentation benefits robotics related applications especially autonomous driving. Most of the research on semantic segmentation is only on increasing the accuracy of segmentation models with little attention to computationally efficient solutions. The few work conducted in this direction does not provide principled methods to evaluate the      different design choices for segmentation. In RTSeg, we address this gap by presenting a real-time semantic segmentation benchmarking framework with a decoupled design for feature extraction and decoding methods. The code and the experimental results are presented on the [CityScapes dataset for urban scenes](https://www.cityscapes-dataset.com/).
 
 <div align="center">
 <img src="https://github.com/MSiam/TFSegmentation/blob/master/figures/fig.png" width="70%" height="70%"><br><br>
@@ -28,7 +30,7 @@ SegNet | 286.03 | 56.1 | 34.2 | 79.8 | 66.4
 ENet | 3.83 | 58.3 | 24.4 | 80.4 | 64.0
 DeepLab | - | 70.4 | 42.6 | 86.4 | 67.7
 SkipNet-VGG16 | - | 65.3 | 41.7 | 85.7 | 70.1
-SkipNet-ShuffleNet | 2.0 | 58.3 | 32.4 | 80.2 | 62.2
+ShuffleSeg | 2.0 | 58.3 | 32.4 | 80.2 | 62.2
 SkipNet-MobileNet | 6.2 | 61.5 | 35.2 | 82.0 | 63.0
 
 ### Validation Set
