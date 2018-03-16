@@ -63,7 +63,7 @@ python3 main.py --load_config=unet_resnet18_test.yaml test Train LinkNET
 ```
 python3 main.py --load_config=unet_resnet18_test.yaml inference Train LinkNET
 ```
-3. To run on different dataset or model, take one of the configuration files such as: config/experiments_config/unet_resnet18_test.yaml and modify it or create another .yaml configuration file depending on your needs.
+3. To run on different dataset or model, take one of the configuration files such as: ```config/experiments_config/unet_resnet18_test.yaml``` and modify it or create another .yaml configuration file depending on your needs.
 
 **NOTE: The current code does not contain the optimized code for measuring inference time, the final code will be released soon.**
 
