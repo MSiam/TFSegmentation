@@ -8,6 +8,7 @@ from utils.img_utils import decode_labels
 import numpy as np
 import tensorflow as tf
 
+
 class Params:
     """
     Class to hold BasicModel parameters
@@ -18,8 +19,9 @@ class Params:
         self.img_height = None
         self.num_channels = None
         self.num_classes = None
-        self.weighted_loss= True
-        self.class_weights= None
+        self.weighted_loss = True
+        self.class_weights = None
+
 
 class BasicModel:
     """
@@ -34,13 +36,13 @@ class BasicModel:
         self.params.img_height = self.args.img_height
         self.params.num_channels = self.args.num_channels
         self.params.num_classes = self.args.num_classes
-        self.params.class_weights= np.load(self.args.data_dir+'weights.npy')
-        self.params.weighted_loss= self.args.weighted_loss
+        self.params.class_weights = np.load(self.args.data_dir + 'weights.npy')
+        self.params.weighted_loss = self.args.weighted_loss
         # Input
         self.x_pl = None
         self.y_pl = None
         self.is_training = None
-        self.curr_learning_rate= None
+        self.curr_learning_rate = None
         # Output
         self.logits = None
         self.out_softmax = None
@@ -106,10 +108,11 @@ class BasicModel:
             self.x_pl = tf.placeholder(tf.float32,
                                        [self.args.batch_size, self.params.img_height, self.params.img_width, 3])
             self.y_pl = tf.placeholder(tf.int32, [self.args.batch_size, self.params.img_height, self.params.img_width])
-#            self.curr_learning_rate= tf.placeholder(tf.float32)
+            #            self.curr_learning_rate= tf.placeholder(tf.float32)
 
             if self.params.weighted_loss:
-                self.wghts = np.zeros((self.args.batch_size, self.params.img_height, self.params.img_width), dtype= np.float32)
+                self.wghts = np.zeros((self.args.batch_size, self.params.img_height, self.params.img_width),
+                                      dtype=np.float32)
             self.is_training = tf.placeholder(tf.bool)
 
     def init_network(self):
@@ -121,13 +124,13 @@ class BasicModel:
             self.out_argmax = tf.argmax(self.out_softmax, axis=3, output_type=tf.int32)
 
     def get_class_weighting(self):
-        self.wghts= tf.one_hot(self.y_pl, dtype='float32', depth=self.params.num_classes)* \
-            self.params.class_weights
-        self.wghts= tf.reduce_sum(self.wghts, 3)
+        self.wghts = tf.one_hot(self.y_pl, dtype='float32', depth=self.params.num_classes) * \
+                     self.params.class_weights
+        self.wghts = tf.reduce_sum(self.wghts, 3)
 
     def weighted_loss(self):
         self.get_class_weighting()
-        losses= tf.losses.sparse_softmax_cross_entropy(logits= self.logits, labels=self.y_pl, weights= self.wghts)
+        losses = tf.losses.sparse_softmax_cross_entropy(logits=self.logits, labels=self.y_pl, weights=self.wghts)
         return tf.reduce_mean(losses)
 
     def bootstrapped_ce_loss(self, ce, fraction):
@@ -145,10 +148,10 @@ class BasicModel:
     def init_train(self):
         with tf.name_scope('loss'):
             if self.params.weighted_loss:
-                self.cross_entropy_loss= self.weighted_loss()
+                self.cross_entropy_loss = self.weighted_loss()
             else:
-#                self.ce = tf.reduce_mean(
-#                    tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_pl))
+                #                self.ce = tf.reduce_mean(
+                #                    tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_pl))
                 self.ce = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.y_pl)
                 self.cross_entropy_loss = self.bootstrapped_ce_loss(self.ce, 0.25)
             self.regularization_loss = tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))

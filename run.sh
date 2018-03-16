@@ -10,7 +10,7 @@
 #python3 main.py --load_config=fcn8s_vgg16_test.yaml inference Train FCN8s
 
 #3- UNET VGG16 Train
-#python3 main.py --load_config=unet_vgg16_train.yaml train Train UNetVGG16
+python3 main.py --load_config=unet_vgg16_train.yaml train Train UNetVGG16
 
 #4- UNET VGG16 Test
 #python3 main.py --load_config=unet_vgg16_test.yaml test Train UNetVGG16
@@ -61,7 +61,7 @@
 #python3 main.py --load_config=unet_shufflenet_train.yaml train Train UNetShuffleNet
 
 #4- UNet ShuffleNet Test
-python3 main.py --load_config=unet_shufflenet_test.yaml test Train UNetShuffleNet
+#python3 main.py --load_config=unet_shufflenet_test.yaml test Train UNetShuffleNet
 #python3 main.py --load_config=unet_shufflenet_test.yaml inference Train UNetShuffleNet
 
 #5- Dilation v1 ShuffleNet Train
