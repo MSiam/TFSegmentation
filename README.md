@@ -54,23 +54,25 @@ ShuffleNet | SkipNet | Yes | 59.3
 
 ### Run
 The file named run.sh provide a good example for running different architectures. Have a look at this file.
-1. Remove comment from run.sh for running fcn8s_mobilenet on the validation set of cityscapes to get its mIoU.
-Our framework evaluation will produce results lower than the cityscapes evaluation script by small difference, for the final evaluation we use the cityscapes evaluation script. UNet ResNet18 should have 56% on validation set, but with cityscapes script we got 57.9%. The results on the test set for SkipNet-MobileNet and SkipNet-ShuffleNet are publicly available on the Cityscapes Benchmark.
-```
-python3 main.py --load_config=unet_resnet18_test.yaml test Train LinkNET
-```
-2. To measure running time run in inference mode.
-```
-python3 main.py --load_config=unet_resnet18_test.yaml inference Train LinkNET
-```
-3. To run on different dataset or model, take one of the configuration files such as: ```config/experiments_config/unet_resnet18_test.yaml``` and modify it or create another .yaml configuration file depending on your needs.
-
-**NOTE: The current code does not contain the optimized code for measuring inference time, the final code will be released soon.**
 
 #### Example to the running command written in the file:
 ```
 python3 main.py --load_config=[config_file_name].yaml [train/test] [Trainer Class Name] [Model Class Name]
 ```
+
+- Remove comment from run.sh for running fcn8s_mobilenet on the validation set of cityscapes to get its mIoU.
+Our framework evaluation will produce results lower than the cityscapes evaluation script by small difference, for the final evaluation we use the cityscapes evaluation script. UNet ResNet18 should have 56% on validation set, but with cityscapes script we got 57.9%. The results on the test set for SkipNet-MobileNet and SkipNet-ShuffleNet are publicly available on the Cityscapes Benchmark.
+```
+python3 main.py --load_config=unet_resnet18_test.yaml test Train LinkNET
+```
+- To measure running time, run in inference mode.
+```
+python3 main.py --load_config=unet_resnet18_test.yaml inference Train LinkNET
+```
+- To run on different dataset or model, take one of the configuration files such as: ```config/experiments_config/unet_resnet18_test.yaml``` and modify it or create another .yaml configuration file depending on your needs.
+
+**NOTE: The current code does not contain the optimized code for measuring inference time, the final code will be released soon.**
+
 ### Main Dependencies
  ```
  Python 3 and above
