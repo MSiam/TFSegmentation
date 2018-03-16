@@ -55,7 +55,7 @@ ShuffleNet | SkipNet | Yes | 59.3
 ### Run
 The file named run.sh provide a good example for running different architectures. Have a look at this file.
 
-#### Example to the running command written in the file:
+#### Examples to the running command in run.sh file:
 ```
 python3 main.py --load_config=[config_file_name].yaml [train/test] [Trainer Class Name] [Model Class Name]
 ```
