@@ -30,8 +30,8 @@ SegNet | 286.03 | 56.1 | 34.2 | 79.8 | 66.4
 ENet | 3.83 | 58.3 | 24.4 | 80.4 | 64.0
 DeepLab | - | 70.4 | 42.6 | 86.4 | 67.7
 SkipNet-VGG16 | - | 65.3 | 41.7 | 85.7 | 70.1
-ShuffleSeg | 2.0 | 58.3 | 32.4 | 80.2 | 62.2
-SkipNet-MobileNet | 6.2 | 61.5 | 35.2 | 82.0 | 63.0
+**ShuffleSeg | 2.0 | 58.3 | 32.4 | 80.2 | 62.2**
+**SkipNet-MobileNet | 6.2 | 61.5 | 35.2 | 82.0 | 63.0**
 
 ### Validation Set
 Encoder | Decoder | Coarse | mIoU
