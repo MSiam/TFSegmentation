@@ -109,6 +109,23 @@ archivePrefix = "arXiv",
   adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
 ```
+
+If you find ShuffleSeg useful in your research, please consider citing it as well:
+```
+@ARTICLE{2018arXiv180303816G,
+   author = {{Gamal}, M. and {Siam}, M. and {Abdel-Razek}, M.},
+    title = "{ShuffleSeg: Real-time Semantic Segmentation Network}",
+  journal = {ArXiv e-prints},
+archivePrefix = "arXiv",
+   eprint = {1803.03816},
+ primaryClass = "cs.CV",
+ keywords = {Computer Science - Computer Vision and Pattern Recognition},
+     year = 2018,
+    month = mar,
+   adsurl = {http://adsabs.harvard.edu/abs/2018arXiv180303816G},
+  adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+```
 ## License
 This project is licensed under the Apache License 2.0 - see the LICENSE file for details.
 
