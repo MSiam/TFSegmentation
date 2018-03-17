@@ -1,6 +1,4 @@
 # Real-time Semantic Segmentation Comparative Study
-By: [Mennatullah Siam](https://github.com/MSiam), [Mostafa Gamal](https://github.com/MG2033), [Moemen AbdelRazek](https://github.com/moemen95), Senthil Yogamani, Martin Jagersand
-
 The repository contains the official **TensorFlow** code used in our papers:
 - [RTSEG: REAL-TIME SEMANTIC SEGMENTATION COMPARATIVE STUDY](https://arxiv.org/abs/1803.02758) for comparing different realtime semantic segmentation architectures.
 - [SHUFFLESEG: REAL-TIME SEMANTIC SEGMENTATION NETWORK](https://arxiv.org/abs/1803.03816) which introduces a new fast realtime semantic segmentation network based on the ShuffleNet unit.
