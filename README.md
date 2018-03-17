@@ -47,7 +47,7 @@ ShuffleNet | SkipNet | Yes | 59.3
 ** GFLOPs is computed on image resolution 360x640. However, the mIOU(s) are computed on the official image resolution required by CityScapes evaluation script 1024x2048.**
 
 ## Usage
-1. Download the weights, processed data, and trained weights from [here](https://drive.google.com/drive/folders/19lJhjiYTKIBrCPwi0cxn1xuyLE3d9i6O?usp=sharing)
+1. Download the weights, processed data, and trained meta graphs from [here](https://drive.google.com/drive/folders/19lJhjiYTKIBrCPwi0cxn1xuyLE3d9i6O?usp=sharing)
 2. Extract pretrained_weights.zip
 3. Extract full_cityscapes_res.zip under data/
 4. Extract unet_resnet18.zip under experiments/
