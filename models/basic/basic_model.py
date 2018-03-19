@@ -113,7 +113,7 @@ class BasicModel:
             if self.params.weighted_loss:
                 self.wghts = np.zeros((self.args.batch_size, self.params.img_height, self.params.img_width),
                                       dtype=np.float32)
-            self.is_training = tf.placeholder(tf.bool)
+            self.is_training = False#tf.placeholder(tf.bool)
 
     def init_network(self):
         raise NotImplementedError("init_network function is not implemented in the model")

@@ -787,6 +787,13 @@ class Train(BasicTrain):
         # load the best model checkpoint to test on it
         self.load_best_model()
 
+        #output_node: network/output/Softmax
+        #input_node: network/input/Placeholder
+#        for n in tf.get_default_graph().as_graph_def().node:
+#            if 'input' in n.name:#if 'Softmax' in n.name:
+#                import pdb; pdb.set_trace()
+        tf.train.write_graph(self.sess.graph_def,'.','graph.pb')
+
         # init tqdm and get the epoch value
         tt = tqdm(range(self.test_data_len))
 
@@ -808,13 +815,13 @@ class Train(BasicTrain):
             # Feed this variables to the network
             if self.args.random_cropping:
                 feed_dict = {self.test_model.x_pl_before: x_batch,
-                             self.test_model.y_pl_before: y_batch,
-                             self.test_model.is_training: False,
+                             self.test_model.y_pl_before: y_batch
+#                             self.test_model.is_training: False,
                              }
             else:
                 feed_dict = {self.test_model.x_pl: x_batch,
-                             self.test_model.y_pl: y_batch,
-                             self.test_model.is_training: False
+                             self.test_model.y_pl: y_batch
+#                             self.test_model.is_training: False
                              }
 
             # calculate the time of one inference
