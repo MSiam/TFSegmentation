@@ -30,7 +30,7 @@ with tf.Session(graph=G) as sess:
 
     tf.global_variables_initializer().run()
 
-    img = np.ones((1, 512, 1024, 3), dtype=np.uint8)
+    img = np.ones((1, 360, 640, 3), dtype=np.uint8)
     fps_meter = FPSMeter()
     # Experiment should be repeated in order to get an accurate value for the inference time and FPS.
     for _ in tqdm(range(args.iterations)):
