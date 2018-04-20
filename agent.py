@@ -90,6 +90,9 @@ class Agent:
         else:
             with self.sess.as_default():
                 self.build_model(x_in)
+                print("Saving graph...")
+                tf.train.write_graph(self.sess.graph_def, ".", 'graph.pb')
+                print("Graph saved successfully.\n\n")
 
         # Create the operator
         self.operator = self.operator(self.args, self.sess, self.model, self.model)
