@@ -5,7 +5,7 @@ import random
 
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework.ops import convert_to_tensor
-from tensorflow.contrib.data import Iterator
+from tensorflow.python.data import Iterator
 #import cv2
 #import matplotlib.pyplot as plt
 import scipy
