@@ -1,7 +1,7 @@
 # Directories arguments
 data_dir: "full_cityscapes_res"
-exp_dir:  "fcn8s_shufflenet"
-out_dir:  "fcn8s_shufflenet"
+exp_dir:  "coarsepre_fcn8s_shufflenet"
+out_dir:  "coarsepre_fcn8s_shufflenet"
 
 # Data arguments
 img_height:   360
