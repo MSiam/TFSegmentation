@@ -10,7 +10,7 @@ from test import *
 from utils.misc import timeit
 
 import os
-#import pdb
+# import pdb
 import pickle
 from utils.misc import calculate_flops
 
@@ -90,9 +90,11 @@ class Agent:
         else:
             with self.sess.as_default():
                 self.build_model(x_in)
-                print("Saving graph...")
-                tf.train.write_graph(self.sess.graph_def, ".", 'graph.pb')
-                print("Graph saved successfully.\n\n")
+
+        if self.mode[0:9] == 'inference':
+            print("Saving graph...")
+            tf.train.write_graph(self.sess.graph_def, ".", 'graph.pb', as_text=True)
+            print("Graph saved successfully.\n\n")
 
         # Create the operator
         self.operator = self.operator(self.args, self.sess, self.model, self.model)
@@ -198,13 +200,14 @@ class Agent:
             print(self.data_x.dtype)
             print("DATA ITERATOR HERE!!")
 
-            self.features_placeholder = tf.placeholder(tf.float32, self.data_x.shape)
+            self.features_placeholder = tf.placeholder(tf.float32, [None, *self.data_x.shape[1:]],
+                                                       name="DatasetAPI_features_placeholder")
 
             dataset = tf.contrib.data.Dataset.from_tensor_slices(self.features_placeholder)
             dataset = dataset.batch(self.args.batch_size)
             self.iterator = tf.contrib.data.Iterator.from_structure(dataset.output_types,
-                                                            dataset.output_shapes)
+                                                                    dataset.output_shapes)
             self.next_batch = self.iterator.get_next()
-            self.training_init_op = self.iterator.make_initializer(dataset)
+            self.training_init_op = self.iterator.make_initializer(dataset, "data_initializer")
             self.sess.run(self.training_init_op, feed_dict={self.features_placeholder: self.data_x})
         return self.next_batch

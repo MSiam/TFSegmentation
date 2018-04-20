@@ -104,7 +104,7 @@ class BasicModel:
     def init_input(self):
         with tf.name_scope('input'):
             self.x_pl = tf.placeholder(tf.float32,
-                                       [self.args.batch_size, self.params.img_height, self.params.img_width, 3])
+                                       [self.args.batch_size, 3, self.params.img_height, self.params.img_width])
             self.y_pl = tf.placeholder(tf.int32, [self.args.batch_size, self.params.img_height, self.params.img_width])
 #            self.curr_learning_rate= tf.placeholder(tf.float32)
 
