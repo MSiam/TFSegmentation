@@ -40,6 +40,7 @@ with tf.Session(graph=G) as sess:
     # Placeholder initialization
     x = G.get_tensor_by_name('import/network/input/Placeholder:0')
     is_training = G.get_tensor_by_name('import/network/input/Placeholder_2:0')
+
     img = np.ones((1, 3, 360, 640), dtype=np.uint8)
 
     fps_meter = FPSMeter()
@@ -47,6 +48,6 @@ with tf.Session(graph=G) as sess:
     for _ in tqdm(range(args.iterations)):
         start = time.time()
         out = sess.run(y, feed_dict={x: img, is_training: False})
-        fps_meter.update(time.time() - start)
+        fps_meter.update_n(time.time() - start, 1)
 
 fps_meter.print_statistics()
