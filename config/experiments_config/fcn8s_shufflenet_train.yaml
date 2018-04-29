@@ -4,8 +4,8 @@ exp_dir:  "fcn8s_shufflenet"
 out_dir:  "fcn8s_shufflenet"
 
 # Data arguments
-img_height:   512
-img_width:    1024
+img_height:   256
+img_width:    512
 num_channels: 3
 num_classes:  20
 
