@@ -62,7 +62,6 @@ with tf.Session(graph=G) as sess:
     #x = G.get_tensor_by_name('import/network/input/Placeholder:0')
 
     tf.global_variables_initializer().run()
-
     #img = np.ones((1, 512, 1024, 3), dtype=np.uint8)
     imgs= np.load('data/full_cityscapes_res/X_val.npy')
     img= np.expand_dims(imgs[0,:,:,:], axis=0)
