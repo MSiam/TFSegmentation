@@ -26,8 +26,10 @@ import matplotlib.pyplot as plt
 from utils.img_utils import decode_labels
 from utils.seg_dataloader import SegDataLoader
 from tensorflow.contrib.data import Iterator
+import os
 import pdb
 import torchfile
+from data.postprocess import postprocess
 
 
 class Train(BasicTrain):
@@ -105,12 +107,19 @@ class Train(BasicTrain):
             self.test_data = None
             self.test_data_len = None
             self.num_iterations_testing_per_epoch = None
-            self.load_test_data()
+            self.load_val_data()
             self.generator = self.test_tfdata_generator
         elif self.args.data_mode == "test":
             self.test_data = None
             self.test_data_len = None
             self.num_iterations_testing_per_epoch = None
+            self.load_val_data()
+            self.generator = self.test_generator
+        elif self.args.data_mode == "test_eval":
+            self.test_data = None
+            self.test_data_len = None
+            self.num_iterations_testing_per_epoch = None
+            self.names_mapper = None
             self.load_test_data()
             self.generator = self.test_generator
         elif self.args.data_mode == "test_v2":
@@ -118,7 +127,7 @@ class Train(BasicTrain):
             self.test_data = None
             self.test_data_len = None
             self.num_iterations_testing_per_epoch = None
-            self.load_test_data(v2=True)
+            self.load_val_data(v2=True)
             self.generator = self.test_generator
         elif self.args.data_mode == "video":
             self.args.data_mode = "test"
@@ -356,8 +365,8 @@ class Train(BasicTrain):
         print("Video data is loaded")
 
     @timeit
-    def load_test_data(self, v2=False):
-        print("Loading Testing data..")
+    def load_val_data(self, v2=False):
+        print("Loading Validation data..")
         self.test_data = {'X': np.load(self.args.data_dir + "X_val.npy"),
                           'Y': np.load(self.args.data_dir + "Y_val.npy")}
         self.test_data = self.resize(self.test_data)
@@ -371,8 +380,19 @@ class Train(BasicTrain):
             self.test_data['Y'] = yy
 
         self.test_data_len = self.test_data['X'].shape[0] - self.test_data['X'].shape[0] % self.args.batch_size
+        print("Validation-shape-x -- " + str(self.test_data['X'].shape))
+        print("Validation-shape-y -- " + str(self.test_data['Y'].shape))
+        self.num_iterations_testing_per_epoch = (self.test_data_len + self.args.batch_size - 1) // self.args.batch_size
+        print("Validation data is loaded")
+
+    @timeit
+    def load_test_data(self):
+        print("Loading Testing data..")
+        self.test_data = {'X': np.load(self.args.data_dir + "X_test.npy")}
+        self.names_mapper = {'X': np.load(self.args.data_dir + "xnames_test.npy"),
+                             'Y': np.load(self.args.data_dir + "ynames_test.npy")}
+        self.test_data_len = self.test_data['X'].shape[0] - self.test_data['X'].shape[0] % self.args.batch_size
         print("Test-shape-x -- " + str(self.test_data['X'].shape))
-        print("Test-shape-y -- " + str(self.test_data['Y'].shape))
         self.num_iterations_testing_per_epoch = (self.test_data_len + self.args.batch_size - 1) // self.args.batch_size
         print("Test data is loaded")
 
@@ -792,6 +812,62 @@ class Train(BasicTrain):
         print("Plotting imgs")
         for i in range(len(img_list)):
             plt.imsave(self.args.imgs_dir + 'test_' + str(i) + '.png', img_list[i])
+
+    def test_eval(self, pkl=False):
+        print("Testing mode will begin NOW..")
+
+        # load the best model checkpoint to test on it
+        if not pkl:
+            self.load_best_model()
+
+        # init tqdm and get the epoch value
+        tt = tqdm(range(self.test_data_len))
+
+        # idx of image
+        idx = 0
+
+        # loop by the number of iterations
+        for cur_iteration in tt:
+            # load mini_batches
+            x_batch = self.test_data['X'][idx:idx + 1]
+
+            # Feed this variables to the network
+            if self.args.random_cropping:
+                feed_dict = {self.test_model.x_pl_before: x_batch,
+                             self.test_model.is_training: False,
+                             }
+            else:
+                feed_dict = {self.test_model.x_pl: x_batch,
+                             self.test_model.is_training: False
+                             }
+
+            # run the feed_forward
+            out_argmax, segmented_imgs = self.sess.run(
+                [self.test_model.out_argmax,
+                 self.test_model.segmented_summary],
+                feed_dict=feed_dict)
+
+            if pkl:
+                out_argmax[0] = self.linknet_postprocess(out_argmax[0])
+                segmented_imgs = decode_labels(out_argmax, 20)
+
+            # Colored results for visualization
+            colored_save_path = self.args.out_dir + 'imgs/' + str(self.names_mapper['Y'][idx])
+            if not os.path.exists(os.path.dirname(colored_save_path)):
+                os.makedirs(os.path.dirname(colored_save_path))
+            plt.imsave(colored_save_path, segmented_imgs[0])
+
+            # Results for official evaluation
+            save_path = self.args.out_dir + 'results/' + str(self.names_mapper['Y'][idx])
+            if not os.path.exists(os.path.dirname(save_path)):
+                os.makedirs(os.path.dirname(save_path))
+            output = postprocess(out_argmax[0])
+            misc.imsave(save_path, misc.imresize(output, [1024, 2048], 'nearest'))
+
+            idx += 1
+
+        # print in console
+        tt.close()
 
     def test_inference(self):
         """

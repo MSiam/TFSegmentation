@@ -46,16 +46,16 @@ class Agent:
                 self.model = self.model(self.args)
                 self.model.build()
 
-#            print('Building Train Network')
-#            with tf.variable_scope('network') as scope:
-#                self.train_model = self.model(self.args, phase=0)
-#                self.train_model.build()
-#
-#            print('Building Test Network')
-#            with tf.variable_scope('network') as scope:
-#                scope.reuse_variables()
-#                self.test_model = self.model(self.args, phase=1)
-#                self.test_model.build()
+        #            print('Building Train Network')
+        #            with tf.variable_scope('network') as scope:
+        #                self.train_model = self.model(self.args, phase=0)
+        #                self.train_model.build()
+        #
+        #            print('Building Test Network')
+        #            with tf.variable_scope('network') as scope:
+        #                scope.reuse_variables()
+        #                self.test_model = self.model(self.args, phase=1)
+        #                self.test_model.build()
         else:  # inference phase
             print('Building Test Network')
             with tf.variable_scope('network') as scope:
@@ -105,6 +105,8 @@ class Agent:
             self.debug()
         elif self.mode == 'test':
             self.test()
+        elif self.mode == 'test_eval':
+            self.test_eval()
         else:
             print("This mode {{{}}}  is not found in our framework".format(self.mode))
             exit(-1)
@@ -126,7 +128,6 @@ class Agent:
                     if str(v.shape) != str(pretrained_weights[v.op.name].shape):
                         print(v.shape)
                         print(pretrained_weights[v.op.name].shape)
-                        print("Oh goooddd!!!")
                         exit(0)
                     assign_op = v.assign(pretrained_weights[v.op.name])
                     sess.run(assign_op)
@@ -143,6 +144,12 @@ class Agent:
     def test(self, pkl=False):
         try:
             self.operator.test(pkl)
+        except KeyboardInterrupt:
+            pass
+
+    def test_eval(self, pkl=False):
+        try:
+            self.operator.test_eval(pkl)
         except KeyboardInterrupt:
             pass
 
