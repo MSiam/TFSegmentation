@@ -4,14 +4,13 @@ import numpy as np
 import tensorflow as tf
 from skimage.draw import circle
 
-import utils.Constants
-# from Log import log
+from utils import  Constants
+#from Log import log
 from datasets.Augmentors import parse_augmentors
 from datasets.Util.Batch import create_batch_dict
 from datasets.Util.Normalization import unnormalize
 from datasets.Util.Reader import read_images_from_disk, load_label_default, load_img_default
 from datasets.Util.Resize import parse_resize_mode, ResizeMode
-
 
 class Dataset(object):
   __metaclass__ = ABCMeta
@@ -95,14 +94,15 @@ class ImageDataset(Dataset):
       augmentors = parse_augmentors(augmentor_strs, self.void_label())
       if len(augmentors) == 0:
         pass
-        print >> log.v1, "warning, no data augmentors used on train"
+        print ("warning, no data augmentors used on train")
     else:
       shuffle = False
       augmentor_strs = self.config.augmentors_val
       augmentors = parse_augmentors(augmentor_strs, self.void_label())
     return augmentors, shuffle
 
-  def create_input_tensors_dict(self, batch_size):
+  def create_input_tensors_dict(self, batch_size, of_flag= False):
+    self.of_flag= of_flag
     self._load_inputfile_lists()
     resize_mode, input_size = self._get_resize_params(self.subset, self.image_size, ResizeMode.Unchanged)
     augmentors, shuffle = self._parse_augmentors_and_shuffle()
@@ -111,8 +111,8 @@ class ImageDataset(Dataset):
     queue = tf.train.slice_input_producer(inputfile_tensors, shuffle=shuffle)
 
     tensors_dict, summaries = self._read_inputfiles(queue, resize_mode, input_size, augmentors)
-    tensors_dict['inputs']=tf.reshape(tensors_dict['inputs'],(480,854,3))
-    tensors_dict['labels']=tf.reshape(tensors_dict['labels'],(480,854,1))
+    # tensors_dict['inputs']=tf.reshape(tensors_dict['inputs'],(480,854,3))
+    # tensors_dict['labels']=tf.reshape(tensors_dict['labels'],(480,854,1))
     # a = tf.Print(tensors_dict['inputs'], [tensors_dict['inputs']], message="This is a: ")
 
     tensors_dict = create_batch_dict(batch_size, tensors_dict)
@@ -161,7 +161,7 @@ class ImageDataset(Dataset):
   def _read_inputfiles(self, queue, resize_mode, input_size, augmentors):
     tensors, summaries = read_images_from_disk(queue, input_size, resize_mode, label_postproc_fn=self.label_postproc_fn,
                                                augmentors=augmentors, label_load_fn=self.label_load_fn,
-                                               img_load_fn=self.img_load_fn)
+                                               img_load_fn=self.img_load_fn, of_flag= self.of_flag)
     return tensors, summaries
 
   def add_clicks(self, inputs, c):

@@ -2,14 +2,14 @@ from abc import abstractmethod
 
 import tensorflow as tf
 
-import Constants
+from utils import Constants
 from datasets.Augmentors import parse_augmentors, apply_augmentors
 from datasets.Dataset import Dataset
-from datasets.Util.Input import assemble_input_tensors
+#from datasets.Util.Input import assemble_input_tensors
 from datasets.Util.Normalization import unnormalize
 from datasets.Util.Reader import create_tensor_dict
+from datasets.Util.Reader import create_tensor_dict_of
 from datasets.Util.Resize import resize
-
 
 class FeedImageDataset(Dataset):
   def __init__(self, config, num_classes, void_label, subset, image_size, n_color_channels=3, use_old_label=False,
@@ -19,9 +19,10 @@ class FeedImageDataset(Dataset):
     self._void_label = void_label
     self.image_size = image_size
     self.config = config
-    self.use_summaries = self.config.bool("use_summaries", False)
+    self.use_summaries = self.config.use_summaries
 
     self.img_placeholder = tf.placeholder(tf.float32, shape=(480, 854, n_color_channels), name="img_placeholder")
+    self.flow_placeholder = tf.placeholder(tf.float32, shape=(480, 854, n_color_channels), name="flow_placeholder")
     self.label_placeholder = tf.placeholder(tf.uint8, shape=(480, 854, 1), name="label_placeholder")
     self.tag_placeholder = tf.placeholder(tf.string, shape=(), name="tag_placeholder")
 
@@ -78,21 +79,36 @@ class FeedImageDataset(Dataset):
   def void_label(self):
     return self._void_label
 
-  def create_input_tensors_dict(self, batch_size):
+  def create_input_tensors_dict(self, batch_size, of_flag=False):
     use_index_img = self.subset != "train"
-    tensors = create_tensor_dict(unnormalized_img=self.img_placeholder, label=self.label_placeholder,
+    if not of_flag:
+        tensors = create_tensor_dict(unnormalized_img=self.img_placeholder, label=self.label_placeholder,
+                                 tag=self.tag_placeholder, raw_label=self.label_placeholder,
+                                 old_label=self.old_label_placeholder, flow_past=self.flow_into_past_placeholder,
+                                 flow_future=self.flow_into_future_placeholder, use_index_img=use_index_img,
+                                 u0=self.u0_placeholder, u1=self.u1_placeholder)
+    else:
+        tensors = create_tensor_dict_of(unnormalized_img=self.img_placeholder, flow= self.flow_placeholder, label=self.label_placeholder,
                                  tag=self.tag_placeholder, raw_label=self.label_placeholder,
                                  old_label=self.old_label_placeholder, flow_past=self.flow_into_past_placeholder,
                                  flow_future=self.flow_into_future_placeholder, use_index_img=use_index_img,
                                  u0=self.u0_placeholder, u1=self.u1_placeholder)
 
     # TODO: need to set shape here?
+    if of_flag:
+        from datasets.Util.Resize_of import resize
+#        from datasets.Augmentors_of import apply_augmentors
+#        from datasets.Util.Input_of import assemble_input_tensors
+    else:
+        from datasets.Util.Resize import resize
+#        from datasets.Augmentors import apply_augmentors
+#        from datasets.Util.Input import assemble_input_tensors
 
     resize_mode, input_size = self._get_resize_params(self.subset, self.image_size)
     tensors = resize(tensors, resize_mode, input_size)
     if len(input_size) == 3:
       input_size = input_size[1:]
-    tensors = self._prepare_augmented_batch(tensors, batch_size, image_size=input_size)
+    tensors = self._prepare_augmented_batch(tensors, batch_size, image_size=input_size, of_flag= of_flag)
 
     if self.use_summaries:
       inputs = tensors["inputs"]
@@ -104,10 +120,17 @@ class FeedImageDataset(Dataset):
     return tensors
 
   # here a batch always consists only of different augmentations of the same image
-  def _prepare_augmented_batch(self, tensors, batch_size, image_size=None):
+  def _prepare_augmented_batch(self, tensors, batch_size, image_size=None, of_flag=False):
+    if of_flag:
+        from datasets.Augmentors_of import apply_augmentors
+        from datasets.Util.Input_of import assemble_input_tensors
+    else:
+        from datasets.Augmentors import apply_augmentors
+        from datasets.Util.Input import assemble_input_tensors
+
     if self.subset == "train":
       assert batch_size == 1, "only implemented for 1 so far"
-      augmentor_strs = self.config.unicode_list("augmentors_train", [])
+      augmentor_strs = self.config.augmentors_train
       augmentors = parse_augmentors(augmentor_strs, self.void_label())
       for augmentor in augmentors:
         tensors = augmentor.apply(tensors)
@@ -119,11 +142,11 @@ class FeedImageDataset(Dataset):
       keys = tensors.keys()
       tensors = {k: tf.expand_dims(tensors[k], axis=0) for k in keys}
     else:
-      augmentor_strs = self.config.unicode_list("augmentors_val", [])
+      augmentor_strs = self.config.augmentors_val
       assert "scale" not in augmentor_strs, "scale augmentation during test time not implemented yet"
       assert "translation" not in augmentor_strs, "translation augmentation during test time not implemented yet"
       augmentors = parse_augmentors(augmentor_strs, self.void_label())
-      tensors = [tensors for _ in xrange(batch_size)]
+      tensors = [tensors for _ in range(batch_size)]
       tensors = [apply_augmentors(t, augmentors) for t in tensors]
       tensors = [assemble_input_tensors(t) for t in tensors]
       # batchify
@@ -163,11 +186,13 @@ class OneshotImageDataset(FeedImageDataset):
     assert self._video_idx is not None
     return len(self._get_video_data())
 
-  def feed_dict_for_video_frame(self, frame_idx, with_annotations, old_mask=None):
+  def feed_dict_for_video_frame(self, frame_idx, with_annotations, old_mask=None, of_flag=False):
     tensors = self._get_video_data()[frame_idx].copy()
     feed_dict = {self.img_placeholder: tensors["unnormalized_img"], self.tag_placeholder: tensors["tag"]}
     if with_annotations:
       feed_dict[self.label_placeholder] = tensors["label"]
+    if of_flag:
+      feed_dict[self.flow_placeholder]= tensors['flow']
 
     assert "old_mask" not in tensors
     if old_mask is not None:

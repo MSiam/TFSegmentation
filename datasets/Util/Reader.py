@@ -8,6 +8,29 @@ from datasets.Util.Normalization import normalize
 from datasets.Util.Resize import resize
 from datasets.Util.Util import load_flow_from_flo, create_index_image, smart_shape
 
+def create_tensor_dict_of(unnormalized_img, flow, label, tag, raw_label=None, old_label=None, flow_past=None, flow_future=None,
+                       use_index_img=False, u0=None, u1=None):
+  tensors = {"unnormalized_img": unnormalized_img, "flow":flow, "label": label, "tag": tag}
+  if raw_label is None:
+    tensors["raw_label"] = label
+  else:
+    tensors["raw_label"] = raw_label
+  if old_label is not None:
+    tensors["old_label"] = old_label
+  if flow_past is not None:
+    tensors["flow_past"] = flow_past
+  if flow_future is not None:
+    tensors["flow_future"] = flow_future
+  if u0 is not None:
+    tensors[Constants.DT_NEG] = u0
+  if u1 is not None:
+    tensors[Constants.DT_POS] = u1
+  if use_index_img:
+    shape = smart_shape(unnormalized_img)
+    index_img = create_index_image(shape[0], shape[1])
+    tensors["index_img"] = index_img
+  return tensors
+
 
 def create_tensor_dict(unnormalized_img, label, tag, raw_label=None, old_label=None, flow_past=None, flow_future=None,
                        use_index_img=False, u0=None, u1=None):
@@ -51,9 +74,15 @@ def load_img_default(img_path):
 
 
 def read_images_from_disk(input_queue, input_size, resize_mode, label_postproc_fn=lambda x: x, augmentors=(),
-                          label_load_fn=load_label_default, img_load_fn=load_img_default):
+                          label_load_fn=load_label_default, img_load_fn=load_img_default, of_flag= False):
   im_path = input_queue[0]
-  label_path = input_queue[1]
+  if of_flag:
+      flow_path= input_queue[1]
+      flow = img_load_fn(img_path=flow_path)
+      label_path= input_queue[2]
+  else:
+      label_path = input_queue[1]
+
   img = img_load_fn(img_path=im_path)
 
   labels = label_load_fn(im_path, label_path)
@@ -85,10 +114,23 @@ def read_images_from_disk(input_queue, input_size, resize_mode, label_postproc_f
     shape = im_path.get_shape()
     im_path = tf.string_join([im_path, tf.as_string(labels['num_clicks'])], separator=":", name="JoinPath")
     im_path.set_shape(shape)
-
-  tensors = create_tensor_dict(unnormalized_img=img, label=label,
+  if of_flag:
+    tensors = create_tensor_dict_of(unnormalized_img=img, flow=flow, label=label,
                                old_label=old_label, u0=u0, u1=u1,
                                tag=im_path, raw_label=label)
+  else:
+    tensors = create_tensor_dict(unnormalized_img=img, label=label,
+                               old_label=old_label, u0=u0, u1=u1,
+                               tag=im_path, raw_label=label)
+
+  if of_flag:
+      from datasets.Util.Resize_of import resize
+      from datasets.Augmentors_of import apply_augmentors
+      from datasets.Util.Input_of import assemble_input_tensors
+  else:
+      from datasets.Util.Resize import resize
+      from datasets.Augmentors import apply_augmentors
+      from datasets.Util.Input import assemble_input_tensors
 
   tensors = resize(tensors, resize_mode, input_size)
   tensors = apply_augmentors(tensors, augmentors)

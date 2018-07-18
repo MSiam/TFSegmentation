@@ -183,6 +183,13 @@ class FlipAugmentor(object):
                 aug_idx_img = tf.cond(doit, lambda: idx_flipped, lambda: idx_img)
                 aug_tensors["index_img"] = aug_idx_img
 
+            if "flow" in tensors:
+                flow = tensors["flow"]
+                # attention: we also need to negate the x part of the flow
+                flow_flipped = tf.reverse(flow, axis=[1]) * [-1, 1]
+                aug_flow = tf.cond(doit, lambda: flow_flipped, lambda: flow)
+                aug_tensors["flow"] = aug_flow
+
             if "flow_past" in tensors:
                 flow_past = tensors["flow_past"]
                 # attention: we also need to negate the x part of the flow
@@ -234,10 +241,13 @@ class ScaleAugmentor(object):
         _scale("old_label", False, offset)
         _scale("index_img", False, offset)
         _scale("flow_past", True, offset)
+        _scale("flow", True, offset)
         _scale("flow_future", True, offset)
         # attention: when we zoom in, the shift in number of pixels (i.e. optical flow) gets larger
         if "flow_past" in aug_tensors:
             aug_tensors["flow_past"] *= scale
+        if "flow" in aug_tensors:
+            aug_tensors["flow"] *= scale
         if "flow_future" in aug_tensors:
             aug_tensors["flow_future"] *= scale
 

@@ -1,12 +1,12 @@
-from Log import log
+# from Log import log
 import time
 
 
 class Timer(object):
   def __init__(self, stream=None):
-    if stream is None:
-      stream = log.v4
-    self.stream = stream
+    # if stream is None:
+    #   stream = log.v4
+    # self.stream = stream
     self.start = None
 
   def __enter__(self):
