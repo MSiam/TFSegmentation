@@ -6,7 +6,8 @@ from configs.onavos_config import OnavosConfig
 from configs.onavos_train import OnavosConfigTrain
 from utils.weights_utils import dump_weights
 from train.trainer import Trainer
-
+from utils.args import get_args
+from utils.config import process_config
 FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_string('model', default_value="onavos_1stream",
                            docstring=""" the model name should be in ["onavos","onavos_1stream","onavos_2stream"] """)
@@ -18,12 +19,24 @@ tf.app.flags.DEFINE_boolean('load_weights', default_value=False,
 
 
 def main(_):
+
+    try:
+        args = get_args()
+        config = process_config(args.config)
+
+    except:
+        print("missing or invalid arguments")
+        exit(0)
+
+
+
     tf.reset_default_graph()
     tf.logging.set_verbosity(tf.logging.INFO)
-    config= tf.ConfigProto()
-    config.gpu_options.allow_growth= True
-    sess = tf.Session(config=config)
+    gpu_config= tf.ConfigProto()
+    gpu_config.gpu_options.allow_growth= True
+    sess = tf.Session(config=gpu_config)
 
+    #creating global step counter
     global_step = tf.Variable(0, name='global_step', trainable=False)
 
     if FLAGS.config == "onavos":
@@ -42,8 +55,8 @@ def main(_):
     else:
         raise Exception('Unknown model')
 
-    if FLAGS.load_weights:
-        model.load_weights('./model4.pkl')
+    if FLAGS.parse_onavos_weights:
+        model.parse_onavos_weights('./model4.pkl')
 
     if FLAGS.mode=="train":
         trainer = Trainer(config, model, global_step, sess)

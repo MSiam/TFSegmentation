@@ -280,7 +280,7 @@ class Onavos_2stream(Onavos):
 
 
 
-    def load_weights(self, model_path):
+    def parse_onavos_weights(self, model_path):
         with open(model_path, 'rb') as output:
             loaded_weights = pickle.load(output, encoding='latin1')
             loaded_model_names = []
