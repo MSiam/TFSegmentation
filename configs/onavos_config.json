@@ -1,7 +1,12 @@
 {
+    "exp_name":"any_name",
+    "model_name":"Onavos_1stream",
+    "mode":"oneshot",
+    "parse_onavos_weights":false,
+
+
     "max_to_keep" : 2,
     "load_model" : true,
-    "checkpoint_dir" : "./checkpoints_1stream/",
     "save" : true,
     "load" : "models/DAVIS16/DAVIS16",
 
@@ -49,8 +54,6 @@
     "use_positives":true,
     "use_negatives":true,
 
+    "1":5
 
-    "model":"onavos_1stream",
-    "mode":"train",
-    "parse_onavos_weights":false
 }

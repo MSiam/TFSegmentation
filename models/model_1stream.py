@@ -3,7 +3,6 @@ import numpy as np
 import pickle
 from utils import Constants
 from utils.Measures import create_confusion_matrix
-from configs.onavos_config import OnavosConfig
 from utils import Measures
 import glob
 from tensorflow.python.training import moving_averages

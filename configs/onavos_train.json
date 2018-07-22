@@ -1,42 +1,45 @@
 {
-    "max_to_keep " : 2,
-    "load_model " : true,
-    "checkpoint_dir " : "./checkpoints/",
-    "save " : true,
-    "load " : "models/DAVIS16/DAVIS16",
 
-    "davis_data_dir " : "/home/eren/Data/DAVIS/",
-    "task " : "train",
-    "dataset " : "DAVIS",
-    "model " : "DAVIS16_oneshot",
-    "batch_size " : 1,
-    "batch_size_eval " : 1,
-    "log_verbosity " : 5,
-    "optimizer " : "adam",
-    "momentum " : 0.9,
-    "freeze_batchnorm " : true,
-    "learning_rates " : {"1": 0.000001, "8": 0.0000005, "12": 0.0000001},
-    "augmentors_train " : ["gamma", "flip"],
-    "resize_mode_train " : "",
-    "n_epochs " : 500,
-    "gpus " : [0],
-
-    "trainsplit " : 0,
-    "n_finetune_steps " : 0,
-    "ignore_first_and_last_results " : true,
-    "resize_mode_val " : "unchanged",
-    "augmentors_val " : [],
-    "n_test_samples " : 1,
-
-    "save_oneshot " : true,
-    "save_logits " : true,
-    "use_summaries " : false,
-    "input_size_val " : null,
-    "measures " : [],
-    "logfile_path " : "./log"
+   "exp_name":"any_name",
+   "model_name":"Onavos_1stream",
+   "mode":"train",
+   "parse_onavos_weights":false,
 
 
-    "model":"onavos_1stream",
-    "mode":"train",
-    "parse_onavos_weights":false
+   "max_to_keep" : 2,
+   "load_model" : true,
+   "save" : true,
+   "load" :"models/DAVIS16/DAVIS16",
+
+   "davis_data_dir" : "/home/gemy/work/datasets/DAVIS/",
+   "task" :"train",
+   "dataset" :"DAVIS",
+   "model" :"DAVIS16_oneshot",
+   "batch_size" : 1,
+   "batch_size_eval" : 1,
+   "log_verbosity" : 5,
+   "optimizer" :"adam",
+   "momentum" : 0.9,
+   "freeze_batchnorm" : true,
+   "learning_rates" : {"1": 0.000001,"8": 0.0000005,"12": 0.0000001},
+   "augmentors_train" : ["gamma","flip"],
+   "resize_mode_train" :"",
+   "n_epochs" : 500,
+   "gpus" : [0],
+
+   "trainsplit" : 0,
+   "n_finetune_steps" : 0,
+   "ignore_first_and_last_results" : true,
+   "resize_mode_val" :"unchanged",
+   "augmentors_val" : [],
+   "n_test_samples" : 1,
+
+   "save_oneshot" : true,
+   "save_logits" : true,
+   "use_summaries" : false,
+   "input_size_val" : null,
+   "measures" : [],
+   "logfile_path" :"./log"
+
+
 }
