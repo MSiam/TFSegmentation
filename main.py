@@ -9,12 +9,12 @@ from utils.dirs import create_dirs
 
 
 def main():
-    # try:
-    args = get_args()
-    config = process_config(args.config)
+    try:
+        args = get_args()
+        config = process_config(args.config)
 
-    # except:
-    #     raise Exception('"missing or invalid arguments"')
+    except:
+        raise Exception("Missing or Invalid arguments")
     #
     # creating experiment folder
     create_dirs([config.summary_dir, config.checkpoint_dir])
@@ -29,7 +29,10 @@ def main():
     global_step = tf.Variable(0, name='global_step', trainable=False)
 
     # model
-    model_class = globals()[config.model_name]
+    try:
+        model_class = globals()[config.model_name]
+    except:
+        raise Exception("Invalid Model Class Name")
     model = model_class(sess, config)
 
     # parse weights from original onavos
