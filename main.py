@@ -37,7 +37,7 @@ def main():
 
     # parse weights from original onavos
     if config.parse_onavos_weights:
-        model.parse_onavos_weights('./model.pkl')
+        model.parse_onavos_weights('./davis.pkl')
 
     # mode [train or oneshot or online]
     if config.mode == "train":

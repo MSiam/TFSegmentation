@@ -106,7 +106,7 @@ class Onavos_2stream(Onavos):
         return res11
 
     def build(self, inputs,flow, labels,reuse):
-        with tf.variable_scope("network",reuse=reuse):
+        with tf.variable_scope("",reuse=reuse):
             stream1= self.create_stream('stream', False, inputs)
             stream2= self.create_stream('stream', True, flow)
 

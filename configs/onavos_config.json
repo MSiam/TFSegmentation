@@ -1,5 +1,5 @@
 {
-    "exp_name":"any_name",
+    "exp_name":"test",
     "model_name":"Onavos_1stream",
     "mode":"oneshot",
     "parse_onavos_weights":false,
@@ -11,7 +11,7 @@
     "load" : "models/DAVIS16/DAVIS16",
 
     "davis_data_dir" : "/home/gemy/work/datasets/DAVIS/",
-    "task" : "online",
+    "task" : "oneshot",
     "dataset" : "DAVIS",
     "model" : "DAVIS16_oneshot",
     "batch_size" : 1,

@@ -75,7 +75,7 @@ class Onavos_1stream(Onavos):
 
     # model
     def build(self, inputs,labels,reuse):
-        with tf.variable_scope("network",reuse=reuse):
+        with tf.variable_scope("",reuse=reuse):
 
             conv0 = tf.layers.conv2d(inputs, 64, 3, use_bias=False, padding='SAME', name='conv0')
 
