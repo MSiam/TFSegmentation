@@ -1,7 +1,7 @@
 {
-    "exp_name":"test2",
+    "exp_name":"test",
     "model_name":"Onavos_1stream",
-    "parse_onavos_weights":true,
+    "parse_onavos_weights":false,
 
 
     "max_to_keep" : 2,

@@ -8,7 +8,6 @@
    "max_to_keep" : 2,
    "load_model" : true,
    "save" : true,
-   "load" :"models/DAVIS16/DAVIS16",
 
    "davis_data_dir" : "/home/gemy/work/datasets/DAVIS/",
    "task" :"train",
