@@ -261,7 +261,6 @@ class Onavos_1stream(Onavos):
         return measures
 
 
-
     def parse_onavos_weights(self, model_path):
         with open(model_path, 'rb') as output:
             loaded_weights = pickle.load(output, encoding='latin1')

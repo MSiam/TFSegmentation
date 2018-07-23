@@ -1,13 +1,12 @@
 {
-    "exp_name":"test",
+    "exp_name":"test2",
     "model_name":"Onavos_1stream",
-    "parse_onavos_weights":false,
+    "parse_onavos_weights":true,
 
 
     "max_to_keep" : 2,
     "load_model" : true,
     "save" : true,
-    "load" : "models/DAVIS16/DAVIS16",
 
     "davis_data_dir" : "/home/gemy/work/datasets/DAVIS/",
     "task" : "oneshot",
