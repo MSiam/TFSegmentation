@@ -2,7 +2,6 @@
 
    "exp_name":"any_name",
    "model_name":"Onavos_1stream",
-   "mode":"train",
    "parse_onavos_weights":false,
 
 

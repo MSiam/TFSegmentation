@@ -1,7 +1,6 @@
 {
     "exp_name":"test",
     "model_name":"Onavos_1stream",
-    "mode":"oneshot",
     "parse_onavos_weights":false,
 
 

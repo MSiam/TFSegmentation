@@ -40,12 +40,12 @@ def main():
         model.parse_onavos_weights('./davis.pkl')
 
     # mode [train or oneshot or online]
-    if config.mode == "train":
+    if config.task == "train":
         trainer = Trainer(config, model, global_step, sess)
         trainer.train()
-    elif config.mode == "oneshot":
+    elif config.task == "oneshot":
         model.one_shot_evaluation()
-    elif config.mode == "online":
+    elif config.task == "online":
         trainer = Trainer(config, model, global_step, sess)
         model.online_forward(sess, config, model, trainer)
 
