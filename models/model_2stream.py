@@ -107,8 +107,8 @@ class Onavos_2stream(Onavos):
 
     def build(self, inputs,flow, labels,reuse):
         with tf.variable_scope("",reuse=reuse):
-            stream1= self.create_stream('stream', False, inputs)
-            stream2= self.create_stream('stream', True, flow)
+            stream1= self.create_stream('', False, inputs)
+            stream2= self.create_stream('', True, flow)
 
             concat= tf.add(stream1, stream2)
             res12 = self.residual_unit2('res12', concat, n_features=[512, 1024], dilations=[1, 2])
