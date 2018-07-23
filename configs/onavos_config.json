@@ -1,6 +1,6 @@
 {
     "exp_name":"test",
-    "model_name":"Onavos_2stream",
+    "model_name":"Onavos_1stream",
     "parse_onavos_weights":false,
 
 

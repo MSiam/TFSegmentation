@@ -14,6 +14,7 @@ import numpy
 from tqdm import tqdm
 from utils.one_shot_utils import adjust_results_to_targets, process_forward_result, flip_if_necessary, average_measures
 from models.model import Onavos
+from Forwarding.OnlineAdaptingForwarder import OnlineAdaptingForwarder
 
 class Onavos_2stream(Onavos):
     def __init__(self, sess, config):
@@ -27,12 +28,12 @@ class Onavos_2stream(Onavos):
         self.prepare_datasets()
         self.regularizer = tf.contrib.layers.l2_regularizer(scale=1e-4)
 
-        if self.config.task=="train":
+        if self.config.task=="train" or self.config.task=="online":
             self.train_net = self.build(self.train_inputs, self.train_flow,self.train_labels,False)
             tf.summary.scalar('train_loss', self.train_net['loss'])
 #            tf.summary.scalar('train_iou', self.train_net['measures']['iou'])
 
-        self.test_net = self.build(self.valid_inputs, self.valid_flow, self.valid_labels, (config.task == "train"))
+        self.test_net = self.build(self.valid_inputs, self.valid_flow, self.valid_labels, (config.task == "train" or self.config.task=="online"))
         tf.summary.scalar('valid_loss', self.test_net['loss'])
 #       tf.summary.scalar('valid_iou', self.test_net['measures']['iou'])
 
@@ -45,7 +46,7 @@ class Onavos_2stream(Onavos):
         # self.loss_summed= self.regularizer + self.loss
 
     def prepare_datasets(self):
-        if self.config.task == "train":
+        if self.config.task == "train" or self.config.task=="online":
             self.train_data = load_dataset(self.config, "train", self.sess, self.coordinator, of_flag= True)
             inputs_tensors_dict = self.train_data.create_input_tensors_dict(self.config.batch_size, of_flag=True)
             self.train_inputs = inputs_tensors_dict["inputs"]
