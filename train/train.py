@@ -911,12 +911,12 @@ class Train(BasicTrain):
             if self.args.random_cropping:
                 feed_dict = {self.test_model.x_pl_before: x_batch,
                              self.test_model.y_pl_before: y_batch
-                             #                             self.test_model.is_training: False,
+                             self.test_model.is_training: False,
                              }
             else:
                 feed_dict = {self.test_model.x_pl: x_batch,
                              self.test_model.y_pl: y_batch
-                             #                             self.test_model.is_training: False
+                             self.test_model.is_training: False
                              }
 
             # calculate the time of one inference
