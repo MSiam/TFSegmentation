@@ -46,6 +46,8 @@ ShuffleNet | SkipNet | Yes | 59.3
 
 ** GFLOPs is computed on image resolution 360x640. However, the mIOU(s) are computed on the official image resolution required by CityScapes evaluation script 1024x2048.**
 
+** Regarding Inference time, issue is reported [here](https://github.com/MSiam/TFSegmentation/issues/20). We were not able to outperform the reported inference time from ENet architecture it could be due to discrepencies in the optimization we perform. People are welcome to improve on the optimization method we're using.
+
 ## Usage
 1. Download the weights, processed data, and trained meta graphs from [here](https://drive.google.com/drive/folders/19lJhjiYTKIBrCPwi0cxn1xuyLE3d9i6O?usp=sharing)
 2. Extract pretrained_weights.zip
