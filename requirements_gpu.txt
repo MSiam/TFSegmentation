@@ -1,4 +1,4 @@
-bleach==2.0.0
+bleach==3.1.4
 cycler==0.10.0
 decorator==4.1.2
 entrypoints==0.2.3
